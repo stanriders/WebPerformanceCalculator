@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -11,6 +12,7 @@ namespace WebPerformanceCalculator.Controllers
 {
     public class HomeController : Controller
     {
+
         public IActionResult Index()
         {
             return View();
@@ -29,8 +31,14 @@ namespace WebPerformanceCalculator.Controllers
         [HttpPost]
         public IActionResult AddToQueue(string jsonUsername)
         {
-            CalcQueue.AddToQueue(jsonUsername);
-            return GetQueue();
+            if (jsonUsername.Length <= 24)
+            {
+                if (CalcQueue.AddToQueue(HttpUtility.HtmlEncode(jsonUsername)))
+                    return GetQueue();
+                else
+                    return StatusCode(500, new { err = "Try again later" });
+            }
+            return StatusCode(500, new { err = "Incorrect username" });
         }
 
         public IActionResult GetQueue()

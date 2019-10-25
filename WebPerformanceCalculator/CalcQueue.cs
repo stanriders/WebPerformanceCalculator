@@ -17,18 +17,23 @@ namespace WebPerformanceCalculator
         private static readonly MemoryCache cache = new MemoryCache("usernames");
         private static readonly Queue<string> usernameQueue = new Queue<string>();
         private static bool isBusy = false;
+        private static DateTime queueDebounce = DateTime.Now;
 
         private const string api_key = "";
 
-        public static void AddToQueue(string username)
+        public static bool AddToQueue(string username)
         {
-            if (usernameQueue.All(x => x != username) && !cache.Contains(username))
+            if (usernameQueue.All(x => x != username) && !cache.Contains(username) && queueDebounce < DateTime.Now)
             {
                 if (!isBusy && usernameQueue.Count <= 0)
                     CalcUser(username);
 
                 usernameQueue.Enqueue(username);
+                queueDebounce = DateTime.Now.AddSeconds(1);
+                return true;
             }
+
+            return false;
         }
 
         public static string[] GetQueued()

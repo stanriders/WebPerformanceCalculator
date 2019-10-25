@@ -3,7 +3,7 @@
 }
 
 <h1>delta_t Rebalance Performance Calculator</h1>
-<p>Current build: 25.10.‎2019, ‏‎12:27:20 GMT+3</p>
+<p>Current build: 25.10.‎2019, ‏‎12:27:20 GMT+3 | <a href="https://github.com/HeBuwei/osu">GitHub</a></p>
 <p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done.</p>
 <p>Please don't abuse it too hard because my server is incredibly slow and can't take so much work.<br><img src="https://i.imgur.com/BsA1f96.png" width="768px" /></p>
 <p>If you have any questions about new PP formula please look at <a href="https://docs.google.com/document/d/1rymnSJ35avbWLwFe45twHnB5zM1BIQcj_mV6D4RE-H8/edit?usp=sharing">this</a> document.</p>
@@ -15,10 +15,12 @@
 <hr />
 <div class="pb-2">
     <p>Try searching top before adding someone to calc queue</p>
+
     <form class="form-row align-items-right">
-        <div class="col-auto" style="width: 300px;"><input type="text" id="username" name="username" class="form-control" placeholder="Username or user ID (preferable)"/></div>
+        <div class="col-auto" style="width: 300px;"><input type="text" id="username" name="username" class="form-control" placeholder="Username or user ID (preferable)" /></div>
         <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Calculate" id="submit" /></div>
-</form>
+        <div class="col-auto"><p id="error" class="text-danger"></p></div>
+    </form>
 </div>
 
 <table class="table table-bordered" data-toggle="bootstrap-table" id="maintable"></table>
@@ -54,7 +56,12 @@
                     type: 'POST',
                     url: "/AddToQueue",
                     data: "jsonUsername=" + $('#username').val(),
-                    complete: function(d) {
+                    error: function (d) {
+                        $('#error').html(d.responseJSON.err);
+                    },
+                    success: function (d) {
+                        $('#error').html('');
+                        $('#username').val('');
                         convertQueue(d);
                     }
                 });
@@ -64,7 +71,7 @@
             });
 
         function convertQueue(d) {
-            var json = JSON.parse(d.responseJSON);
+            var json = JSON.parse(d);
             json.forEach(function(item, i, arr) {
                 json[i] = { name: item };
             });
