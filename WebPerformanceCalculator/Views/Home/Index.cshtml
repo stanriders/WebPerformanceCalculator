@@ -44,7 +44,7 @@
                 type: 'GET',
                 url: "/GetQueue",
                 complete: function(d) {
-                    convertQueue(d);
+                    convertQueue(d.responseJSON);
                 }
             });
         });
