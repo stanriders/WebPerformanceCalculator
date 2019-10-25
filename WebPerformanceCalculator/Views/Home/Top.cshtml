@@ -1,0 +1,67 @@
+﻿
+@{
+    ViewData["Title"] = "Top";
+}
+
+<h1>Top</h1>
+<table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable" />
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            $('#maintable').bootstrapTable({
+                pageSize: 50,
+                pageList: [50, 100, 150, 200, 'unlimited'],
+                pagination: true,
+                search: true,
+                columns: [
+                    [
+                        {
+                            formatter: runningFormatter,
+                            title: '#',
+                            width: 32,
+                            align: 'center'
+                        }, {
+                            title: 'Player',
+                            field: 'Name',
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'Live PP',
+                            field: 'LivePP',
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'Local PP',
+                            field: 'LocalPP',
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'PP Change',
+                            field: 'PPLoss',
+                            sortable: true,
+                            align: 'center'
+                        }
+                    ]
+                ]
+            });
+
+            $.ajax({
+                url: "/GetTop",
+                success: function(d){
+                    var json = JSON.parse(d);
+                    json.forEach(function (item, i, arr) {
+                        item.Name = "<a href=\"/user/" + item.JsonName + "\">" + item.Name + "</a>";
+                        item.PPLoss = item.PPLoss.toFixed(1);
+                    });
+                    $('#maintable').bootstrapTable('load', json);
+                }
+            });
+        });
+
+        function runningFormatter(value, row, index) {
+            return index+1;
+        }
+    </script>
+}

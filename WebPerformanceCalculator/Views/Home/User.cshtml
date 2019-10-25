@@ -1,0 +1,78 @@
+﻿@model string
+@{
+    ViewData["Title"] = @Model;
+}
+
+<h1 id="username">@Model</h1>
+
+<div>Live PP: <div id="livePP"></div></div>
+<div> Local PP: <div id="localPP"></div></div>
+<table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable" />
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            $.ajax({
+                type: 'GET',
+                url: "/GetResults",
+                data: {jsonUsername: '@Model', calc: false},
+                complete: function (d) {
+                    var json = JSON.parse(d.responseJSON);
+
+                    $('#livePP').html(json.LivePP);
+                    $('#localPP').html(json.LocalPP);
+                    $('#username').html(json.Username);
+
+                    json.Beatmaps.forEach(function (item, i, arr) {
+                        var split = item.Beatmap.split(' - ');
+                        var beatmapId = split[0];
+                        split.splice(0, 1);
+                        json.Beatmaps[i].Beatmap = '<a href=\"https://osu.ppy.sh/b/'+ beatmapId +'\">' + split.join(' - ') + '</a>';
+                    });
+
+                    $('#maintable').bootstrapTable('load', json.Beatmaps);
+                }
+            });
+
+            $('#maintable').bootstrapTable({
+                columns: [
+                    [
+                        {
+                            formatter: runningFormatter,
+                            title: '#',
+                            width: 32,
+                            align: 'center'
+                        }, {
+                            title: 'Beatmap',
+                            field: 'Beatmap'
+                        }, {
+                            title: 'Live PP',
+                            field: 'LivePP',
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'Local PP',
+                            field: 'LocalPP',
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'PP Change',
+                            field: 'PPChange',
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'Position change',
+                            field: 'PositionChange',
+                            sortable: true,
+                            align: 'center'
+                        }
+                    ]
+                ]
+            });
+        });
+        function runningFormatter(value, row, index) {
+            return index+1;
+        }
+    </script>
+}
