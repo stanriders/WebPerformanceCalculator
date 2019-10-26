@@ -1,10 +1,10 @@
-﻿@model string
+﻿@model WebPerformanceCalculator.Models.UserModel
 @{
     ViewData["Title"] = @Model;
 }
 
-<h1 id="username">@Model</h1>
-
+<h1 id="username">@Model.Username</h1>
+<div><b>Updated on:</b> @Model.UpdateDate</div>
 <div><b>Live PP:</b><div id="livePP"></div></div>
 <div><b>Local PP:</b><div id="localPP"></div></div>
 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable" />
@@ -16,7 +16,7 @@
             $.ajax({
                 type: 'GET',
                 url: "/GetResults",
-                data: {jsonUsername: '@Model', calc: false},
+                data: {jsonUsername: '@Model.Username', calc: false},
                 complete: function (d) {
                     var json = JSON.parse(d.responseJSON);
 

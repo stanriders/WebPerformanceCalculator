@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using WebPerformanceCalculator.DB;
+using WebPerformanceCalculator.Models;
 
 namespace WebPerformanceCalculator.Controllers
 {
@@ -15,7 +16,10 @@ namespace WebPerformanceCalculator.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
+            var workingDir = assemblyFileInfo.DirectoryName;
+            var date = System.IO.File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll");
+            return View(model: date.ToUniversalTime().ToString());
         }
 
         public IActionResult Top()
@@ -25,7 +29,27 @@ namespace WebPerformanceCalculator.Controllers
 
         public IActionResult User(string username)
         {
-            return View(model: username);
+            var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
+            var workingDir = assemblyFileInfo.DirectoryName;
+
+            var updateDateString = string.Empty;
+
+            var calcDate = System.IO.File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll").ToUniversalTime();
+
+            if (System.IO.File.Exists($"{workingDir}/{username}.json"))
+            {
+                var fileDate = System.IO.File.GetLastWriteTime($"{workingDir}/{username}.json").ToUniversalTime();
+                if (fileDate < calcDate)
+                    updateDateString = $"{fileDate.ToString()} UTC (outdated!)";
+                else
+                    updateDateString = $"{fileDate.ToString()} UTC";
+            }
+
+            return View(model: new UserModel 
+            { 
+                Username = username,
+                UpdateDate = updateDateString
+            });
         }
 
         [HttpPost]
