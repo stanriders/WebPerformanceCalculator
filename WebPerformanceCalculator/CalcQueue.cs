@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -14,23 +13,26 @@ namespace WebPerformanceCalculator
 {
     public static class CalcQueue
     {
-        private static readonly MemoryCache cache = new MemoryCache("usernames");
         private static readonly Queue<string> usernameQueue = new Queue<string>();
         private static bool isBusy = false;
-        private static DateTime queueDebounce = DateTime.Now;
+
+        private static string workingDir;
+        private static DateTime calcUpdateDate;
 
         private const string api_key = "";
 
         public static bool AddToQueue(string username)
         {
+            if (calcUpdateDate == DateTime.MinValue)
+                GetCalcUpdateDate();
+
             username = username.ToLowerInvariant();
-            if (usernameQueue.All(x => x != username) && !cache.Contains(username) && queueDebounce < DateTime.Now)
+            if (usernameQueue.All(x => x != username) && CheckUserCalcDate(username) )
             {
                 if (!isBusy && usernameQueue.Count <= 0)
                     CalcUser(username);
 
                 usernameQueue.Enqueue(username);
-                queueDebounce = DateTime.Now.AddSeconds(1);
                 return true;
             }
 
@@ -40,6 +42,25 @@ namespace WebPerformanceCalculator
         public static string[] GetQueued()
         {
             return usernameQueue.ToArray();
+        }
+
+        public static void GetCalcUpdateDate()
+        {
+            var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
+            workingDir = assemblyFileInfo.DirectoryName;
+            calcUpdateDate = File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll").ToUniversalTime();
+        }
+
+        private static bool CheckUserCalcDate(string jsonUsername)
+        {
+            if (!File.Exists($"{workingDir}/{jsonUsername}.json"))
+                return true;
+
+            var userCalcDate = File.GetLastWriteTime($"{workingDir}/{jsonUsername}.json").ToUniversalTime();
+            if (userCalcDate < calcUpdateDate)
+                return true;
+
+            return false;
         }
 
         private static void CalcUser(string username)
@@ -62,14 +83,14 @@ namespace WebPerformanceCalculator
                             FileName = "dotnet",
                             WorkingDirectory = workingDir,
                             Arguments =
-                                $"PerformanceCalculator.dll profile {jsonUsername} {api_key}",
+                                $"PerformanceCalculator.dll profile \"{jsonUsername}\" {api_key}",
                             RedirectStandardOutput = false,
                             UseShellExecute = true,
                             CreateNoWindow = true,
                         }
                     };
                     process.Start();
-                    process.WaitForExit();
+                    process.WaitForExit(300000); // 5 mins
 
                     var result = string.Empty;
                     if (File.Exists($"{workingDir}/{jsonUsername}.json"))
@@ -108,8 +129,6 @@ namespace WebPerformanceCalculator
 
                             db.SaveChanges();
                         }
-
-                        cache.Add(username, username, DateTimeOffset.Now.AddHours(1));
                     }
                 }
                 catch (Exception e)

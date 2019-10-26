@@ -6,9 +6,10 @@
 <h1>delta_t Rebalance Performance Calculator</h1>
 <p>Current build: @Model UTC | <a href="https://github.com/HeBuwei/osu">GitHub</a></p>
 <p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done.</p>
-<p>Please don't abuse it too hard because my server is incredibly slow and can't take so much work.<br><img src="https://i.imgur.com/BsA1f96.png" width="768px" /></p>
+<p>Please don't abuse it too hard because my server is incredibly slow and can't take so much work.<br><img src="https://i.imgur.com/BsA1f96.png" width="100%" /></p>
 <p>If you have any questions about new PP formula please look at <a href="https://docs.google.com/document/d/1rymnSJ35avbWLwFe45twHnB5zM1BIQcj_mV6D4RE-H8/edit?usp=sharing">this</a> <b>incomplete</b> document.</p>
 <p>If you have any questions about this website give me a shout at Discord (StanR#3012) or <a href="https://osu.ppy.sh/users/7217455">on osu!</a></p>
+<span style="display: none;">while i appreciate the pentesting please send me a message if you find a bug instead of abusing it, thanks</span>
 <hr/>
 <div>
     @Html.ActionLink("Top", "Top", new { }, new { @class = "btn btn-info", @style = "width: 150px" })
@@ -24,7 +25,7 @@
     </form>
 </div>
 
-<table class="table table-bordered" data-toggle="bootstrap-table" id="maintable"></table>
+<table class="table table-bordered table-sm" data-toggle="bootstrap-table" id="maintable"></table>
 
 @section Scripts
 {
@@ -32,6 +33,7 @@
         $(function () {
             /* page load */
             $('#maintable').bootstrapTable({
+                height: 500,
                 columns: [
                     [
                         {

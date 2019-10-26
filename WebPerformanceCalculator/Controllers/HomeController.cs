@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -14,7 +15,7 @@ namespace WebPerformanceCalculator.Controllers
 {
     public class HomeController : Controller
     {
-
+        private static DateTime queueDebounce = DateTime.Now;
         public IActionResult Index()
         {
             var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
@@ -56,6 +57,9 @@ namespace WebPerformanceCalculator.Controllers
         [HttpPost]
         public IActionResult AddToQueue(string jsonUsername)
         {
+            if (queueDebounce > DateTime.Now)
+                return StatusCode(500, new { err = "Try again later" });
+
             jsonUsername = jsonUsername.Trim();
 
             var regexp = new Regex(@"^[A-Za-z0-9-\[\]_ ]+$");
@@ -63,9 +67,12 @@ namespace WebPerformanceCalculator.Controllers
             if (jsonUsername.Length > 2 && jsonUsername.Length < 15 && regexp.IsMatch(jsonUsername))
             {
                 if (CalcQueue.AddToQueue(HttpUtility.HtmlEncode(jsonUsername)))
+                {
+                    queueDebounce = DateTime.Now.AddSeconds(1);
                     return GetQueue();
+                }
                 else
-                    return StatusCode(500, new { err = "Try again later" });
+                    return StatusCode(500, new { err = "This player doesn't need a recalc yet!" });
             }
             return StatusCode(500, new { err = "Incorrect username" });
         }
