@@ -23,6 +23,7 @@ namespace WebPerformanceCalculator
 
         public static bool AddToQueue(string username)
         {
+            username = username.ToLowerInvariant();
             if (usernameQueue.All(x => x != username) && !cache.Contains(username) && queueDebounce < DateTime.Now)
             {
                 if (!isBusy && usernameQueue.Count <= 0)

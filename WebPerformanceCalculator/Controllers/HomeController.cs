@@ -1,6 +1,7 @@
 ﻿
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +56,11 @@ namespace WebPerformanceCalculator.Controllers
         [HttpPost]
         public IActionResult AddToQueue(string jsonUsername)
         {
-            if (jsonUsername.Length <= 24)
+            jsonUsername = jsonUsername.Trim();
+
+            var regexp = new Regex(@"^[A-Za-z0-9-\[\]_ ]+$");
+
+            if (jsonUsername.Length > 2 && jsonUsername.Length < 15 && regexp.IsMatch(jsonUsername))
             {
                 if (CalcQueue.AddToQueue(HttpUtility.HtmlEncode(jsonUsername)))
                     return GetQueue();
