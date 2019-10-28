@@ -60,6 +60,10 @@ namespace WebPerformanceCalculator.Controllers
             if (queueDebounce > DateTime.Now)
                 return StatusCode(500, new { err = "Try again later" });
 
+            // performance calculator doesn't want to work with them even when escaping
+            if (jsonUsername.Contains('-'))
+                return StatusCode(500, new { err = "Please use user ID instead" });
+
             jsonUsername = jsonUsername.Trim();
 
             var regexp = new Regex(@"^[A-Za-z0-9-\[\]_ ]+$");

@@ -68,8 +68,6 @@ namespace WebPerformanceCalculator
                 Thread.CurrentThread.Name = $"Calc {username}";
                 try
                 {
-                    var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
-                    var workingDir = assemblyFileInfo.DirectoryName;
                     var jsonUsername = username.ToLowerInvariant().Replace(' ', '_');
 
                     var process = new Process()
