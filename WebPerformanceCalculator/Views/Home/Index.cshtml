@@ -25,7 +25,7 @@
         <div class="col-auto"><p id="error" class="text-danger"></p></div>
     </form>
 
-    <p id="expectedTime">Expected wait time is unknown.</p>
+    <p id="expectedTime">Estimated wait time is unknown.</p>
 </div>
 
 <table class="table table-bordered table-sm" data-toggle="bootstrap-table" id="maintable"></table>
@@ -84,9 +84,9 @@
             $('#maintable').bootstrapTable('load', json);
             var waitTime = (json.length + 1) * 15;
             if (waitTime > 60)
-                $('#expectedTime').html('Expected wait time is ~' + (waitTime / 60).toFixed(1) + ' minutes.');
+                $('#expectedTime').html('Estimated wait time is ~' + (waitTime / 60).toFixed(1) + ' minutes.');
             else
-                $('#expectedTime').html('Expected wait time is ~' + waitTime + ' seconds.');
+                $('#expectedTime').html('Estimated wait time is ~' + waitTime + ' seconds.');
         }
 
     </script>
