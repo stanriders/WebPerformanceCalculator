@@ -53,7 +53,7 @@
                     var json = JSON.parse(d);
                     json.forEach(function (item, i, arr) {
                         item.Name = "<a href=\"/user/" + item.JsonName + "\">" + item.Name + "</a>";
-                        item.PPLoss = item.PPLoss.toFixed(1);
+                        item.PPLoss = (item.PPLoss<=0?"":"+") + item.PPLoss.toFixed(1);
                     });
                     $('#maintable').bootstrapTable('load', json);
                 }

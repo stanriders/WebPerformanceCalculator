@@ -84,7 +84,7 @@ namespace WebPerformanceCalculator
                         }
                     };
                     process.Start();
-                    process.WaitForExit(300000); // 5 mins
+                    process.WaitForExit(180000); // 3 mins
 
                     var result = string.Empty;
                     if (File.Exists($"{workingDir}/players/{jsonUsername}.json"))
