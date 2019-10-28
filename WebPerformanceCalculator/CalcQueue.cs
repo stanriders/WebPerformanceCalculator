@@ -17,14 +17,16 @@ namespace WebPerformanceCalculator
         private static bool isBusy = false;
 
         private static string workingDir;
-        private static DateTime calcUpdateDate;
 
         private const string api_key = "";
 
         public static bool AddToQueue(string username)
         {
-            if (calcUpdateDate == DateTime.MinValue)
-                GetCalcUpdateDate();
+            if (string.IsNullOrEmpty(workingDir))
+            {
+                var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
+                workingDir = assemblyFileInfo.DirectoryName;
+            }
 
             username = username.ToLowerInvariant();
             if (usernameQueue.All(x => x != username) && CheckUserCalcDate(username) )
@@ -44,19 +46,13 @@ namespace WebPerformanceCalculator
             return usernameQueue.ToArray();
         }
 
-        public static void GetCalcUpdateDate()
-        {
-            var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
-            workingDir = assemblyFileInfo.DirectoryName;
-            calcUpdateDate = File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll").ToUniversalTime();
-        }
-
         private static bool CheckUserCalcDate(string jsonUsername)
         {
             if (!File.Exists($"{workingDir}/{jsonUsername}.json"))
                 return true;
 
-            var userCalcDate = File.GetLastWriteTime($"{workingDir}/{jsonUsername}.json").ToUniversalTime();
+            var userCalcDate = File.GetLastWriteTime($"{workingDir}/players/{jsonUsername}.json").ToUniversalTime();
+            var calcUpdateDate = File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll").ToUniversalTime();
             if (userCalcDate < calcUpdateDate)
                 return true;
 
@@ -93,9 +89,9 @@ namespace WebPerformanceCalculator
                     process.WaitForExit(300000); // 5 mins
 
                     var result = string.Empty;
-                    if (File.Exists($"{workingDir}/{jsonUsername}.json"))
+                    if (File.Exists($"{workingDir}/players/{jsonUsername}.json"))
                     {
-                        result = File.ReadAllText($"{workingDir}/{jsonUsername}.json");
+                        result = File.ReadAllText($"{workingDir}/players/{jsonUsername}.json");
 
                         var json = JObject.Parse(result);
 

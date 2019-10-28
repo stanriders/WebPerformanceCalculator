@@ -38,9 +38,9 @@ namespace WebPerformanceCalculator.Controllers
 
             var calcDate = System.IO.File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll").ToUniversalTime();
 
-            if (System.IO.File.Exists($"{workingDir}/{username}.json"))
+            if (System.IO.File.Exists($"{workingDir}/players/{username}.json"))
             {
-                var fileDate = System.IO.File.GetLastWriteTime($"{workingDir}/{username}.json").ToUniversalTime();
+                var fileDate = System.IO.File.GetLastWriteTime($"{workingDir}/players/{username}.json").ToUniversalTime();
                 if (fileDate < calcDate)
                     updateDateString = $"{fileDate.ToString()} UTC (outdated!)";
                 else
@@ -87,8 +87,8 @@ namespace WebPerformanceCalculator.Controllers
             var workingDir = new FileInfo(typeof(HomeController).Assembly.Location).DirectoryName;
 
             var result = string.Empty;
-            if (System.IO.File.Exists($"{workingDir}/{jsonUsername}.json"))
-                result = await System.IO.File.ReadAllTextAsync($"{workingDir}/{jsonUsername}.json");
+            if (System.IO.File.Exists($"{workingDir}/players/{jsonUsername}.json"))
+                result = await System.IO.File.ReadAllTextAsync($"{workingDir}/players/{jsonUsername}.json");
 
             return Json(result);
         }
