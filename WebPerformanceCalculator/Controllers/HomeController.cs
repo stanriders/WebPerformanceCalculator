@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -31,7 +32,7 @@ namespace WebPerformanceCalculator.Controllers
             }
 
             var date = System.IO.File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll");
-            return View(model: date.ToUniversalTime().ToString());
+            return View(model: date.ToUniversalTime().ToString(CultureInfo.InvariantCulture));
         }
 
         public IActionResult Top()
@@ -50,9 +51,9 @@ namespace WebPerformanceCalculator.Controllers
                 var fileDate = System.IO.File.GetLastWriteTime($"{workingDir}/players/{username}.json")
                     .ToUniversalTime();
                 if (fileDate < calcDate)
-                    updateDateString = $"{fileDate.ToString()} UTC (outdated!)";
+                    updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC (outdated!)";
                 else
-                    updateDateString = $"{fileDate.ToString()} UTC";
+                    updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC";
             }
 
             return View(model: new UserModel
@@ -150,10 +151,8 @@ namespace WebPerformanceCalculator.Controllers
                 {
                     var userid = Convert.ToInt64(json["UserID"].ToString().Split(' ')[0]);
                     var osuUsername = json["Username"].ToString();
-                    var livePP = Convert.ToDouble(json["LivePP"].ToString().Split(' ')[0],
-                        System.Globalization.CultureInfo.InvariantCulture);
-                    var localPP = Convert.ToDouble(json["LocalPP"].ToString().Split(' ')[0],
-                        System.Globalization.CultureInfo.InvariantCulture);
+                    var livePP = Convert.ToDouble(json["LivePP"].ToString().Split(' ')[0], CultureInfo.InvariantCulture);
+                    var localPP = Convert.ToDouble(json["LocalPP"].ToString().Split(' ')[0], CultureInfo.InvariantCulture);
                     if (await db.Players.AnyAsync(x => x.ID == userid))
                     {
                         var player = await db.Players.SingleAsync(x => x.ID == userid);

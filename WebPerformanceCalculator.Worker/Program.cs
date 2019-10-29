@@ -41,7 +41,7 @@ namespace WebPerformanceCalculator.Worker
 
             Console.WriteLine("Started...");
 
-            while (true)
+            while (!File.Exists($"{workingDir}/softexit"))
             {
                 try
                 {

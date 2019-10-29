@@ -10,6 +10,7 @@ namespace WebPerformanceCalculator
         private static readonly Queue<string> usernameQueue = new Queue<string>();
         private static string workingDir;
         private static object dequeueLock = new object();
+        private static object processingLock = new object();
 
         public static bool AddToQueue(string username)
         {
@@ -22,7 +23,11 @@ namespace WebPerformanceCalculator
             username = username.ToLowerInvariant();
             if (usernameQueue.All(x => x != username) && CheckUserCalcDate(username) )
             {
-                usernameQueue.Enqueue(username);
+                lock (dequeueLock)
+                {
+                    usernameQueue.Enqueue(username);
+                }
+
                 return true;
             }
 
@@ -66,7 +71,10 @@ namespace WebPerformanceCalculator
 
         public static void RemoveFromProcessing(string username)
         {
-            processingList.RemoveAt(processingList.IndexOf(username));
+            lock (processingLock)
+            {
+                processingList.RemoveAt(processingList.IndexOf(username));
+            }
         }
     }
 }
