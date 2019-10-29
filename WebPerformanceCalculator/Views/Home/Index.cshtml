@@ -4,7 +4,7 @@
 }
 
 <h1>delta_t Rebalance Performance Calculator</h1>
-<p>Current build: @Model UTC (e94e5ab) | <a href="https://github.com/HeBuwei/osu">GitHub</a></p>
+<p>Current build: @Model UTC (7ba802e) | <a href="https://github.com/HeBuwei/osu">GitHub</a></p>
 <p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done.</p>
 <p>Please don't abuse it too hard because my server is incredibly slow and can't take so much work.<br><img src="https://i.imgur.com/Ny6rt6e.png" width="100%" /></p>
 <p>If you have any questions about new PP formula please look at <a href="https://docs.google.com/document/d/1rymnSJ35avbWLwFe45twHnB5zM1BIQcj_mV6D4RE-H8/edit?usp=sharing">this</a> <b>incomplete</b> document.</p>
@@ -46,14 +46,19 @@
                     ]
                 ]
             });
+            updateQueue();
+        });
+
+        function updateQueue() {
             $.ajax({
                 type: 'GET',
                 url: "/GetQueue",
                 complete: function(d) {
                     convertQueue(d.responseJSON);
+                    setTimeout(function(){updateQueue();}, 3000);
                 }
             });
-        });
+        }
 
         /* add to queue */
         $("form").on('submit',
@@ -76,13 +81,12 @@
                 e.preventDefault();
             });
 
-        function convertQueue(d) {
-            var json = JSON.parse(d);
+        function convertQueue(json) {
             json.forEach(function(item, i, arr) {
                 json[i] = { name: item };
             });
             $('#maintable').bootstrapTable('load', json);
-            var waitTime = (json.length + 1) * 15;
+            var waitTime = (json.length + 1) * 5;
             if (waitTime > 60)
                 $('#expectedTime').html('Estimated wait time is ~' + (waitTime / 60).toFixed(1) + ' minutes.');
             else

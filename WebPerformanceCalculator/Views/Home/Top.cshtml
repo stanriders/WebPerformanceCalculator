@@ -18,28 +18,28 @@
                 columns: [
                     [
                         {
-                            formatter: runningFormatter,
+                            field: 'place',
                             title: '#',
                             width: 32,
                             align: 'center'
                         }, {
                             title: 'Player',
-                            field: 'Name',
+                            field: 'name',
                             sortable: true,
                             align: 'center'
                         }, {
                             title: 'Live PP',
-                            field: 'LivePP',
+                            field: 'livePP',
                             sortable: true,
                             align: 'center'
                         }, {
                             title: 'Local PP',
-                            field: 'LocalPP',
+                            field: 'localPP',
                             sortable: true,
                             align: 'center'
                         }, {
                             title: 'PP Change',
-                            field: 'PPLoss',
+                            field: 'ppLoss',
                             sortable: true,
                             align: 'center'
                         }
@@ -49,19 +49,14 @@
 
             $.ajax({
                 url: "/GetTop",
-                success: function(d){
-                    var json = JSON.parse(d);
+                success: function(json){
                     json.forEach(function (item, i, arr) {
-                        item.Name = "<a href=\"/user/" + item.JsonName + "\">" + item.Name + "</a>";
-                        item.PPLoss = (item.PPLoss<=0?"":"+") + item.PPLoss.toFixed(1);
+                        item.name = "<a href=\"/user/" + item.jsonName + "\">" + item.name + "</a>";
+                        item.ppLoss = (item.ppLoss<=0?"":"+") + item.ppLoss.toFixed(1);
                     });
                     $('#maintable').bootstrapTable('load', json);
                 }
             });
         });
-
-        function runningFormatter(value, row, index) {
-            return index+1;
-        }
     </script>
 }
