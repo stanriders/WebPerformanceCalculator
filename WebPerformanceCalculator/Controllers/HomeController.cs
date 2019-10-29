@@ -18,6 +18,7 @@ namespace WebPerformanceCalculator.Controllers
     {
         private static DateTime queueDebounce = DateTime.Now;
         private static string workingDir;
+        private static bool queueLocked;
 
         private const string auth_key = "";
 
@@ -64,6 +65,9 @@ namespace WebPerformanceCalculator.Controllers
         [HttpPost]
         public IActionResult AddToQueue(string jsonUsername)
         {
+            if (queueLocked)
+                return StatusCode(500, new { err = "Queue is temporary locked, try again later!" });
+
             if (queueDebounce > DateTime.Now)
                 return StatusCode(500, new {err = "Try again later"});
 
@@ -188,6 +192,16 @@ namespace WebPerformanceCalculator.Controllers
             var username = CalcQueue.GetUserForCalc();
             if (!string.IsNullOrEmpty(username))
                 return Json(new { user = username });
+
+            return new OkResult();
+        }
+
+        public IActionResult LockQueue(string key)
+        {
+            if (key != auth_key)
+                return StatusCode(403);
+
+            queueLocked = true;
 
             return new OkResult();
         }
