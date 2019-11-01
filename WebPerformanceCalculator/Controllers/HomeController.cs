@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -18,20 +17,17 @@ namespace WebPerformanceCalculator.Controllers
     public class HomeController : Controller
     {
         private static DateTime queueDebounce = DateTime.Now;
-        private static string workingDir;
         private static bool queueLocked;
 
         private const string auth_key = "";
+        private const string calc_file = "osu.Game.Rulesets.Osu.dll";
+        private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
+
+        #region Pages
 
         public IActionResult Index()
         {
-            if (string.IsNullOrEmpty(workingDir))
-            {
-                var assemblyFileInfo = new FileInfo(typeof(HomeController).Assembly.Location);
-                workingDir = assemblyFileInfo.DirectoryName;
-            }
-
-            var date = System.IO.File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll");
+            var date = System.IO.File.GetLastWriteTime(calc_file);
             return View(model: date.ToUniversalTime().ToString(CultureInfo.InvariantCulture));
         }
 
@@ -44,24 +40,27 @@ namespace WebPerformanceCalculator.Controllers
         {
             var updateDateString = string.Empty;
 
-            var calcDate = System.IO.File.GetLastWriteTime($"{workingDir}/osu.Game.Rulesets.Osu.dll").ToUniversalTime();
+            var calcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
 
-            if (System.IO.File.Exists($"{workingDir}/players/{username}.json"))
+            if (System.IO.File.Exists($"players/{username}.json"))
             {
-                var fileDate = System.IO.File.GetLastWriteTime($"{workingDir}/players/{username}.json")
-                    .ToUniversalTime();
+                var fileDate = System.IO.File.GetLastWriteTime($"players/{username}.json").ToUniversalTime();
                 if (fileDate < calcDate)
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC (outdated!)";
                 else
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC";
             }
 
-            return View(model: new UserModel
+            return View(new UserModel
             {
                 Username = username,
                 UpdateDate = updateDateString
             });
         }
+
+        #endregion
+
+        #region API
 
         [HttpPost]
         public IActionResult AddToQueue(string jsonUsername)
@@ -102,15 +101,15 @@ namespace WebPerformanceCalculator.Controllers
         public async Task<IActionResult> GetResults(string jsonUsername)
         {
             var result = string.Empty;
-            if (System.IO.File.Exists($"{workingDir}/players/{jsonUsername}.json"))
-                result = await System.IO.File.ReadAllTextAsync($"{workingDir}/players/{jsonUsername}.json");
+            if (System.IO.File.Exists($"players/{jsonUsername}.json"))
+                result = await System.IO.File.ReadAllTextAsync($"players/{jsonUsername}.json");
 
             return Json(result);
         }
 
         public async Task<IActionResult> GetTop()
         {
-            using (DatabaseContext db = new DatabaseContext())
+            await using (DatabaseContext db = new DatabaseContext())
             {
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
@@ -145,9 +144,9 @@ namespace WebPerformanceCalculator.Controllers
             {
                 var json = JObject.Parse(jsonString);
 
-                await System.IO.File.WriteAllTextAsync($"{workingDir}/players/{jsonUsername}.json", jsonString);
+                await System.IO.File.WriteAllTextAsync($"players/{jsonUsername}.json", jsonString);
 
-                using (DatabaseContext db = new DatabaseContext())
+                await using (DatabaseContext db = new DatabaseContext())
                 {
                     var userid = Convert.ToInt64(json["UserID"].ToString().Split(' ')[0]);
                     var osuUsername = json["Username"].ToString();
@@ -183,14 +182,25 @@ namespace WebPerformanceCalculator.Controllers
             return new OkResult();
         }
 
-        public IActionResult GetUserForWorker(string key)
+        public IActionResult GetUserForWorker(string key, long calcTimestamp)
         {
             if (key != auth_key)
                 return StatusCode(403);
 
+            var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
+
+            if (calcTimestamp < localCalcDate)
+            {
+                return Json(new WorkerDataModel
+                {
+                    NeedsCalcUpdate = true,
+                    Data = calc_update_link
+                });
+            }
+
             var username = CalcQueue.GetUserForCalc();
             if (!string.IsNullOrEmpty(username))
-                return Json(new { user = username });
+                return Json(new WorkerDataModel() { Data = username });
 
             return new OkResult();
         }
@@ -204,5 +214,7 @@ namespace WebPerformanceCalculator.Controllers
 
             return new OkResult();
         }
+
+        #endregion
     }
 }

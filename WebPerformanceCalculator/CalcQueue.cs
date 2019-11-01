@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -6,11 +7,10 @@ namespace WebPerformanceCalculator
 {
     public static class CalcQueue
     {
-        private static readonly List<string> processingList = new List<string>();
-        private static readonly Queue<string> usernameQueue = new Queue<string>();
+        //private static readonly List<string> processingList = new List<string>();
+        private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
         private static string workingDir;
-        private static object dequeueLock = new object();
-        private static object processingLock = new object();
+        private static readonly object processingLock = new object();
 
         public static bool AddToQueue(string username)
         {
@@ -21,13 +21,9 @@ namespace WebPerformanceCalculator
             }
 
             username = username.ToLowerInvariant();
-            if (usernameQueue.All(x => x != username) && CheckUserCalcDate(username) )
+            if (!usernameQueue.Contains(username) && CheckUserCalcDate(username))
             {
-                lock (dequeueLock)
-                {
-                    usernameQueue.Enqueue(username);
-                }
-
+                usernameQueue.Enqueue(username);
                 return true;
             }
 
@@ -36,9 +32,9 @@ namespace WebPerformanceCalculator
 
         public static string[] GetQueue()
         {
-            var queue = new List<string>(processingList);
-            queue.AddRange(usernameQueue);
-            return queue.ToArray();
+            //var queue = new List<string>(processingList);
+            //queue.AddRange(usernameQueue);
+            return usernameQueue.ToArray();
         }
 
         private static bool CheckUserCalcDate(string jsonUsername)
@@ -56,25 +52,21 @@ namespace WebPerformanceCalculator
 
         public static string GetUserForCalc()
         {
-            lock (dequeueLock)
+            if (usernameQueue.TryDequeue(out var user))
             {
-                if (usernameQueue.Count > 0)
-                {
-                    var user = usernameQueue.Dequeue();
-                    processingList.Add(user);
-                    return user;
-                }
-
-                return string.Empty;
+                //processingList.Add(user);
+                return user;
             }
+
+            return string.Empty;
         }
 
         public static void RemoveFromProcessing(string username)
         {
-            lock (processingLock)
+            /*lock (processingLock)
             {
                 processingList.RemoveAt(processingList.IndexOf(username));
-            }
+            }*/
         }
     }
 }

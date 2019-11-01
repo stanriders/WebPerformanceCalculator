@@ -7,14 +7,9 @@ namespace WebPerformanceCalculator.DB
     {
         private const string connection_string = "Filename=./top.db";
 
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite(connection_string);
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
         }
 
         public DbSet<Player> Players { get; set; }

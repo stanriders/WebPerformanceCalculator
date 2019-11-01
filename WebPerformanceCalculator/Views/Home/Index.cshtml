@@ -4,18 +4,21 @@
 }
 
 <h1>delta_t Rebalance Performance Calculator</h1>
-<p>Current build: @Model UTC (7ba802e) | <a href="https://github.com/HeBuwei/osu">GitHub</a></p>
+<p>Current build: @Model UTC (489cb27) | <a href="https://github.com/HeBuwei/osu">GitHub</a></p>
 <p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done.</p>
-<p>Please don't abuse it too hard because my server is incredibly slow and can't take so much work.<br><img src="https://i.imgur.com/Ny6rt6e.png" width="100%" /></p>
 <p>If you have any questions about new PP formula please look at <a href="https://docs.google.com/document/d/1rymnSJ35avbWLwFe45twHnB5zM1BIQcj_mV6D4RE-H8/edit?usp=sharing">this</a> <b>incomplete</b> document.</p>
-<p>If you have any questions about this website give me a shout at Discord (StanR#3012) or <a href="https://osu.ppy.sh/users/7217455">on osu!</a><br/>
-<a href="https://www.donationalerts.com/r/stanr"><b>You can also help me cover some of the server costs!</b></a></p>
-<span style="display: none;">while i appreciate the pentesting please send me a message if you find a bug instead of abusing it, thanks</span>
-<hr/>
+<p>
+    If you have any questions about this website give me a shout at Discord (StanR#3012) or <a href="https://osu.ppy.sh/users/7217455">on osu!</a><br />
+    <a href="https://www.donationalerts.com/r/stanr"><b>You can also help me cover some of the server costs!</b></a>
+    <!--while i appreciate pentesting please send me a message if you find a bug instead of abusing it, thanks-->
+</p>
+<hr />
+
 <div>
     @Html.ActionLink("Top", "Top", new { }, new { @class = "btn btn-info", @style = "width: 150px" })
 </div>
 <hr />
+
 <div class="pb-2">
     <p>Try searching top before adding someone to calculation queue.</p>
 
@@ -36,7 +39,7 @@
         $(function () {
             /* page load */
             $('#maintable').bootstrapTable({
-                height: 500,
+                height: 350,
                 columns: [
                     [
                         {
@@ -53,16 +56,16 @@
             $.ajax({
                 type: 'GET',
                 url: "/GetQueue",
-                complete: function(d) {
+                complete: function (d) {
                     convertQueue(d.responseJSON);
-                    setTimeout(function(){updateQueue();}, 3000);
+                    setTimeout(function () { updateQueue(); }, 5000);
                 }
             });
         }
 
         /* add to queue */
         $("form").on('submit',
-            function(e) {
+            function (e) {
                 $.ajax({
                     type: 'POST',
                     url: "/AddToQueue",
@@ -82,7 +85,7 @@
             });
 
         function convertQueue(json) {
-            json.forEach(function(item, i, arr) {
+            json.forEach(function (item, i, arr) {
                 json[i] = { name: item };
             });
             $('#maintable').bootstrapTable('load', json);

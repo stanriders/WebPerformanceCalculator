@@ -11,56 +11,94 @@ namespace WebPerformanceCalculator.Worker
     class Program
     {
         private static string workingDir;
+        private static string apiKey;
         private static readonly HttpClient http = new HttpClient();
 
 #if DEBUG
         private const string remote_in_endpoint = @"http://localhost:6000/GetUserForWorker";
         private const string remote_out_endpoint = @"http://localhost:6000/SubmitWorkerResults";
+        private const int pooling_rate = 1000; // 1 second
 #else
         private const string remote_in_endpoint = @"https://newpp.stanr.info/GetUserForWorker";
         private const string remote_out_endpoint = @"https://newpp.stanr.info/SubmitWorkerResults";
-#endif
-        private const string auth_key = "";
-        private const string api_key = "";
-
-#if DEBUG
-        private const int pooling_rate = 1000; // 1 second
-#else
         private const int pooling_rate = 5000; // 5 seconds
 #endif
 
-        private class JsonUser
-        {
-            public string user { get; set; }
-        }
+        private const string auth_key = "";
+        private const string lock_file = "lockcalc";
+        private const string calc_file = "osu.Game.Rulesets.Osu.dll";
 
         static void Main(string[] args)
         {
             var assemblyFileInfo = new FileInfo(typeof(Program).Assembly.Location);
             workingDir = assemblyFileInfo.DirectoryName;
 
+            apiKey = File.ReadAllText("apikey");
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Console.WriteLine("API Key is empty! Exiting...");
+                return;
+            }
+
             Console.WriteLine("Started...");
 
-            while (!File.Exists($"{workingDir}/softexit"))
+            while (!File.Exists("softexit"))
             {
                 try
                 {
-                    var json = http.GetStringAsync($"{remote_in_endpoint}?key={auth_key}").Result;
-                    if (!string.IsNullOrEmpty(json))
+                    if (!File.Exists(lock_file))
                     {
-                        CalcUser(JsonConvert.DeserializeObject<JsonUser>(json).user);
+                        var calcDate = File.GetLastWriteTime(calc_file).ToUniversalTime();
+                        var json = http.GetStringAsync($"{remote_in_endpoint}?key={auth_key}&calcTimestamp={calcDate.Ticks}").Result;
+                        if (!string.IsNullOrEmpty(json))
+                        {
+                            var data = JsonConvert.DeserializeObject<WorkerDataModel>(json);
+                            if (data.NeedsCalcUpdate)
+                                UpdateCalc(data.Data);
+                            else
+                                CalcUser(data.Data);
+
+                            continue;
+                        }
                     }
                     else
-                        Thread.Sleep(pooling_rate);
+                    {
+                        Console.WriteLine("Calculation is locked.");
+                    }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    Thread.Sleep(pooling_rate);
                 }
+                Thread.Sleep(pooling_rate);
             }
+            Console.WriteLine("Exiting...");
         }
 
+        private static void UpdateCalc(string calcLink)
+        {
+            Console.WriteLine("OUTDATED CALC MODULE! Updating...");
+            try
+            {
+                Console.WriteLine("Locking calculation...");
+                var lockFile = File.Create(lock_file);
+                lockFile.Dispose();
+
+                Thread.Sleep(10000);
+
+                Console.WriteLine("Downloading new calc module...");
+                var calcBytes = http.GetByteArrayAsync(calcLink).Result;
+                File.WriteAllBytes(calc_file, calcBytes);
+
+                Console.WriteLine("Unlocking calculation...");
+                File.Delete(lock_file);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            Console.WriteLine("Finished updating");
+        }
 
         private static void CalcUser(string username)
         {
@@ -77,7 +115,7 @@ namespace WebPerformanceCalculator.Worker
                         FileName = "dotnet",
                         WorkingDirectory = workingDir,
                         Arguments =
-                            $"PerformanceCalculator.dll profile \"{jsonUsername}\" {api_key}",
+                            $"PerformanceCalculator.dll profile \"{jsonUsername}\" {apiKey}",
                         RedirectStandardOutput = false,
                         UseShellExecute = true,
                         CreateNoWindow = true,
@@ -86,8 +124,8 @@ namespace WebPerformanceCalculator.Worker
                 process.Start();
                 process.WaitForExit(180000); // 3 mins
 
-                if (File.Exists($"{workingDir}/players/{jsonUsername}.json"))
-                    result = File.ReadAllText($"{workingDir}/players/{jsonUsername}.json");
+                if (File.Exists($"players/{jsonUsername}.json"))
+                    result = File.ReadAllText($"players/{jsonUsername}.json");
             }
             catch (Exception e)
             {
