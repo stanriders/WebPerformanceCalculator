@@ -107,7 +107,7 @@ namespace WebPerformanceCalculator.Controllers
             return Json(result);
         }
 
-        public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null)
+        public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "asc", string sort = "LocalPP")
         {
             await using (DatabaseContext db = new DatabaseContext())
             {
@@ -116,24 +116,26 @@ namespace WebPerformanceCalculator.Controllers
                 var totalNotFilteredAmt = await db.Players.CountAsync();
                 var totalAmt = totalNotFilteredAmt;
 
-                Player[] players;
-                if (!string.IsNullOrEmpty(search))
-                {
-                    players = await db.Players.Where(x => x.JsonName.Contains(search) || x.Name.Contains(search))
-                        .OrderByDescending(x => x.LocalPP)
-                        .Skip(offset)
-                        .Take(limit)
-                        .ToArrayAsync();
+                var query = db.Players.AsQueryable();
 
-                    totalAmt = players.Length;
-                }
-                else
+                if (!string.IsNullOrEmpty(search))
+                    query = query.Where(x => x.JsonName.Contains(search) || x.Name.Contains(search));
+
+                if (!string.IsNullOrEmpty(order))
                 {
-                    players = await db.Players.OrderByDescending(x => x.LocalPP)
-                        .Skip(offset)
-                        .Take(limit)
-                        .ToArrayAsync();
+                    // this is stupid
+                    if (sort == "ppLoss")
+                        sort = "PPLoss";
+                    else
+                        sort = sort.First().ToString().ToUpper() + sort.Substring(1);
+
+                    if (order == "asc")
+                        query = query.OrderBy(sort);
+                    else
+                        query = query.OrderByDescending(sort);
                 }
+
+                var players = await query.Skip(offset).Take(limit).ToArrayAsync();
 
                 var jsonPlayers = new List<TopPlayerModel>();
                 for (int i = 0; i < players.Length; i++)
