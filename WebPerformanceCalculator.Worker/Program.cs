@@ -37,11 +37,11 @@ namespace WebPerformanceCalculator.Worker
             apiKey = File.ReadAllText("apikey");
             if (string.IsNullOrEmpty(apiKey))
             {
-                Console.WriteLine("API Key is empty! Using fallback key...");
+                Log("API Key is empty! Using fallback key...");
                 apiKey = fallback_api_key;
             }
 
-            Console.WriteLine("Started...");
+            Log("Started...");
 
             while (!File.Exists("softexit"))
             {
@@ -64,41 +64,41 @@ namespace WebPerformanceCalculator.Worker
                     }
                     else
                     {
-                        Console.WriteLine("Calculation is locked.");
+                        Log("Calculation is locked.");
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Log(e.Message);
                 }
                 Thread.Sleep(pooling_rate);
             }
-            Console.WriteLine("Exiting...");
+            Log("Exiting...");
         }
 
         private static void UpdateCalc(string calcLink)
         {
-            Console.WriteLine("OUTDATED CALC MODULE! Updating...");
+            Log("OUTDATED CALC MODULE! Updating...");
             try
             {
-                Console.WriteLine("Locking calculation...");
+                Log("Locking calculation...");
                 var lockFile = File.Create(lock_file);
                 lockFile.Dispose();
 
                 Thread.Sleep(10000);
 
-                Console.WriteLine("Downloading new calc module...");
+                Log("Downloading new calc module...");
                 var calcBytes = http.GetByteArrayAsync(calcLink).Result;
                 File.WriteAllBytes(calc_file, calcBytes);
 
-                Console.WriteLine("Unlocking calculation...");
+                Log("Unlocking calculation...");
                 File.Delete(lock_file);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Log(e.Message);
             }
-            Console.WriteLine("Finished updating");
+            Log("Finished updating");
         }
 
         private static void CalcUser(string username)
@@ -106,7 +106,7 @@ namespace WebPerformanceCalculator.Worker
             var result = string.Empty;
             try
             {
-                Console.WriteLine($"Calculating {username}");
+                Log($"Calculating {username}");
                 var jsonUsername = username.Replace(' ', '_');
 
                 var process = new Process()
@@ -130,12 +130,17 @@ namespace WebPerformanceCalculator.Worker
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Failed to calc {username}\n {e.Message}");
+                Log($"Failed to calc {username}\n {e.Message}");
             }
-            Console.WriteLine($"Sending {username} results");
+            Log($"Sending {username} results");
 
             var content = new StringContent(result, Encoding.UTF8, "application/json");
             http.PostAsync($"{remote_out_endpoint}?key={auth_key}&jsonUsername={username}", content).Wait();
+        }
+
+        private static void Log(string log)
+        {
+            Console.WriteLine($"[{DateTime.Now}] {log}");
         }
     }
 }

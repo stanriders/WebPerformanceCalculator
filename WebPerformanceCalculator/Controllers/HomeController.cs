@@ -211,7 +211,7 @@ namespace WebPerformanceCalculator.Controllers
 
         public IActionResult GetUserForWorker(string key, long calcTimestamp)
         {
-            if (key != auth_key)
+            if (key != auth_key || calcTimestamp == 0)
                 return StatusCode(403);
 
             var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
