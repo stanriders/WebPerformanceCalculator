@@ -119,7 +119,7 @@ namespace WebPerformanceCalculator.Controllers
                 var query = db.Players.AsQueryable();
 
                 if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.JsonName.Contains(search) || x.Name.Contains(search));
+                    query = query.Where(x => x.JsonName.Contains(search.ToLower()) || x.Name.Contains(search));
 
                 if (!string.IsNullOrEmpty(order))
                 {
@@ -155,7 +155,7 @@ namespace WebPerformanceCalculator.Controllers
                 return Json(new TopModel()
                 {
                     Rows = jsonPlayers.ToArray(),
-                    Total = totalAmt,
+                    Total = players.Length,
                     TotalNotFiltered = totalNotFilteredAmt
                 });
             }
@@ -253,7 +253,7 @@ namespace WebPerformanceCalculator.Controllers
             {
                 var players = await db.Players.OrderByDescending(x=> x.LocalPP)
                     .Skip(offset)
-                    .Take(100)
+                    .Take(amt)
                     .Select(x => x.JsonName)
                     .ToArrayAsync();
 
