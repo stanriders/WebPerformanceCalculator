@@ -15,8 +15,7 @@
         $(function () {
             $.ajax({
                 type: 'GET',
-                url: "/GetResults",
-                data: {jsonUsername: '@Model.Username', calc: false},
+                url: "/GetResults?jsonUsername=@Model.Username",
                 complete: function (d) {
                     var json = JSON.parse(d.responseJSON);
 

@@ -107,14 +107,13 @@ namespace WebPerformanceCalculator.Controllers
             return Json(result);
         }
 
-        public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "asc", string sort = "LocalPP")
+        public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "asc", string sort = "localPP")
         {
             await using (DatabaseContext db = new DatabaseContext())
             {
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
                 var totalNotFilteredAmt = await db.Players.CountAsync();
-                var totalAmt = totalNotFilteredAmt;
 
                 var query = db.Players.AsQueryable();
 
@@ -124,10 +123,15 @@ namespace WebPerformanceCalculator.Controllers
                 if (!string.IsNullOrEmpty(order))
                 {
                     // this is stupid
-                    if (sort == "ppLoss")
-                        sort = "PPLoss";
-                    else
-                        sort = sort.First().ToString().ToUpper() + sort.Substring(1);
+                    sort = sort switch
+                    {
+                        "jsonName" => "JsonName",
+                        "name" => "Name",
+                        "livePP" => "LivePP",
+                        "localPP" => "LocalPP",
+                        "ppLoss" => "PPLoss",
+                        _ => string.Empty
+                    };
 
                     if (order == "asc")
                         query = query.OrderBy(sort);
