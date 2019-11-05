@@ -159,7 +159,7 @@ namespace WebPerformanceCalculator.Controllers
                 return Json(new TopModel()
                 {
                     Rows = jsonPlayers.ToArray(),
-                    Total = players.Length,
+                    Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : players.Length,
                     TotalNotFiltered = totalNotFilteredAmt
                 });
             }
