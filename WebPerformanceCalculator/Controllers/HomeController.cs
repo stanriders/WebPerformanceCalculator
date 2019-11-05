@@ -87,7 +87,7 @@ namespace WebPerformanceCalculator.Controllers
                     return GetQueue();
                 }
                 else
-                    return StatusCode(500, new {err = "This player doesn't need a recalc yet!"});
+                    return StatusCode(500, new {err = "Recalculation is only allowed after formula updates!"});
             }
 
             return StatusCode(500, new {err = "Incorrect username"});
