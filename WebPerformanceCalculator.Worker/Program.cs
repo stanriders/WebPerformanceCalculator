@@ -25,6 +25,7 @@ namespace WebPerformanceCalculator.Worker
 #endif
 
         private const string auth_key = "";
+        private const string fallback_api_key = "";
         private const string lock_file = "lockcalc";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
 
@@ -36,8 +37,8 @@ namespace WebPerformanceCalculator.Worker
             apiKey = File.ReadAllText("apikey");
             if (string.IsNullOrEmpty(apiKey))
             {
-                Console.WriteLine("API Key is empty! Exiting...");
-                return;
+                Console.WriteLine("API Key is empty! Using fallback key...");
+                apiKey = fallback_api_key;
             }
 
             Console.WriteLine("Started...");

@@ -12,9 +12,11 @@
         $(function () {
             $('#maintable').bootstrapTable({
                 pageSize: 50,
-                pageList: [50, 100, 150, 200, 'unlimited'],
+                pageList: [50, 100, 150, 200, 500],
                 pagination: true,
+                sidePagination: 'server',
                 search: true,
+                url: "/GetTop",
                 columns: [
                     [
                         {
@@ -26,7 +28,8 @@
                             title: 'Player',
                             field: 'name',
                             sortable: true,
-                            align: 'center'
+                            align: 'center',
+                            formatter: formatPlayerName
                         }, {
                             title: 'Live PP',
                             field: 'livePP',
@@ -47,16 +50,9 @@
                 ]
             });
 
-            $.ajax({
-                url: "/GetTop",
-                success: function(json){
-                    json.forEach(function (item, i, arr) {
-                        item.name = "<a href=\"/user/" + item.jsonName + "\">" + item.name + "</a>";
-                        item.ppLoss = (item.ppLoss<=0?"":"+") + item.ppLoss.toFixed(1);
-                    });
-                    $('#maintable').bootstrapTable('load', json);
-                }
-            });
+            function formatPlayerName(value, row, index) {
+                return "<a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
+            }
         });
     </script>
 }

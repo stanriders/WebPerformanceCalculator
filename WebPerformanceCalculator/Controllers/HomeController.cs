@@ -107,13 +107,34 @@ namespace WebPerformanceCalculator.Controllers
             return Json(result);
         }
 
-        public async Task<IActionResult> GetTop()
+        public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null)
         {
             await using (DatabaseContext db = new DatabaseContext())
             {
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-                var players = (await db.Players.ToArrayAsync()).OrderByDescending(x => x.LocalPP).ToArray();
+                var totalNotFilteredAmt = await db.Players.CountAsync();
+                var totalAmt = totalNotFilteredAmt;
+
+                Player[] players;
+                if (!string.IsNullOrEmpty(search))
+                {
+                    players = await db.Players.Where(x => x.JsonName.Contains(search) || x.Name.Contains(search))
+                        .OrderByDescending(x => x.LocalPP)
+                        .Skip(offset)
+                        .Take(limit)
+                        .ToArrayAsync();
+
+                    totalAmt = players.Length;
+                }
+                else
+                {
+                    players = await db.Players.OrderByDescending(x => x.LocalPP)
+                        .Skip(offset)
+                        .Take(limit)
+                        .ToArrayAsync();
+                }
+
                 var jsonPlayers = new List<TopPlayerModel>();
                 for (int i = 0; i < players.Length; i++)
                 {
@@ -124,12 +145,17 @@ namespace WebPerformanceCalculator.Controllers
                         LivePP = players[i].LivePP,
                         LocalPP = players[i].LocalPP,
                         Name = players[i].Name,
-                        PPLoss = players[i].PPLoss,
-                        Place = i + 1
+                        PPLoss = Math.Round(players[i].PPLoss, 2),
+                        Place = offset + i + 1
                     });
                 }
 
-                return Json(jsonPlayers);
+                return Json(new TopModel()
+                {
+                    Rows = jsonPlayers.ToArray(),
+                    Total = totalAmt,
+                    TotalNotFiltered = totalNotFilteredAmt
+                });
             }
         }
 
@@ -159,6 +185,7 @@ namespace WebPerformanceCalculator.Controllers
                         player.LocalPP = localPP;
                         player.PPLoss = localPP - livePP;
                         player.JsonName = jsonUsername;
+                        player.Name = osuUsername;
                     }
                     else
                     {
@@ -211,6 +238,26 @@ namespace WebPerformanceCalculator.Controllers
                 return StatusCode(403);
 
             queueLocked = true;
+
+            return new OkResult();
+        }
+
+        public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0)
+        {
+            if (key != auth_key)
+                return StatusCode(403);
+
+            await using (DatabaseContext db = new DatabaseContext())
+            {
+                var players = await db.Players.OrderByDescending(x=> x.LocalPP)
+                    .Skip(offset)
+                    .Take(100)
+                    .Select(x => x.JsonName)
+                    .ToArrayAsync();
+
+                foreach (var player in players)
+                    CalcQueue.AddToQueue(player);
+            }
 
             return new OkResult();
         }
