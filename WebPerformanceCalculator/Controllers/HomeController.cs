@@ -79,7 +79,7 @@ namespace WebPerformanceCalculator.Controllers
 
             var regexp = new Regex(@"^[A-Za-z0-9-\[\]_ ]+$");
 
-            if (jsonUsername.Length > 2 && jsonUsername.Length < 15 && regexp.IsMatch(jsonUsername))
+            if (jsonUsername.Length > 2 && jsonUsername.Length < 16 && regexp.IsMatch(jsonUsername))
             {
                 if (CalcQueue.AddToQueue(HttpUtility.HtmlEncode(jsonUsername)))
                 {
