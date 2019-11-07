@@ -303,7 +303,7 @@ namespace WebPerformanceCalculator.Controllers
                     .ToArrayAsync();
 
                 foreach (var player in players)
-                    if (!CheckUserCalcDate(player))
+                    if (CheckUserCalcDate(player))
                         usernameQueue.Enqueue(player);
             }
 
