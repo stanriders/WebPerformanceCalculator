@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,15 +12,16 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using WebPerformanceCalculator.DB;
 using WebPerformanceCalculator.Models;
+using WebPerformanceCalculator.Shared;
 
 namespace WebPerformanceCalculator.Controllers
 {
     public class HomeController : Controller
     {
+        private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
 
-        private const string auth_key = "";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
         private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
 
@@ -40,12 +42,10 @@ namespace WebPerformanceCalculator.Controllers
         {
             var updateDateString = string.Empty;
 
-            var calcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
-
             if (System.IO.File.Exists($"players/{username}.json"))
             {
                 var fileDate = System.IO.File.GetLastWriteTime($"players/{username}.json").ToUniversalTime();
-                if (fileDate < calcDate)
+                if (CheckUserCalcDate(username))
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC (outdated!)";
                 else
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC";
@@ -123,13 +123,15 @@ namespace WebPerformanceCalculator.Controllers
 
             if (jsonUsername.Length > 2 && jsonUsername.Length < 16 && regexp.IsMatch(jsonUsername))
             {
-                if (CalcQueue.AddToQueue(HttpUtility.HtmlEncode(jsonUsername)))
+                jsonUsername = HttpUtility.HtmlEncode(jsonUsername).ToLowerInvariant();
+                if (!usernameQueue.Contains(jsonUsername) && CheckUserCalcDate(jsonUsername))
                 {
+                    usernameQueue.Enqueue(jsonUsername);
                     queueDebounce = DateTime.Now.AddSeconds(1);
                     return GetQueue();
                 }
-                else
-                    return StatusCode(500, new {err = "Recalculation is only allowed after formula updates!"});
+
+                return StatusCode(500, new { err = "Recalculation is only allowed after formula updates!" });
             }
 
             return StatusCode(500, new {err = "Incorrect username"});
@@ -137,7 +139,7 @@ namespace WebPerformanceCalculator.Controllers
 
         public IActionResult GetQueue()
         {
-            return Json(CalcQueue.GetQueue());
+            return Json(usernameQueue.ToArray());
         }
 
         public async Task<IActionResult> GetResults(string jsonUsername)
@@ -210,7 +212,7 @@ namespace WebPerformanceCalculator.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitWorkerResults([FromBody]dynamic content, string key, string jsonUsername)
         {
-            if (key != auth_key)
+            if (key != Config.auth_key)
                 return StatusCode(403);
 
             string jsonString = content.ToString();
@@ -252,14 +254,12 @@ namespace WebPerformanceCalculator.Controllers
                 }
             }
 
-            // we want to remove user from queue even if processing failed
-            CalcQueue.RemoveFromProcessing(jsonUsername);
             return new OkResult();
         }
 
         public IActionResult GetUserForWorker(string key, long calcTimestamp)
         {
-            if (key != auth_key || calcTimestamp == 0)
+            if (key != Config.auth_key || calcTimestamp == 0)
                 return StatusCode(403);
 
             var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
@@ -273,8 +273,7 @@ namespace WebPerformanceCalculator.Controllers
                 });
             }
 
-            var username = CalcQueue.GetUserForCalc();
-            if (!string.IsNullOrEmpty(username))
+            if (usernameQueue.TryDequeue(out var username))
                 return Json(new WorkerDataModel() { Data = username });
 
             return new OkResult();
@@ -282,7 +281,7 @@ namespace WebPerformanceCalculator.Controllers
 
         public IActionResult LockQueue(string key)
         {
-            if (key != auth_key)
+            if (key != Config.auth_key)
                 return StatusCode(403);
 
             queueLocked = true;
@@ -292,7 +291,7 @@ namespace WebPerformanceCalculator.Controllers
 
         public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0)
         {
-            if (key != auth_key)
+            if (key != Config.auth_key)
                 return StatusCode(403);
 
             await using (DatabaseContext db = new DatabaseContext())
@@ -304,12 +303,26 @@ namespace WebPerformanceCalculator.Controllers
                     .ToArrayAsync();
 
                 foreach (var player in players)
-                    CalcQueue.AddToQueue(player);
+                    if (!CheckUserCalcDate(player))
+                        usernameQueue.Enqueue(player);
             }
 
             return new OkResult();
         }
 
         #endregion
+
+        private static bool CheckUserCalcDate(string jsonUsername)
+        {
+            if (!System.IO.File.Exists($"players/{jsonUsername}.json"))
+                return true;
+
+            var userCalcDate = System.IO.File.GetLastWriteTime($"players/{jsonUsername}.json").ToUniversalTime();
+            var calcUpdateDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
+            if (userCalcDate < calcUpdateDate)
+                return true;
+
+            return false;
+        }
     }
 }

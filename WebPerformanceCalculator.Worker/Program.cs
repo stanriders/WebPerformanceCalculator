@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
+using WebPerformanceCalculator.Shared;
 
 namespace WebPerformanceCalculator.Worker
 {
@@ -24,7 +25,6 @@ namespace WebPerformanceCalculator.Worker
         private const int pooling_rate = 5000; // 5 seconds
 #endif
 
-        private const string auth_key = "";
         private const string fallback_api_key = "";
         private const string lock_file = "lockcalc";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
@@ -50,7 +50,7 @@ namespace WebPerformanceCalculator.Worker
                     if (!File.Exists(lock_file))
                     {
                         var calcDate = File.GetLastWriteTime(calc_file).ToUniversalTime();
-                        var json = http.GetStringAsync($"{remote_in_endpoint}?key={auth_key}&calcTimestamp={calcDate.Ticks}").Result;
+                        var json = http.GetStringAsync($"{remote_in_endpoint}?key={Config.auth_key}&calcTimestamp={calcDate.Ticks}").Result;
                         if (!string.IsNullOrEmpty(json))
                         {
                             var data = JsonConvert.DeserializeObject<WorkerDataModel>(json);
@@ -135,7 +135,7 @@ namespace WebPerformanceCalculator.Worker
             Log($"Sending {username} results");
 
             var content = new StringContent(result, Encoding.UTF8, "application/json");
-            http.PostAsync($"{remote_out_endpoint}?key={auth_key}&jsonUsername={username}", content).Wait();
+            http.PostAsync($"{remote_out_endpoint}?key={Config.auth_key}&jsonUsername={username}", content).Wait();
         }
 
         private static void Log(string log)

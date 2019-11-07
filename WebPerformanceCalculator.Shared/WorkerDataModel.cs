@@ -1,5 +1,5 @@
 ﻿
-namespace WebPerformanceCalculator.Models
+namespace WebPerformanceCalculator.Shared
 {
     public class WorkerDataModel
     {

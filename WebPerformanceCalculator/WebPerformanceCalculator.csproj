@@ -9,4 +9,8 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WebPerformanceCalculator.Shared\WebPerformanceCalculator.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
