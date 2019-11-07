@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -10,6 +12,7 @@ using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using RunProcessAsTask;
 using WebPerformanceCalculator.DB;
 using WebPerformanceCalculator.Models;
 using WebPerformanceCalculator.Shared;
@@ -21,9 +24,16 @@ namespace WebPerformanceCalculator.Controllers
         private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
+        private static string workingDir;
 
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
         private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
+
+        public HomeController()
+        {
+            var assemblyFileInfo = new FileInfo(typeof(Program).Assembly.Location);
+            workingDir = assemblyFileInfo.DirectoryName;
+        }
 
         #region Pages
 
@@ -45,7 +55,7 @@ namespace WebPerformanceCalculator.Controllers
             if (System.IO.File.Exists($"players/{username}.json"))
             {
                 var fileDate = System.IO.File.GetLastWriteTime($"players/{username}.json").ToUniversalTime();
-                if (CheckUserCalcDate(username))
+                if (CheckFileCalcDate($"players/{username}.json"))
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC (outdated!)";
                 else
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC";
@@ -56,6 +66,11 @@ namespace WebPerformanceCalculator.Controllers
                 Username = username,
                 UpdateDate = updateDateString
             });
+        }
+
+        public IActionResult Map(int? id = null)
+        {
+            return View(model: id?.ToString() ?? string.Empty);
         }
 
         private static string TimeAgo(DateTime dt)
@@ -124,7 +139,7 @@ namespace WebPerformanceCalculator.Controllers
             if (jsonUsername.Length > 2 && jsonUsername.Length < 16 && regexp.IsMatch(jsonUsername))
             {
                 jsonUsername = HttpUtility.HtmlEncode(jsonUsername).ToLowerInvariant();
-                if (!usernameQueue.Contains(jsonUsername) && CheckUserCalcDate(jsonUsername))
+                if (!usernameQueue.Contains(jsonUsername) && CheckFileCalcDate($"players/{jsonUsername}.json"))
                 {
                     usernameQueue.Enqueue(jsonUsername);
                     queueDebounce = DateTime.Now.AddSeconds(1);
@@ -303,23 +318,63 @@ namespace WebPerformanceCalculator.Controllers
                     .ToArrayAsync();
 
                 foreach (var player in players)
-                    if (CheckUserCalcDate(player))
+                    if (CheckFileCalcDate($"players/{player}.json"))
                         usernameQueue.Enqueue(player);
             }
 
             return new OkResult();
         }
 
+        public async Task<IActionResult> CalculateMap(int mapId, string[] mods)
+        {
+            if (mapId == 0)
+                return StatusCode(500, new { err = "Incorrect beatmap ID!" });
+
+            var modsJoined = string.Join(string.Empty, mods);
+            if (CheckFileCalcDate($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
+            {
+                try
+                {
+                    var commandMods = string.Empty;
+                    if (mods.Length > 0)
+                        commandMods = "-m " + string.Join(" -m ", mods);
+                    await ProcessEx.RunAsync(new ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        WorkingDirectory = workingDir,
+                        Arguments =
+                            $"PerformanceCalculator.dll simulate osu cache/{mapId}.osu {commandMods}",
+                        RedirectStandardOutput = false,
+                        UseShellExecute = true,
+                        CreateNoWindow = true,
+                    });
+
+                    if (System.IO.File.Exists($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
+                        return Json(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to calc {mapId}\n {e.Message}");
+                }
+            }
+            else
+            {
+                return Json(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
+            }
+
+            return StatusCode(500, new { err = "Failed to calculate!" });
+        }
+
         #endregion
 
-        private static bool CheckUserCalcDate(string jsonUsername)
+        private static bool CheckFileCalcDate(string path)
         {
-            if (!System.IO.File.Exists($"players/{jsonUsername}.json"))
+            if (!System.IO.File.Exists(path))
                 return true;
 
-            var userCalcDate = System.IO.File.GetLastWriteTime($"players/{jsonUsername}.json").ToUniversalTime();
+            var fileCalcDate = System.IO.File.GetLastWriteTime(path).ToUniversalTime();
             var calcUpdateDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
-            if (userCalcDate < calcUpdateDate)
+            if (fileCalcDate < calcUpdateDate)
                 return true;
 
             return false;

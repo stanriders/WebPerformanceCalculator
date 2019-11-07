@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Home Page";
 }
-
 <h1>delta_t Rebalance Performance Calculator</h1>
 <p>Current build: @Model | <a href="https://github.com/HeBuwei/osu">GitHub</a> (7065037)</p>
 <p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done. It is yet unknown when it will be done.</p>
@@ -16,6 +15,8 @@
 
 <div>
     @Html.ActionLink("Leaderboard", "Top", new { }, new { @class = "btn btn-info", @style = "width: 150px" })
+    <!--@Html.ActionLink("Calculate map pp", "Map", new { }, new { @class = "btn btn-info", @style = "width: 150px" })-->
+    <!-- shhh dont tell anyone! -->
 </div>
 <hr />
 
@@ -98,3 +99,38 @@
 
     </script>
 }
+
+<!--
+                         `:ossosso+:--:::/.
+                    `://:::::://::`.::::. :o-
+                  .+/`                  .::ohy-
+                .+/                         .ohy-
+               ++                             -Ns/
+             :o.  .::::::`             `-::-`  -d+:
+          :/+- :+s+::::::so-.       ./+/-.-oh-  .+y`
+          h-   o.    .//`  :+      +/:soo....+/   .h.
+         /s   /-     mMN:   s    `s` .mMM/    +-   `d/
+       -:::   .o     `.    -+    /:   `.`    `s`    +/o
+       :-o     `+:`     `:/:      :/:`    `://`      s:+
+       ://       `:::::::`          `-::::-`         `ss
+       .d`                                            :h
+       -M-                                   -s/      .m`
+       -M-                                   /:`       o+
+       .ys                                   s         ++
+       :h:+                                 :/         o+
+     `:`/:s.                               .s          y:
+    `:   -+s                              :+           m`
+    /      /:        `+h.              .//.           :h
+   //`      `:-`       `:::::--..-:::::-              d-
+  /MMNy/`      .--.           ````                   ss
+ .NMMMMMMdo-      .---.                             sNms-
+ yMMMMMMMMMMNh+.      `-----.`                     /+yMMMd/
+.MMMMMMMMMMMMMMMNy+-        `+yddhhyysoyhs+ossyyyyh: dMMMMMm/
+yMMMMMMMMMMMMMMMMMMMNh+.   `dMMMMMMMMMMMMMMMMMMMMMMM/MMMMMMMMh.
+MMMMMMMMMMMMMMMMMMMMMMMMmo.`NMMMMMMmhyhNMmNMMMMMMMMMNMMMMMMMMMN:
+MMMMMMMMMMMMMMMMMMMMMMMMMMMy:yhymh`   ./  :.-/yMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMNosmMMo    /  :yyNMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMd. ./`sNMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMd:`  /  hMMMMMMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
+-->

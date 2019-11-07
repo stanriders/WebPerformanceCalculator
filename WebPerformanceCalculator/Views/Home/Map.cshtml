@@ -1,0 +1,150 @@
+﻿@model string
+@{
+    ViewData["Title"] = "Calculate Map";
+}
+
+<h1>Calculate Map</h1>
+
+<div class="pb-2">
+    <form>
+        <div class="form-group">
+            <input type="text" id="id" name="id" class="form-control" placeholder="Map ID" />
+        </div>
+        <div class="form-check form-row">
+            <input type="checkbox" id="mod" value="EZ" />
+            <label class="form-check-label">EZ</label>
+            <input type="checkbox" id="mod" value="NF" />
+            <label class="form-check-label">NF</label>
+            <input type="checkbox" id="mod" value="EZ" />
+            <label class="form-check-label">HT</label>
+        </div>
+        <div class="form-check form-row">
+            <input type="checkbox" id="mod" value="HR" />
+            <label class="form-check-label">HR</label>
+            <input type="checkbox" id="mod" value="DT" />
+            <label class="form-check-label">DT</label>
+            <input type="checkbox" id="mod" value="HD" />
+            <label class="form-check-label">HD</label>
+            <input type="checkbox" id="mod" value="FL" />
+            <label class="form-check-label">FL</label>
+        </div>
+        <div class="form-group">
+            <input type="submit" class="btn btn-secondary" value="Calculate" id="submit" />
+            <p id="error" class="text-danger"></p>
+        </div>
+    </form>
+</div>
+
+<div class="card" id="map" style="display: none">
+    <div class="card-body">
+        <!-- <img id="bg" /> -->
+        <h4 class="card-title" id="mapname"></h4>
+        <p id="sr" class="badge badge-primary"></p>
+        <table class="table table-bordered">
+            <thead>
+                <th>90%</th>
+                <th>95%</th>
+                <th>98%</th>
+                <th>99%</th>
+                <th>100%</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="pp90">90%</td>
+                    <td id="pp95">95%</td>
+                    <td id="pp98">98%</td>
+                    <td id="pp99">99%</td>
+                    <td id="pp100">100%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <canvas id="ppChart"></canvas>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.2/dist/Chart.min.js"></script>
+    <script>
+
+        $(function() {
+                if ('@Model' !== '') {
+                    getMap(@Model);
+                }
+            }
+        );
+
+        $("form").on('submit',
+            function(e) {
+                getMap($('#id').val());
+
+                //stop form submission
+                e.preventDefault();
+            });
+
+        function makeChart(json) {
+            var vals = [].concat(json.PP90.toFixed(2),
+                json.PP95.toFixed(2),
+                json.PP98.toFixed(2),
+                json.PP99.toFixed(2),
+                json.PP100.toFixed(2));
+            var ctx = document.getElementById('ppChart').getContext('2d');
+            var myChart = new Chart(ctx,
+                {
+                    type: 'line',
+                    data: {
+                        labels: ['90%', '95%', '98%', '99%', '100%'],
+                        datasets: [{ label: 'pp', data: vals }]
+                    }
+                });
+        }
+
+        function getMap(id) {
+            $.ajax({
+                type: 'GET',
+                url: "/CalculateMap",
+                traditional: true,
+                data: {
+                    mapId: id,
+                    mods: $("input:checkbox[id=mod]:checked").map(function() { return $(this).val() }).get()
+                },
+                error: function(d) {
+                    $('#error').html(d.responseJSON.err);
+                },
+                success: function(d) {
+                    var json = JSON.parse(d);
+                    /*$('#bg').attr("src", 'https://assets.ppy.sh/beatmaps/' + json.Id + '/covers/cover.jpg');*/
+
+                    var mods = json.Mods.map(function(item) {
+                        return '<span class="badge badge-secondary">' + item.acronym + '</span>'
+                    }).join(" ");
+                    $('#mapname').html('<a href=\"https://osu.ppy.sh/beatmaps/' +
+                        json.Id +
+                        '\">' +
+                        json.Title +
+                        '</a> ' +
+                        mods);
+                    $('#sr').html(json.Stars.toFixed(2) + '*');
+                    $('#pp100').html(json.PP100.toFixed(2));
+                    $('#pp99').html(json.PP99.toFixed(2));
+                    $('#pp98').html(json.PP98.toFixed(2));
+                    $('#pp95').html(json.PP95.toFixed(2));
+                    $('#pp90').html(json.PP90.toFixed(2));
+                    makeChart(json);
+
+                    $('#map').show();
+                },
+                complete: function() {
+                    $('#submit').show();
+
+                },
+                beforeSend: function() {
+                    $('#error').html('');
+                    $('#username').val('');
+                    $('#submit').hide();
+                }
+            });
+        }
+    </script>
+}
