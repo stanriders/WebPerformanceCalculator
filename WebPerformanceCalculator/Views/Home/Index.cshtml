@@ -21,7 +21,7 @@
 <hr />
 
 <div class="pb-2">
-    <p>Try searching top before adding someone to calculation queue.</p>
+    <p>Try searching the leaderboard before adding someone to the calculation queue.</p>
 
     <form class="form-row align-items-right">
         <div class="col-auto" style="width: 300px;"><input type="text" id="username" name="username" class="form-control" placeholder="Username or user ID (preferable)" /></div>
@@ -40,7 +40,7 @@
         $(function () {
             /* page load */
             $('#maintable').bootstrapTable({
-                height: 350,
+                height: 200,
                 columns: [
                     [
                         {
@@ -59,7 +59,7 @@
                 url: "/GetQueue",
                 complete: function (d) {
                     convertQueue(d.responseJSON);
-                    setTimeout(function () { updateQueue(); }, 5000);
+                    setTimeout(function () { updateQueue(); }, 7000);
                 }
             });
         }
