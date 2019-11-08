@@ -2,38 +2,55 @@
 @{
     ViewData["Title"] = "Home Page";
 }
-<h1>delta_t Rebalance Performance Calculator</h1>
-<p>Current build: @Model | <a href="https://github.com/HeBuwei/osu">GitHub</a> (7065037)</p>
-<p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done. It is yet unknown when it will be done.</p>
-<p>If you have any questions about new PP system please look at <a href="https://docs.google.com/document/d/1rymnSJ35avbWLwFe45twHnB5zM1BIQcj_mV6D4RE-H8/edit?usp=sharing">this</a> <b>incomplete</b> document.</p>
-<p>
-    If you have any questions about this website give me a shout at Discord (StanR#3012) or <a href="https://osu.ppy.sh/users/7217455">on osu!</a><br />
-    <a href="https://paypal.me/stanriders"><b>You can also help me cover some of the server costs!</b></a>
-    <!--while i appreciate pentesting please send me a message if you find a bug instead of abusing it, thanks-->
-</p>
-<hr />
+<nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
+    <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-<div>
-    @Html.ActionLink("Leaderboard", "Top", new { }, new { @class = "btn btn-info", @style = "width: 150px" })
-    @Html.ActionLink("Calculate map PP", "Map", new { }, new { @class = "btn btn-info", @style = "width: 150px" })
-    @Html.ActionLink("Highscores", "Highscores", new { }, new { @class = "btn btn-info", @style = "width: 150px" })
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/Top">Leaderboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Highscores">Highscores</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Map">Calculate map PP</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="card">
+    <div class="card-body">
+        <p><b>Current build:</b> @Model | <a href="https://github.com/HeBuwei/osu">GitHub</a> (7065037)</p>
+        <p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done. It is yet unknown when it will be done.</p>
+        <p>If you have any questions about new PP system please look at <a href="https://docs.google.com/document/d/1rymnSJ35avbWLwFe45twHnB5zM1BIQcj_mV6D4RE-H8/edit?usp=sharing">this</a> <b>incomplete</b> document.</p>
+        <p>
+            If you have any questions about this website give me a shout at Discord (StanR#3012) or <a href="https://osu.ppy.sh/users/7217455">on osu!</a><br/>
+            <a href="https://paypal.me/stanriders"><b>You can also help me cover some of the server costs!</b></a>
+            <!--while i appreciate pentesting please send me a message if you find a bug instead of abusing it, thanks-->
+        </p>
+    </div>
 </div>
 <hr />
+<div class="card">
+    <div class="card-body">
+        <p>Try searching the leaderboard before adding someone to the calculation queue.</p>
 
-<div class="pb-2">
-    <p>Try searching the leaderboard before adding someone to the calculation queue.</p>
+        <form class="form-row align-items-right">
+            <div class="col-auto" style="width: 300px;"><input type="text" id="username" name="username" class="form-control" placeholder="Username or user ID (preferable)" /></div>
+            <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Calculate" id="submit" /></div>
+            <div class="col-auto"><p id="error" class="text-danger"></p></div>
+        </form>
 
-    <form class="form-row align-items-right">
-        <div class="col-auto" style="width: 300px;"><input type="text" id="username" name="username" class="form-control" placeholder="Username or user ID (preferable)" /></div>
-        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Calculate" id="submit" /></div>
-        <div class="col-auto"><p id="error" class="text-danger"></p></div>
-    </form>
+        <p id="expectedTime">Estimated wait time is unknown.</p>
 
-    <p id="expectedTime">Estimated wait time is unknown.</p>
+        <table class="table table-bordered table-sm" data-toggle="bootstrap-table" id="maintable"></table>
+    </div>
 </div>
-
-<table class="table table-bordered table-sm" data-toggle="bootstrap-table" id="maintable"></table>
-
 @section Scripts
 {
     <script>

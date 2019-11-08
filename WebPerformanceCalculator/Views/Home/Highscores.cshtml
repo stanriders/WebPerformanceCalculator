@@ -2,8 +2,26 @@
 @{
     ViewData["Title"] = "Highscores";
 }
+<nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
+    <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-<h1>Highscores</h1>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/Top">Leaderboard</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Highscores <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Map">Calculate map PP</a>
+            </li>
+        </ul>
+    </div>
+</nav>
 
 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
 
@@ -20,6 +38,11 @@
                 columns: [
                     [
                         {
+                            formatter: placeFormatter,
+                            title: '#',
+                            width: 32,
+                            align: 'center'
+                        }, {
                             title: 'Player',
                             field: 'player',
                             align: 'center'
@@ -38,6 +61,9 @@
                 ]
             });
         });
+        function placeFormatter(value, row, index) {
+            return index+1;
+        }
         function beatmapFormatter(value, row, index) {
             var split = value.split(' - ');
             var beatmapId = split[0];

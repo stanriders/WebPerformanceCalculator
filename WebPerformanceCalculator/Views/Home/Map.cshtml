@@ -2,11 +2,28 @@
 @{
     ViewData["Title"] = "Calculate Map PP";
 }
+<nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
+    <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-<h1>Calculate Map PP</h1>
-
-<div class="pb-2">
-    <form>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/Top">Leaderboard</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Highscores">Highscores</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Calculate map PP <span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div class="card">
+    <form class="card-body">
         <div class="form-group">
             <input type="text" id="id" name="id" class="form-control" placeholder="Map link or ID" />
         </div>
@@ -28,13 +45,13 @@
             <input type="checkbox" id="mod" value="FL" />
             <label class="form-check-label">FL</label>
         </div>
-        <div class="form-group">
-            <input type="submit" class="btn btn-secondary" value="Calculate" id="submit" />
+        <div>
             <p id="error" class="text-danger"></p>
+            <input type="submit" class="btn btn-secondary" value="Calculate" id="submit" />
         </div>
     </form>
 </div>
-
+<hr id="hr" style="display: none"/>
 <div class="card" id="map" style="display: none">
     <div class="card-body">
         <!-- <img id="bg" /> -->
@@ -43,7 +60,9 @@
         <table class="table table-bordered">
             <thead>
                 <th>90%</th>
+                <th>92.5%</th>
                 <th>95%</th>
+                <th>97.5%</th>
                 <th>98%</th>
                 <th>99%</th>
                 <th>100%</th>
@@ -51,7 +70,9 @@
             <tbody>
                 <tr>
                     <td id="pp90"></td>
+                    <td id="pp925"></td>
                     <td id="pp95"></td>
+                    <td id="pp975"></td>
                     <td id="pp98"></td>
                     <td id="pp99"></td>
                     <td id="pp100"></td>
@@ -132,10 +153,13 @@
                     $('#pp100').html(json.PP100.toFixed(2));
                     $('#pp99').html(json.PP99.toFixed(2));
                     $('#pp98').html(json.PP98.toFixed(2));
+                    $('#pp975').html(json.PP95.toFixed(2));
                     $('#pp95').html(json.PP95.toFixed(2));
+                    $('#pp925').html(json.PP95.toFixed(2));
                     $('#pp90').html(json.PP90.toFixed(2));
                     makeChart(json);
 
+                    $('#hr').show();
                     $('#map').show();
                 },
                 complete: function() {

@@ -2,8 +2,26 @@
 @{
     ViewData["Title"] = "Leaderboard";
 }
+<nav class="navbar navbar-expand-sm navbar-light bg-light">
+    <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-<h1>Leaderboard</h1>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Leaderboard <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Highscores">Highscores</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Map">Calculate map PP</a>
+            </li>
+        </ul>
+    </div>
+</nav>
 
 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
 
@@ -17,6 +35,8 @@
                 pagination: true,
                 sidePagination: 'server',
                 search: true,
+                showSearchButton: true,
+                searchOnEnterKey: true,
                 url: "/GetTop",
                 sortOrder: 'desc',
                 columns: [

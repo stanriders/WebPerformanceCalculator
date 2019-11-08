@@ -1,11 +1,13 @@
 # WebPerformanceCalculator
 https://newpp.stanr.info/
 
-## API
+## API (json)
 [GET] `/GetTop?offset=0&limit=50&search=chocomint&order=desc&sort=localPP` - returns leaderboard page  
 [GET] `/GetResults?jsonUsername={jsonName from GetTop}` - returns user data  
 [GET] `/GetQueue` - returns current queue  
 [POST] `/AddToQueue?jsonUsername={player name or user ID}` - returns current queue  
+[GET] `/CalculateMap?map={map link or id}&mods=HD&mods=HR&mods=...` - calculates map pp values for different acc values
+[GET] `/GetHighscores` - returns sorted topscores
 
 --  
 
