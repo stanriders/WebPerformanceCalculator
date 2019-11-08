@@ -12,7 +12,15 @@ namespace WebPerformanceCalculator.DB
             optionsBuilder.UseSqlite(connection_string);
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // lol
+            modelBuilder.Entity<Score>().HasKey(p => new {p.PP, p.Map, p.Player, p.CalcTime});
+        }
+
         public DbSet<Player> Players { get; set; }
+
+        public DbSet<Score> Scores { get; set; }
 
     }
 }

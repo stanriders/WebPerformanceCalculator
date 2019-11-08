@@ -1,0 +1,48 @@
+﻿
+@{
+    ViewData["Title"] = "Highscores";
+}
+
+<h1>Highscores</h1>
+
+<table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
+
+@section Scripts
+{
+    <script>
+        $(function () {
+            $('#maintable').bootstrapTable({
+                pageSize: 100,
+                pageList: [100, 150, 200, 500],
+                pagination: true,
+                url: "/GetHighscores",
+                sortOrder: 'desc',
+                columns: [
+                    [
+                        {
+                            title: 'Player',
+                            field: 'player',
+                            align: 'center'
+                        }, {
+                            title: 'Beatmap',
+                            field: 'map',
+                            align: 'center',
+                            formatter: beatmapFormatter,
+                        }, {
+                            title: 'PP',
+                            field: 'pp',
+                            sortable: true,
+                            align: 'center'
+                        }
+                    ]
+                ]
+            });
+        });
+        function beatmapFormatter(value, row, index) {
+            var split = value.split(' - ');
+            var beatmapId = split[0];
+            split.splice(0, 1);
+            return '<a href=\"https://osu.ppy.sh/b/'+ beatmapId +'\">' + split.join(' - ') + '</a>';
+        }
+    </script>
+}

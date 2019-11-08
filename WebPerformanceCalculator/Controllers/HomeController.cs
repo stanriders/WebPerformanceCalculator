@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RunProcessAsTask;
 using WebPerformanceCalculator.DB;
@@ -25,6 +26,12 @@ namespace WebPerformanceCalculator.Controllers
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
         private static string workingDir;
+
+        private static readonly Regex mapLinkRegex = 
+            new Regex(@"(?>https?:\/\/)?(?>osu|old)\.ppy\.sh\/([b,s]|(?>beatmaps)|(?>beatmapsets))\/(\d+\/?\#osu\/)?(\d+)?\/?(?>[&,?].=\d)?", 
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private const double keep_scores_bigger_than = 650.0;
 
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
         private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
@@ -55,7 +62,7 @@ namespace WebPerformanceCalculator.Controllers
             if (System.IO.File.Exists($"players/{username}.json"))
             {
                 var fileDate = System.IO.File.GetLastWriteTime($"players/{username}.json").ToUniversalTime();
-                if (CheckFileCalcDate($"players/{username}.json"))
+                if (CheckFileCalcDateOutdated($"players/{username}.json"))
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC (outdated!)";
                 else
                     updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC";
@@ -68,9 +75,15 @@ namespace WebPerformanceCalculator.Controllers
             });
         }
 
+        [Route("Map/{id?}")]
         public IActionResult Map(int? id = null)
         {
             return View(model: id?.ToString() ?? string.Empty);
+        }
+
+        public IActionResult Highscores()
+        {
+            return View();
         }
 
         private static string TimeAgo(DateTime dt)
@@ -139,7 +152,7 @@ namespace WebPerformanceCalculator.Controllers
             if (jsonUsername.Length > 2 && jsonUsername.Length < 16 && regexp.IsMatch(jsonUsername))
             {
                 jsonUsername = HttpUtility.HtmlEncode(jsonUsername).ToLowerInvariant();
-                if (!usernameQueue.Contains(jsonUsername) && CheckFileCalcDate($"players/{jsonUsername}.json"))
+                if (!usernameQueue.Contains(jsonUsername) && CheckFileCalcDateOutdated($"players/{jsonUsername}.json"))
                 {
                     usernameQueue.Enqueue(jsonUsername);
                     queueDebounce = DateTime.Now.AddSeconds(1);
@@ -233,16 +246,16 @@ namespace WebPerformanceCalculator.Controllers
             string jsonString = content.ToString();
             if (!string.IsNullOrEmpty(jsonString))
             {
-                var json = JObject.Parse(jsonString);
+                dynamic json = JsonConvert.DeserializeObject(jsonString);
 
                 await System.IO.File.WriteAllTextAsync($"players/{jsonUsername}.json", jsonString);
 
                 await using (DatabaseContext db = new DatabaseContext())
                 {
-                    var userid = Convert.ToInt64(json["UserID"].ToString().Split(' ')[0]);
-                    var osuUsername = json["Username"].ToString();
-                    var livePP = Convert.ToDouble(json["LivePP"].ToString().Split(' ')[0], CultureInfo.InvariantCulture);
-                    var localPP = Convert.ToDouble(json["LocalPP"].ToString().Split(' ')[0], CultureInfo.InvariantCulture);
+                    long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
+                    string osuUsername = json.Username.ToString();
+                    double livePP = Convert.ToDouble(json.LivePP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
+                    double localPP = Convert.ToDouble(json.LocalPP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
                     if (await db.Players.AnyAsync(x => x.ID == userid))
                     {
                         var player = await db.Players.SingleAsync(x => x.ID == userid);
@@ -264,6 +277,17 @@ namespace WebPerformanceCalculator.Controllers
                             JsonName = jsonUsername
                         });
                     }
+
+                    JArray maps = json.Beatmaps;
+                    var highscores = maps.Where(x => Convert.ToDouble(x["LocalPP"]) > keep_scores_bigger_than).Select(x => new Score()
+                    {
+                        Map = x["Beatmap"].ToString(), 
+                        Player = osuUsername, 
+                        PP = Convert.ToDouble(x["LocalPP"]), 
+                        CalcTime = DateTime.Now.ToUniversalTime()
+                    }).ToArray();
+
+                    await db.Scores.AddRangeAsync(highscores);
 
                     await db.SaveChangesAsync();
                 }
@@ -318,20 +342,27 @@ namespace WebPerformanceCalculator.Controllers
                     .ToArrayAsync();
 
                 foreach (var player in players)
-                    if (CheckFileCalcDate($"players/{player}.json"))
+                    if (CheckFileCalcDateOutdated($"players/{player}.json"))
                         usernameQueue.Enqueue(player);
             }
 
             return new OkResult();
         }
 
-        public async Task<IActionResult> CalculateMap(int mapId, string[] mods)
+        public async Task<IActionResult> CalculateMap(string map, string[] mods)
         {
-            if (mapId == 0)
-                return StatusCode(500, new { err = "Incorrect beatmap ID!" });
+            if (!int.TryParse(map, out var mapId))
+            {
+                mapId = GetMapIdFromLink(map, out var isSet);
+                if (mapId == 0)
+                    return StatusCode(500, new {err = "Incorrect beatmap link!"});
+
+                if (isSet)
+                    return StatusCode(500, new {err = "Beatmap set links aren't supported"});
+            }
 
             var modsJoined = string.Join(string.Empty, mods);
-            if (CheckFileCalcDate($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
+            if (CheckFileCalcDateOutdated($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
             {
                 try
                 {
@@ -365,9 +396,19 @@ namespace WebPerformanceCalculator.Controllers
             return StatusCode(500, new { err = "Failed to calculate!" });
         }
 
+
+        public async Task<IActionResult> GetHighscores()
+        {
+            await using var db = new DatabaseContext();
+            db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+            var calcUpdateDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
+            return Json(await db.Scores.Where(x => x.CalcTime > calcUpdateDate).OrderByDescending(x=> x.PP).ToArrayAsync());
+        }
+
         #endregion
 
-        private static bool CheckFileCalcDate(string path)
+        private static bool CheckFileCalcDateOutdated(string path)
         {
             if (!System.IO.File.Exists(path))
                 return true;
@@ -378,6 +419,44 @@ namespace WebPerformanceCalculator.Controllers
                 return true;
 
             return false;
+        }
+
+        public static int GetMapIdFromLink(string link, out bool isSet)
+        {
+            isSet = false;
+            Match regexMatch = mapLinkRegex.Match(link);
+            if (regexMatch.Groups.Count > 1)
+            {
+                List<Group> regexGroups = regexMatch.Groups.Values.Where(x => (x != null) && (x.Length > 0))
+                    .ToList();
+
+                bool isNew = regexGroups[1].Value == "beatmapsets"; // are we using new website or not
+                int beatmapId = 0;
+
+                if (isNew)
+                {
+                    if (regexGroups[2].Value.Contains("#osu/"))
+                    {
+                        beatmapId = int.Parse(regexGroups[3].Value);
+                    }
+                    else
+                    {
+                        isSet = true;
+                        beatmapId = int.Parse(regexGroups[2].Value);
+                    }
+                }
+                else
+                {
+                    if (regexGroups[1].Value == "s")
+                        isSet = true;
+
+                    beatmapId = int.Parse(regexGroups[2].Value);
+                }
+
+                return beatmapId;
+            }
+
+            return 0;
         }
     }
 }
