@@ -278,6 +278,8 @@ namespace WebPerformanceCalculator.Controllers
                         });
                     }
 
+                    var currentScores = await db.Scores.ToArrayAsync();
+                    
                     JArray maps = json.Beatmaps;
                     var highscores = maps.Where(x => Convert.ToDouble(x["LocalPP"]) > keep_scores_bigger_than).Select(x => new Score()
                     {
@@ -287,7 +289,7 @@ namespace WebPerformanceCalculator.Controllers
                         CalcTime = DateTime.Now.ToUniversalTime()
                     }).ToArray();
 
-                    await db.Scores.AddRangeAsync(highscores);
+                    await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());
 
                     await db.SaveChangesAsync();
                 }
@@ -328,7 +330,7 @@ namespace WebPerformanceCalculator.Controllers
             return new OkResult();
         }
 
-        public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0)
+        public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0, bool force = false)
         {
             if (key != Config.auth_key)
                 return StatusCode(403);
@@ -342,7 +344,7 @@ namespace WebPerformanceCalculator.Controllers
                     .ToArrayAsync();
 
                 foreach (var player in players)
-                    if (CheckFileCalcDateOutdated($"players/{player}.json"))
+                    if (CheckFileCalcDateOutdated($"players/{player}.json") || force)
                         usernameQueue.Enqueue(player);
             }
 
