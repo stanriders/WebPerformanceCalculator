@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -26,6 +27,8 @@ namespace WebPerformanceCalculator.Controllers
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
         private static string workingDir;
+
+        private static MemoryCache playerCache = new MemoryCache("calculated_players");
 
         private static readonly Regex mapLinkRegex = 
             new Regex(@"(?>https?:\/\/)?(?>osu|old)\.ppy\.sh\/([b,s]|(?>beatmaps)|(?>beatmapsets))\/(\d+\/?\#osu\/)?(\d+)?\/?(?>[&,?].=\d)?", 
@@ -110,14 +113,14 @@ namespace WebPerformanceCalculator.Controllers
             if (jsonUsername.Length > 2 && jsonUsername.Length < 16 && regexp.IsMatch(jsonUsername))
             {
                 jsonUsername = HttpUtility.HtmlEncode(jsonUsername).ToLowerInvariant();
-                if (!usernameQueue.Contains(jsonUsername) && CheckFileCalcDateOutdated($"players/{jsonUsername}.json"))
+                if (!usernameQueue.Contains(jsonUsername) && !playerCache.Contains(jsonUsername))
                 {
                     usernameQueue.Enqueue(jsonUsername);
                     queueDebounce = DateTime.Now.AddSeconds(1);
                     return GetQueue();
                 }
 
-                return StatusCode(500, new { err = "Recalculation is only allowed after formula updates!" });
+                return StatusCode(500, new { err = "This player doesn't need a recalculation yet! You can only recalculate once a day" });
             }
 
             return StatusCode(500, new {err = "Incorrect username"});
@@ -248,6 +251,9 @@ namespace WebPerformanceCalculator.Controllers
                     await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());
 
                     await db.SaveChangesAsync();
+
+                    // one calculation a day
+                    playerCache.Add(jsonUsername, jsonUsername, DateTimeOffset.Now.AddDays(1));
                 }
             }
 
