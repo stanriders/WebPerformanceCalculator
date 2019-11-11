@@ -29,21 +29,27 @@
         </div>
         <div class="form-check form-row">
             <input type="checkbox" id="mod" value="EZ" />
-            <label class="form-check-label">EZ</label>
+            <label class="form-check-label"><span class="badge badge-success" style="width: 28px">EZ</span></label>
             <input type="checkbox" id="mod" value="NF" />
-            <label class="form-check-label">NF</label>
-            <input type="checkbox" id="mod" value="EZ" />
-            <label class="form-check-label">HT</label>
+            <label class="form-check-label"><span class="badge badge-success" style="width: 28px">NF</span></label>
+            <input type="checkbox" id="mod" value="HT" />
+            <label class="form-check-label"><span class="badge badge-success" style="width: 28px">HT</span></label>
         </div>
         <div class="form-check form-row">
             <input type="checkbox" id="mod" value="HR" />
-            <label class="form-check-label">HR</label>
+            <label class="form-check-label"><span class="badge badge-danger" style="width: 28px">HR</span></label>
             <input type="checkbox" id="mod" value="DT" />
-            <label class="form-check-label">DT</label>
+            <label class="form-check-label"><span class="badge badge-danger" style="width: 28px">DT</span></label>
             <input type="checkbox" id="mod" value="HD" />
-            <label class="form-check-label">HD</label>
+            <label class="form-check-label"><span class="badge badge-danger" style="width: 28px">HD</span></label>
             <input type="checkbox" id="mod" value="FL" />
-            <label class="form-check-label">FL</label>
+            <label class="form-check-label"><span class="badge badge-danger" style="width: 28px">FL</span></label>
+        </div>
+        <div class="form-check form-row">
+            <input type="checkbox" id="mod" value="SO" />
+            <label class="form-check-label"><span class="badge badge-info" style="width: 28px">SO</span></label>
+            <input type="checkbox" id="mod" value="TD" />
+            <label class="form-check-label"><span class="badge badge-info" style="width: 28px">TD</span></label>
         </div>
         <div>
             <p id="error" class="text-danger"></p>
@@ -53,33 +59,35 @@
 </div>
 <hr id="hr" style="display: none"/>
 <div class="card" id="map" style="display: none">
+    <img id="bg" class="card-img-top" />
     <div class="card-body">
-        <!-- <img id="bg" /> -->
         <h4 class="card-title" id="mapname"></h4>
         <p id="sr" class="badge badge-primary"></p>
-        <table class="table table-bordered">
-            <thead>
-                <th>90%</th>
-                <th>92.5%</th>
-                <th>95%</th>
-                <th>97.5%</th>
-                <th>98%</th>
-                <th>99%</th>
-                <th>100%</th>
-            </thead>
-            <tbody>
-                <tr>
-                    <td id="pp90"></td>
-                    <td id="pp925"></td>
-                    <td id="pp95"></td>
-                    <td id="pp975"></td>
-                    <td id="pp98"></td>
-                    <td id="pp99"></td>
-                    <td id="pp100"></td>
-                </tr>
-            </tbody>
-        </table>
-
+        
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <th>90%</th>
+                    <th>92.5%</th>
+                    <th>95%</th>
+                    <th>97.5%</th>
+                    <th>98%</th>
+                    <th>99%</th>
+                    <th>100%</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="pp90"></td>
+                        <td id="pp925"></td>
+                        <td id="pp95"></td>
+                        <td id="pp975"></td>
+                        <td id="pp98"></td>
+                        <td id="pp99"></td>
+                        <td id="pp100"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <canvas id="ppChart"></canvas>
     </div>
 </div>
@@ -138,7 +146,11 @@
                 },
                 success: function(d) {
                     var json = JSON.parse(d);
-                    /*$('#bg').attr("src", 'https://assets.ppy.sh/beatmaps/' + json.Id + '/covers/cover.jpg');*/
+
+                    if (json.BeatmapSetId != null && json.BeatmapSetId != 0)
+                        $('#bg').attr("src", 'https://assets.ppy.sh/beatmaps/' + json.BeatmapSetId + '/covers/cover.jpg');
+                    else
+                        $('#bg').attr("src", null);
 
                     var mods = json.Mods.map(function(item) {
                         return '<span class="badge badge-secondary">' + item.acronym + '</span>'
@@ -149,7 +161,9 @@
                         json.Title +
                         '</a> ' +
                         mods);
+
                     $('#sr').html(json.Stars.toFixed(2) + '*');
+
                     $('#pp100').html(json.PP100.toFixed(2));
                     $('#pp99').html(json.PP99.toFixed(2));
                     $('#pp98').html(json.PP98.toFixed(2));
@@ -157,6 +171,7 @@
                     $('#pp95').html(json.PP95.toFixed(2));
                     $('#pp925').html(json.PP925.toFixed(2));
                     $('#pp90').html(json.PP90.toFixed(2));
+
                     makeChart(json);
 
                     $('#hr').show();
