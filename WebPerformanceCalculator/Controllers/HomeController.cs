@@ -31,7 +31,7 @@ namespace WebPerformanceCalculator.Controllers
             new Regex(@"(?>https?:\/\/)?(?>osu|old)\.ppy\.sh\/([b,s]|(?>beatmaps)|(?>beatmapsets))\/(\d+\/?\#osu\/)?(\d+)?\/?(?>[&,?].=\d)?", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private const double keep_scores_bigger_than = 650.0;
+        private const double keep_scores_bigger_than = 699.5;
 
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
         private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
@@ -84,48 +84,6 @@ namespace WebPerformanceCalculator.Controllers
         public IActionResult Highscores()
         {
             return View();
-        }
-
-        private static string TimeAgo(DateTime dt)
-        {
-            if (dt > DateTime.Now.ToUniversalTime())
-                return "soon";
-            TimeSpan span = DateTime.Now.ToUniversalTime() - dt;
-
-            switch (span)
-            {
-                case var _ when span.Days > 365:
-                {
-                    int years = (span.Days / 365);
-                    if (span.Days % 365 != 0)
-                        years += 1;
-                    return $"about {years} {(years == 1 ? "year" : "years")} ago";
-                }
-                case var _ when span.Days > 30:
-                {
-                    int months = (span.Days / 30);
-                    if (span.Days % 31 != 0)
-                        months += 1;
-                    return $"about {months} {(months == 1 ? "month" : "months")} ago";
-                }
-
-                case var _ when span.Days > 0:
-                    return $"about {span.Days} {(span.Days == 1 ? "day" : "days")} ago";
-
-                case var _ when span.Hours > 0:
-                    return $"about {span.Hours} {(span.Hours == 1 ? "hour" : "hours")} ago";
-
-                case var _ when span.Minutes > 0:
-                    return $"about {span.Minutes} {(span.Minutes == 1 ? "minute" : "minutes")} ago";
-
-                case var _ when span.Seconds > 5:
-                    return $"about {span.Seconds} seconds ago";
-
-                case var _ when span.Seconds <= 5:
-                    return "just now";
-
-                default: return string.Empty;
-            }
         }
 
         #endregion
@@ -238,11 +196,9 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [HttpPost]
+        [RequiresKey]
         public async Task<IActionResult> SubmitWorkerResults([FromBody]dynamic content, string key, string jsonUsername)
         {
-            if (key != Config.auth_key)
-                return StatusCode(403);
-
             string jsonString = content.ToString();
             if (!string.IsNullOrEmpty(jsonString))
             {
@@ -298,15 +254,17 @@ namespace WebPerformanceCalculator.Controllers
             return new OkResult();
         }
 
+        [RequiresKey]
         public IActionResult GetUserForWorker(string key, long calcTimestamp)
         {
-            if (key != Config.auth_key || calcTimestamp == 0)
-                return StatusCode(403);
+            if (calcTimestamp == 0)
+                return StatusCode(422);
 
             var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
 
             if (calcTimestamp < localCalcDate)
             {
+                // send update data
                 return Json(new WorkerDataModel
                 {
                     NeedsCalcUpdate = true,
@@ -315,26 +273,22 @@ namespace WebPerformanceCalculator.Controllers
             }
 
             if (usernameQueue.TryDequeue(out var username))
-                return Json(new WorkerDataModel() { Data = username });
+                return Json(new WorkerDataModel { Data = username });
 
             return new OkResult();
         }
 
+        [RequiresKey]
         public IActionResult LockQueue(string key)
         {
-            if (key != Config.auth_key)
-                return StatusCode(403);
-
             queueLocked = true;
 
             return new OkResult();
         }
 
+        [RequiresKey]
         public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0, bool force = false)
         {
-            if (key != Config.auth_key)
-                return StatusCode(403);
-
             await using (DatabaseContext db = new DatabaseContext())
             {
                 var players = await db.Players.OrderByDescending(x=> x.LocalPP)
@@ -399,7 +353,6 @@ namespace WebPerformanceCalculator.Controllers
             return StatusCode(500, new { err = "Failed to calculate!" });
         }
 
-
         public async Task<IActionResult> GetHighscores()
         {
             await using var db = new DatabaseContext();
@@ -409,11 +362,9 @@ namespace WebPerformanceCalculator.Controllers
             return Json(await db.Scores.Where(x => x.CalcTime > calcUpdateDate).OrderByDescending(x=> x.PP).ToArrayAsync());
         }
 
+        [RequiresKey]
         public IActionResult ClearHighscores(string key)
         {
-            if (key != Config.auth_key)
-                return StatusCode(403);
-
             using var db = new DatabaseContext();
             db.Scores.RemoveRange(db.Scores.Select(x => x));
             db.SaveChanges();
@@ -422,6 +373,8 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         #endregion
+
+        #region Helpers
 
         private bool CheckFileCalcDateOutdated(string path)
         {
@@ -466,5 +419,50 @@ namespace WebPerformanceCalculator.Controllers
 
             return beatmapId;
         }
+
+        private string TimeAgo(DateTime dt)
+        {
+            if (dt > DateTime.Now.ToUniversalTime())
+                return "soon";
+            TimeSpan span = DateTime.Now.ToUniversalTime() - dt;
+
+            switch (span)
+            {
+                case var _ when span.Days > 365:
+                    {
+                        int years = (span.Days / 365);
+                        if (span.Days % 365 != 0)
+                            years += 1;
+                        return $"about {years} {(years == 1 ? "year" : "years")} ago";
+                    }
+                case var _ when span.Days > 30:
+                    {
+                        int months = (span.Days / 30);
+                        if (span.Days % 31 != 0)
+                            months += 1;
+                        return $"about {months} {(months == 1 ? "month" : "months")} ago";
+                    }
+
+                case var _ when span.Days > 0:
+                    return $"about {span.Days} {(span.Days == 1 ? "day" : "days")} ago";
+
+                case var _ when span.Hours > 0:
+                    return $"about {span.Hours} {(span.Hours == 1 ? "hour" : "hours")} ago";
+
+                case var _ when span.Minutes > 0:
+                    return $"about {span.Minutes} {(span.Minutes == 1 ? "minute" : "minutes")} ago";
+
+                case var _ when span.Seconds > 5:
+                    return $"about {span.Seconds} seconds ago";
+
+                case var _ when span.Seconds <= 5:
+                    return "just now";
+
+                default: return string.Empty;
+            }
+        }
+
+        #endregion
+
     }
 }
