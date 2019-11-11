@@ -371,6 +371,7 @@ namespace WebPerformanceCalculator.Controllers
                     var commandMods = string.Empty;
                     if (mods.Length > 0)
                         commandMods = "-m " + string.Join(" -m ", mods);
+
                     await ProcessEx.RunAsync(new ProcessStartInfo
                     {
                         FileName = "dotnet",
@@ -408,9 +409,21 @@ namespace WebPerformanceCalculator.Controllers
             return Json(await db.Scores.Where(x => x.CalcTime > calcUpdateDate).OrderByDescending(x=> x.PP).ToArrayAsync());
         }
 
+        public IActionResult ClearHighscores(string key)
+        {
+            if (key != Config.auth_key)
+                return StatusCode(403);
+
+            using var db = new DatabaseContext();
+            db.Scores.RemoveRange(db.Scores.Select(x => x));
+            db.SaveChanges();
+
+            return new OkResult();
+        }
+
         #endregion
 
-        private static bool CheckFileCalcDateOutdated(string path)
+        private bool CheckFileCalcDateOutdated(string path)
         {
             if (!System.IO.File.Exists(path))
                 return true;
@@ -423,42 +436,35 @@ namespace WebPerformanceCalculator.Controllers
             return false;
         }
 
-        public static int GetMapIdFromLink(string link, out bool isSet)
+        private int GetMapIdFromLink(string link, out bool isSet)
         {
+            int beatmapId = 0;
             isSet = false;
             Match regexMatch = mapLinkRegex.Match(link);
             if (regexMatch.Groups.Count > 1)
             {
-                List<Group> regexGroups = regexMatch.Groups.Values.Where(x => (x != null) && (x.Length > 0))
+                List<Group> regexGroups = regexMatch.Groups.Values
+                    .Where(x => x != null && x.Length > 0)
                     .ToList();
 
                 bool isNew = regexGroups[1].Value == "beatmapsets"; // are we using new website or not
-                int beatmapId = 0;
-
                 if (isNew)
                 {
                     if (regexGroups[2].Value.Contains("#osu/"))
-                    {
                         beatmapId = int.Parse(regexGroups[3].Value);
-                    }
                     else
-                    {
                         isSet = true;
-                        beatmapId = int.Parse(regexGroups[2].Value);
-                    }
                 }
                 else
                 {
                     if (regexGroups[1].Value == "s")
                         isSet = true;
-
-                    beatmapId = int.Parse(regexGroups[2].Value);
+                    else
+                        beatmapId = int.Parse(regexGroups[2].Value);
                 }
-
-                return beatmapId;
             }
 
-            return 0;
+            return beatmapId;
         }
     }
 }
