@@ -97,14 +97,14 @@ namespace WebPerformanceCalculator.Controllers
         public IActionResult AddToQueue(string jsonUsername)
         {
             if (queueLocked)
-                return StatusCode(500, new { err = "Queue is temporary locked, try again later!" });
+                return StatusCode(400, new { err = "Queue is temporary locked, try again later!" });
 
             if (queueDebounce > DateTime.Now)
-                return StatusCode(500, new {err = "Try again later"});
+                return StatusCode(400, new {err = "Try again later"});
 
             // performance calculator doesn't want to work with them even when escaping
             if (jsonUsername.Contains('-'))
-                return StatusCode(500, new {err = "Please use user ID instead"});
+                return StatusCode(400, new {err = "Please use user ID instead"});
 
             jsonUsername = jsonUsername.Trim();
 
@@ -120,10 +120,10 @@ namespace WebPerformanceCalculator.Controllers
                     return GetQueue();
                 }
 
-                return StatusCode(500, new { err = "This player doesn't need a recalculation yet! You can only recalculate once a day" });
+                return StatusCode(400, new { err = "This player doesn't need a recalculation yet! You can only recalculate once a day" });
             }
 
-            return StatusCode(500, new {err = "Incorrect username"});
+            return StatusCode(400, new {err = "Incorrect username"});
         }
 
         public IActionResult GetQueue()
@@ -373,6 +373,18 @@ namespace WebPerformanceCalculator.Controllers
         {
             using var db = new DatabaseContext();
             db.Scores.RemoveRange(db.Scores.Select(x => x));
+            db.SaveChanges();
+
+            return new OkResult();
+        }
+
+        [RequiresKey]
+        public IActionResult RemovePlayer(string key, string name)
+        {
+            using var db = new DatabaseContext();
+
+            db.Players.Remove(db.Players.Single(x => x.Name == name));
+            db.Scores.RemoveRange(db.Scores.Where(x => x.Player == name));
             db.SaveChanges();
 
             return new OkResult();
