@@ -63,14 +63,12 @@
     <div class="card-body">
         <h4 class="card-title" id="mapname"></h4>
         <p id="sr" class="badge badge-primary"></p>
-        
+        <p id="ppwarning" class="text-danger"></p>
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
                     <th>90%</th>
-                    <th>92.5%</th>
                     <th>95%</th>
-                    <th>97.5%</th>
                     <th>98%</th>
                     <th>99%</th>
                     <th>100%</th>
@@ -78,9 +76,7 @@
                 <tbody>
                     <tr>
                         <td id="pp90"></td>
-                        <td id="pp925"></td>
                         <td id="pp95"></td>
-                        <td id="pp975"></td>
                         <td id="pp98"></td>
                         <td id="pp99"></td>
                         <td id="pp100"></td>
@@ -103,7 +99,7 @@
                 {
                     type: 'line',
                     data: {
-                        labels: ['90%', '92.5%', '95%', '97.5%', '100%']
+                        labels: ['90%', '91%','92%','93%','94%', '95%', '96%', '97%', '98%', '99%', '100%']
                     }
                 });
 
@@ -120,17 +116,6 @@
                 //stop form submission
                 e.preventDefault();
             });
-
-        function makeChart(json) {
-            var vals = [].concat(json.PP90.toFixed(2),
-                json.PP925.toFixed(2),
-                json.PP95.toFixed(2),
-                json.PP975.toFixed(2),
-                json.PP100.toFixed(2));
-            
-            ppChart.data.datasets = [{ label: 'pp', data: vals }];
-            ppChart.update();
-        }
 
         function getMap(id) {
             $.ajax({
@@ -164,15 +149,25 @@
 
                     $('#sr').html(json.Stars.toFixed(2) + '*');
 
-                    $('#pp100').html(json.PP100.toFixed(2));
-                    $('#pp99').html(json.PP99.toFixed(2));
-                    $('#pp98').html(json.PP98.toFixed(2));
-                    $('#pp975').html(json.PP975.toFixed(2));
-                    $('#pp95').html(json.PP95.toFixed(2));
-                    $('#pp925').html(json.PP925.toFixed(2));
-                    $('#pp90').html(json.PP90.toFixed(2));
+                    $('#pp100').html(json.PP[10].toFixed(2));
+                    $('#pp99').html(json.PP[9].toFixed(2));
+                    $('#pp98').html(json.PP[8].toFixed(2));
+                    $('#pp95').html(json.PP[5].toFixed(2));
+                    $('#pp90').html(json.PP[0].toFixed(2));
 
-                    makeChart(json);
+                    var incorrectValues = 0;
+                    for (var i = 1; i < json.PP.length; i++) {
+                        if (json.PP[i] < json.PP[i - 1])
+                            incorrectValues++;
+                    }
+
+                    if (incorrectValues > 0)
+                        $('#ppwarning').html('At least '+ incorrectValues +' PP values for this map aren\'t entirely correct because of how accuracy is being approximated!');
+                    else
+                        $('#ppwarning').html('');
+
+                    ppChart.data.datasets = [{ label: 'pp', data: json.PP }];
+                    ppChart.update();
 
                     $('#hr').show();
                     $('#map').show();
