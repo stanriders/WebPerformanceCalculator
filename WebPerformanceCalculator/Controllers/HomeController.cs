@@ -359,6 +359,28 @@ namespace WebPerformanceCalculator.Controllers
             return StatusCode(500, new { err = "Failed to calculate!" });
         }
 
+        public async Task<IActionResult> GetProbabilityChart(int mapId)
+        {
+            var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}.txt");
+            if (graph.Length > 0)
+            {
+                var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
+                foreach (var g in graph)
+                {
+                    var split = g.Split(' ');
+                    jsonGraph.Add(new ProbabilityGraphModel
+                    {
+                        Time = Convert.ToDouble(split[0]),
+                        Probability = Convert.ToDouble(split[3])
+                    });
+                }
+
+                return Json(JsonConvert.SerializeObject(jsonGraph));
+            }
+
+            return StatusCode(400);
+        }
+
         public async Task<IActionResult> GetHighscores()
         {
             await using var db = new DatabaseContext();

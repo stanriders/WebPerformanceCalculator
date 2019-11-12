@@ -61,9 +61,11 @@
 <div class="card" id="map" style="display: none">
     <img id="bg" class="card-img-top" style="max-height: 200px; object-fit: cover;" />
     <div class="card-body">
-        <h4 class="card-title" id="mapname"></h4>
-        <p id="sr" class="badge badge-primary"></p>
-        <p id="ppwarning" class="text-danger"></p>
+        <div class="card-img-overlay" style="max-height: 200px;">
+            <h4 class="card-title alert alert-light" id="mapname"></h4>
+            <p id="sr" class="badge badge-primary"></p>
+            <p id="ppwarning" class="text-danger"></p>
+        </div>
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
@@ -85,6 +87,8 @@
             </table>
         </div>
         <canvas id="ppChart"></canvas>
+        <hr/>
+        <canvas id="probChart"></canvas>
     </div>
 </div>
 
@@ -93,13 +97,33 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.2/dist/Chart.min.js"></script>
     <script>
         var ppChart;
+        var probChart;
         $(function() {
-            var ctx = document.getElementById('ppChart').getContext('2d');
-            ppChart = new Chart(ctx,
+            var ppctx = document.getElementById('ppChart').getContext('2d');
+            ppChart = new Chart(ppctx,
                 {
+                    aspectRatio: 3,
                     type: 'line',
                     data: {
-                        labels: ['90%', '91%','92%','93%','94%', '95%', '96%', '97%', '98%', '99%', '100%']
+                        labels: ['90%', '91%', '92%', '93%', '94%', '95%', '96%', '97%', '98%', '99%', '100%']
+                    },
+                    options: { aspectRatio: 4 }
+                });
+
+            var probctx = document.getElementById('probChart').getContext('2d');
+            probChart = new Chart(probctx,
+                {
+                    type: 'scatter',
+                    options: {
+                        aspectRatio: 3,
+                        scales: {
+                            xAxes: [
+                                {
+                                    type: 'linear',
+                                    position: 'bottom'
+                                }
+                            ]
+                        }
                     }
                 });
 
@@ -133,7 +157,8 @@
                     var json = JSON.parse(d);
 
                     if (json.BeatmapSetId != null && json.BeatmapSetId != 0)
-                        $('#bg').attr("src", 'https://assets.ppy.sh/beatmaps/' + json.BeatmapSetId + '/covers/cover.jpg');
+                        $('#bg').attr("src",
+                            'https://assets.ppy.sh/beatmaps/' + json.BeatmapSetId + '/covers/cover.jpg');
                     else
                         $('#bg').attr("src", null);
 
@@ -162,19 +187,47 @@
                     }
 
                     if (incorrectValues > 0)
-                        $('#ppwarning').html('At least '+ incorrectValues +' PP values for this map aren\'t entirely correct because of how accuracy is being approximated!');
+                        $('#ppwarning').html('At least ' +
+                            incorrectValues +
+                            ' PP values for this map aren\'t entirely correct because of how accuracy is being approximated!');
                     else
                         $('#ppwarning').html('');
 
-                    ppChart.data.datasets = [{ label: 'pp', data: json.PP }];
+                    ppChart.data.datasets = [
+                        {
+                            backgroundColor: "rgba(0,123,255,0.3)",
+                            label: 'pp',
+                            cubicInterpolationMode: 'monotone',
+                            data: json.PP
+                        }];
                     ppChart.update();
+
+                    $.ajax({
+                        type: 'GET',
+                        url: "/GetProbabilityChart",
+                        data: { mapId: json.Id },
+                        success: function(d) {
+                            var json = JSON.parse(d);
+
+                            probChart.data.datasets = [
+                                {
+                                    backgroundColor: "rgba(0,123,255,0.3)",
+                                    label: '(aim) miss probability',
+                                    data: json
+                                }];
+                            probChart.update();
+                            $('#probChart').show();
+                        },
+                        error: function(d) {
+                            $('#probChart').hide();
+                        },
+                    });
 
                     $('#hr').show();
                     $('#map').show();
                 },
                 complete: function() {
                     $('#submit').show();
-
                 },
                 beforeSend: function() {
                     $('#error').html('');
