@@ -59,13 +59,13 @@
 </div>
 <hr id="hr" style="display: none"/>
 <div class="card" id="map" style="display: none">
-    <img id="bg" class="card-img-top" style="max-height: 200px; object-fit: cover;" />
+    <img id="bg" class="card-img-top" style="min-height: 175px; max-height: 200px; object-fit: cover;" />
     <div class="card-body">
-        <div class="card-img-overlay" style="max-height: 200px;">
-            <h4 class="card-title alert alert-light" id="mapname"></h4>
+        <div class="card-img-overlay" style="min-height: 175px; max-height: 200px;">
+            <h4 class="alert alert-light" id="mapname" style="max-height: 100px; overflow: hidden"></h4>
             <p id="sr" class="badge badge-primary"></p>
-            <p id="ppwarning" class="text-danger"></p>
         </div>
+        <p id="ppwarning" class="text-danger"></p>
         <div class="table-responsive">
             <table class="table table-bordered">
                 <thead>
@@ -86,9 +86,13 @@
                 </tbody>
             </table>
         </div>
-        <canvas id="ppChart"></canvas>
-        <hr/>
-        <canvas id="probChart"></canvas>
+        <div class="chart-container" style="position: relative; min-height: 200px">
+            <canvas id="ppChart"></canvas>
+        </div>
+        <hr />
+        <div class="chart-container" style="position: relative; min-height: 250px">
+            <canvas id="probChart"></canvas>
+        </div>
     </div>
 </div>
 
@@ -102,12 +106,11 @@
             var ppctx = document.getElementById('ppChart').getContext('2d');
             ppChart = new Chart(ppctx,
                 {
-                    aspectRatio: 3,
                     type: 'line',
                     data: {
                         labels: ['90%', '91%', '92%', '93%', '94%', '95%', '96%', '97%', '98%', '99%', '100%']
                     },
-                    options: { aspectRatio: 4 }
+                    options: { maintainAspectRatio: false }
                 });
 
             var probctx = document.getElementById('probChart').getContext('2d');
@@ -115,10 +118,11 @@
                 {
                     type: 'scatter',
                     options: {
-                        aspectRatio: 3,
+                        maintainAspectRatio: false,
                         scales: {
                             xAxes: [
                                 {
+                                    scaleLabel: {display: true, labelString: 'time'},
                                     type: 'linear',
                                     position: 'bottom'
                                 }
