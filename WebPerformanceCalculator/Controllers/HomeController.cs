@@ -147,52 +147,81 @@ namespace WebPerformanceCalculator.Controllers
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
                 var totalNotFilteredAmt = await db.Players.CountAsync();
-
-                var query = db.Players.AsQueryable();
-
-                if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.JsonName.Contains(search.ToLower()) || x.Name.Contains(search));
-
-                if (!string.IsNullOrEmpty(order))
-                {
-                    // this is stupid
-                    sort = sort switch
-                    {
-                        "jsonName" => "JsonName",
-                        "name" => "Name",
-                        "livePP" => "LivePP",
-                        "localPP" => "LocalPP",
-                        "ppLoss" => "PPLoss",
-                        _ => string.Empty
-                    };
-
-                    if (order == "asc")
-                        query = query.OrderBy(sort);
-                    else
-                        query = query.OrderByDescending(sort);
-                }
-
-                var players = await query.Skip(offset).Take(limit).ToArrayAsync();
+                var totalFilteredAmt = 0;
 
                 var jsonPlayers = new List<TopPlayerModel>();
-                for (int i = 0; i < players.Length; i++)
+                if (!string.IsNullOrEmpty(search))
                 {
-                    jsonPlayers.Add(new TopPlayerModel
+                    // not supporting different ordering for now
+                    var filteredPlayers = await db.PlayerSearchQuery.FromSqlInterpolated(
+                        $@"SELECT * FROM (
+                            SELECT *, ROW_NUMBER() OVER(ORDER BY LocalPP DESC) AS Rank
+                            from Players)")
+                        .Where(x=> x.Name.ToUpper() == search.ToUpper() || x.JsonName.Contains(search.ToLower()))
+                        .Skip(offset)
+                        .Take(limit)
+                        .ToArrayAsync();
+
+                    for (int i = 0; i < filteredPlayers.Length; i++)
                     {
-                        ID = players[i].ID,
-                        JsonName = players[i].JsonName,
-                        LivePP = players[i].LivePP,
-                        LocalPP = players[i].LocalPP,
-                        Name = players[i].Name,
-                        PPLoss = Math.Round(players[i].PPLoss, 2),
-                        Place = offset + i + 1
-                    });
+                        jsonPlayers.Add(new TopPlayerModel
+                        {
+                            ID = filteredPlayers[i].ID,
+                            JsonName = filteredPlayers[i].JsonName,
+                            LivePP = filteredPlayers[i].LivePP,
+                            LocalPP = filteredPlayers[i].LocalPP,
+                            Name = filteredPlayers[i].Name,
+                            PPLoss = Math.Round(filteredPlayers[i].PPLoss, 2),
+                            Place = filteredPlayers[i].Rank
+                        });
+                    }
+                    totalFilteredAmt = filteredPlayers.Length;
+                }
+                else
+                {
+                    var query = db.Players.AsQueryable();
+
+                    if (!string.IsNullOrEmpty(order))
+                    {
+                        // this is stupid
+                        sort = sort switch
+                        {
+                            "jsonName" => "JsonName",
+                            "name" => "Name",
+                            "livePP" => "LivePP",
+                            "localPP" => "LocalPP",
+                            "ppLoss" => "PPLoss",
+                            _ => string.Empty
+                        };
+
+                        if (order == "asc")
+                            query = query.OrderBy(sort);
+                        else
+                            query = query.OrderByDescending(sort);
+                    }
+
+                    var players = await query.Skip(offset).Take(limit).ToArrayAsync();
+                    for (int i = 0; i < players.Length; i++)
+                    {
+                        jsonPlayers.Add(new TopPlayerModel
+                        {
+                            ID = players[i].ID,
+                            JsonName = players[i].JsonName,
+                            LivePP = players[i].LivePP,
+                            LocalPP = players[i].LocalPP,
+                            Name = players[i].Name,
+                            PPLoss = Math.Round(players[i].PPLoss, 2),
+                            Place = offset + i + 1
+                        });
+                    }
+
+                    totalFilteredAmt = players.Length;
                 }
 
                 return Json(new TopModel()
                 {
                     Rows = jsonPlayers.ToArray(),
-                    Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : players.Length,
+                    Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : totalFilteredAmt,
                     TotalNotFiltered = totalNotFilteredAmt
                 });
             }
