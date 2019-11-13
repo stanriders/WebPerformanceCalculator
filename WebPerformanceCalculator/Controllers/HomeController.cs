@@ -391,23 +391,23 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [RequiresKey]
-        public IActionResult ClearHighscores(string key)
+        public async Task<IActionResult> ClearHighscores(string key)
         {
             using var db = new DatabaseContext();
-            db.Scores.RemoveRange(db.Scores.Select(x => x));
-            db.SaveChanges();
+            db.Scores.RemoveRange(await db.Scores.Select(x => x).ToArrayAsync());
+            await db.SaveChangesAsync();
 
             return new OkResult();
         }
 
         [RequiresKey]
-        public IActionResult RemovePlayer(string key, string name)
+        public async Task<IActionResult> RemovePlayer(string key, string name)
         {
             using var db = new DatabaseContext();
 
-            db.Players.Remove(db.Players.Single(x => x.Name == name));
-            db.Scores.RemoveRange(db.Scores.Where(x => x.Player == name));
-            db.SaveChanges();
+            db.Players.Remove(await db.Players.SingleAsync(x => x.Name == name));
+            db.Scores.RemoveRange(await db.Scores.Where(x => x.Player == name).ToArrayAsync());
+            await db.SaveChangesAsync();
 
             return new OkResult();
         }
