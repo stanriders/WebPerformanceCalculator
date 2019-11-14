@@ -47,51 +47,24 @@ namespace WebPerformanceCalculator.Controllers
 
         #region Pages
 
-        public IActionResult Index()
-        {
-            var date = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
-            return View(model: $"{date.ToString(CultureInfo.InvariantCulture)} UTC ({TimeAgo(date)})");
-        }
-
-        public IActionResult Top()
-        {
-            return View();
-        }
-
-        public IActionResult User(string username)
-        {
-            var updateDateString = string.Empty;
-
-            if (System.IO.File.Exists($"players/{username}.json"))
-            {
-                var fileDate = System.IO.File.GetLastWriteTime($"players/{username}.json").ToUniversalTime();
-                if (CheckFileCalcDateOutdated($"players/{username}.json"))
-                    updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC (outdated!)";
-                else
-                    updateDateString = $"{fileDate.ToString(CultureInfo.InvariantCulture)} UTC";
-            }
-
-            return View(new UserModel
-            {
-                Username = username,
-                UpdateDate = updateDateString
-            });
-        }
-
-        [Route("Map/{id?}")]
-        public IActionResult Map(int? id = null)
-        {
-            return View(model: id?.ToString() ?? string.Empty);
-        }
-
-        public IActionResult Highscores()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
+        public IActionResult Top() => View();
+        public IActionResult Map() => View();
+        public IActionResult User() => View();
+        public IActionResult Highscores() => View();
 
         #endregion
 
         #region API
+
+        public IActionResult GetCalcModuleUpdateDate()
+        {
+            return Json(new
+            {
+                date = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime(), 
+                commit = "d92b1d9"
+            });
+        }
 
         [HttpPost]
         public IActionResult AddToQueue(string jsonUsername)
@@ -135,7 +108,11 @@ namespace WebPerformanceCalculator.Controllers
         {
             var result = string.Empty;
             if (System.IO.File.Exists($"players/{jsonUsername}.json"))
-                result = await System.IO.File.ReadAllTextAsync($"players/{jsonUsername}.json");
+            {
+                dynamic json = JsonConvert.DeserializeObject(await System.IO.File.ReadAllTextAsync($"players/{jsonUsername}.json"));
+                json.UpdateDate = System.IO.File.GetLastWriteTime($"players/{jsonUsername}.json").ToUniversalTime();
+                result = JsonConvert.SerializeObject(json);
+            }
 
             return Json(result);
         }
@@ -342,14 +319,17 @@ namespace WebPerformanceCalculator.Controllers
 
         public async Task<IActionResult> CalculateMap(string map, string[] mods)
         {
+            if (string.IsNullOrEmpty(map))
+                return StatusCode(400, new { err = "Incorrect beatmap link!" });
+
             if (!int.TryParse(map, out var mapId))
             {
                 mapId = GetMapIdFromLink(map, out var isSet);
                 if (mapId == 0)
-                    return StatusCode(500, new {err = "Incorrect beatmap link!"});
+                    return StatusCode(400, new {err = "Incorrect beatmap link!"});
 
                 if (isSet)
-                    return StatusCode(500, new {err = "Beatmap set links aren't supported"});
+                    return StatusCode(400, new {err = "Beatmap set links aren't supported"});
             }
 
             var modsJoined = string.Join(string.Empty, mods);
@@ -487,48 +467,6 @@ namespace WebPerformanceCalculator.Controllers
             }
 
             return beatmapId;
-        }
-
-        private string TimeAgo(DateTime dt)
-        {
-            if (dt > DateTime.Now.ToUniversalTime())
-                return "soon";
-            TimeSpan span = DateTime.Now.ToUniversalTime() - dt;
-
-            switch (span)
-            {
-                case var _ when span.Days > 365:
-                    {
-                        int years = (span.Days / 365);
-                        if (span.Days % 365 != 0)
-                            years += 1;
-                        return $"about {years} {(years == 1 ? "year" : "years")} ago";
-                    }
-                case var _ when span.Days > 30:
-                    {
-                        int months = (span.Days / 30);
-                        if (span.Days % 31 != 0)
-                            months += 1;
-                        return $"about {months} {(months == 1 ? "month" : "months")} ago";
-                    }
-
-                case var _ when span.Days > 0:
-                    return $"about {span.Days} {(span.Days == 1 ? "day" : "days")} ago";
-
-                case var _ when span.Hours > 0:
-                    return $"about {span.Hours} {(span.Hours == 1 ? "hour" : "hours")} ago";
-
-                case var _ when span.Minutes > 0:
-                    return $"about {span.Minutes} {(span.Minutes == 1 ? "minute" : "minutes")} ago";
-
-                case var _ when span.Seconds > 5:
-                    return $"about {span.Seconds} seconds ago";
-
-                case var _ when span.Seconds <= 5:
-                    return "just now";
-
-                default: return string.Empty;
-            }
         }
 
         #endregion

@@ -1,5 +1,4 @@
-﻿@model string
-@{
+﻿@{
     ViewData["Title"] = "Calculate Map PP";
 }
 <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
@@ -122,7 +121,7 @@
                         scales: {
                             xAxes: [
                                 {
-                                    scaleLabel: {display: true, labelString: 'time'},
+                                    scaleLabel: { display: true, labelString: 'time' },
                                     type: 'linear',
                                     position: 'bottom'
                                 }
@@ -131,9 +130,11 @@
                     }
                 });
 
-            if ('@Model' !== '') {
-                $('#id').val('@Model');
-                getMap(@Model);
+            // load map data if we have an id in the url
+            var map = window.location.href.slice(window.location.href.lastIndexOf('/') + 1);
+            if (!isNaN(map)) {
+                $('#id').val(map);
+                getMap(map);
             }
         });
 
@@ -145,7 +146,16 @@
                 e.preventDefault();
             });
 
-        function getMap(id) {
+        window.onpopstate = function(event) {
+            if (event.state != null && !isNaN(event.state))
+                getMap(event.state, true);
+            else {
+                $('#hr').hide();
+                $('#map').hide();
+            }
+        };
+
+        function getMap(id, fromHistory) {
             $.ajax({
                 type: 'GET',
                 url: "/CalculateMap",
@@ -160,15 +170,19 @@
                 success: function(d) {
                     var json = JSON.parse(d);
 
+                    // get beatmap cover if possible
                     if (json.BeatmapSetId != null && json.BeatmapSetId != 0)
                         $('#bg').attr("src",
                             'https://assets.ppy.sh/beatmaps/' + json.BeatmapSetId + '/covers/cover.jpg');
                     else
                         $('#bg').attr("src", null);
 
+                    // mod badges
                     var mods = json.Mods.map(function(item) {
                         return '<span class="badge badge-secondary">' + item.acronym + '</span>'
                     }).join(" ");
+
+                    // map name
                     $('#mapname').html('<a href=\"https://osu.ppy.sh/beatmaps/' +
                         json.Id +
                         '\">' +
@@ -178,6 +192,7 @@
 
                     $('#sr').html(json.Stars.toFixed(2) + '*');
 
+                    // populate the table
                     $('#pp100').html(json.PP[10].toFixed(2));
                     $('#pp99').html(json.PP[9].toFixed(2));
                     $('#pp98').html(json.PP[8].toFixed(2));
@@ -197,15 +212,18 @@
                     else
                         $('#ppwarning').html('');
 
+                    // load pp chart
                     ppChart.data.datasets = [
                         {
                             backgroundColor: "rgba(0,123,255,0.3)",
                             label: 'pp',
                             cubicInterpolationMode: 'monotone',
                             data: json.PP
-                        }];
+                        }
+                    ];
                     ppChart.update();
 
+                    // load probability chart
                     $.ajax({
                         type: 'GET',
                         url: "/GetProbabilityChart",
@@ -218,7 +236,8 @@
                                     backgroundColor: "rgba(0,123,255,0.3)",
                                     label: '(aim) miss probability',
                                     data: json
-                                }];
+                                }
+                            ];
                             probChart.update();
                             $('#probChart').show();
                         },
@@ -226,6 +245,10 @@
                             $('#probChart').hide();
                         },
                     });
+
+                    // keep calculated maps in history
+                    if (!fromHistory)
+                        window.history.pushState(json.Id, json.Title, '/map/' + json.Id);
 
                     $('#hr').show();
                     $('#map').show();

@@ -1,6 +1,5 @@
-﻿@model WebPerformanceCalculator.Models.UserModel
-@{
-    ViewData["Title"] = @Model.Username;
+﻿@{
+    ViewData["Title"] = "Loading...";
 }
 <nav class="navbar navbar-expand-sm navbar-light bg-light">
     <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
@@ -15,7 +14,7 @@
             </li>
             <li class="nav-item"><a class="nav-link disabled" href="#">/</a></li>
             <li class="nav-item active">
-                <a class="nav-link" href="#">@Model.Username <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="#"><span class="username">...</span> <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/Highscores">Highscores</a>
@@ -29,8 +28,8 @@
 </nav>
 
 <div class="pt-2 pb-2">
-    <h1 id="username">@Model.Username</h1>
-    <div><b>Updated on:</b> @Model.UpdateDate</div>
+    <h1 class="username">Loading...</h1>
+    <div><b>Updated on:</b> <span id="updatedate"></span></div>
     <div><b>Live PP:</b><div id="livePP"></div></div>
     <div><b>Local PP:</b><div id="localPP"></div></div>
     <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
@@ -39,21 +38,33 @@
 {
     <script>
         $(function () {
+            var user = window.location.href.slice(window.location.href.lastIndexOf('/') + 1);
             $.ajax({
                 type: 'GET',
-                url: "/GetResults?jsonUsername=@Model.Username",
+                url: "/GetResults?jsonUsername=" + user,
                 complete: function (d) {
                     var json = JSON.parse(d.responseJSON);
 
                     $('#livePP').html(json.LivePP);
                     $('#localPP').html(json.LocalPP);
-                    $('#username').html(json.Username);
+                    $('.username').html(json.Username);
+                    $('title').html(json.Username + ' - delta_t PP Rebalance Calculator');
 
                     json.Beatmaps.forEach(function (item, i, arr) {
                         var split = item.Beatmap.split(' - ');
                         var beatmapId = split[0];
                         split.splice(0, 1);
-                        json.Beatmaps[i].Beatmap = '<a href=\"https://osu.ppy.sh/b/'+ beatmapId +'\">' + split.join(' - ') + '</a>';
+                        json.Beatmaps[i].Beatmap = '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a>';
+                    });
+
+                    $.ajax({
+                        type: 'GET',
+                        url: "/GetCalcModuleUpdateDate",
+                        complete: function (d) {
+                            var updateDate = new Date(json.UpdateDate);
+                            var calcDate = new Date(d.responseJSON.date);
+                            $('#updatedate').html(updateDate.toLocaleDateString() + ' ' + updateDate.toLocaleTimeString() + (updateDate < calcDate ? ' (outdated!)' : ''));
+                        }
                     });
 
                     $('#maintable').bootstrapTable('load', json.Beatmaps);
@@ -97,7 +108,7 @@
             });
         });
         function runningFormatter(value, row, index) {
-            return index+1;
+            return index + 1;
         }
     </script>
 }
