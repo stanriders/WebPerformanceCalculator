@@ -173,13 +173,15 @@
 
         function getMap(id, fromHistory) {
             $.ajax({
-                type: 'GET',
+                type: 'POST',
                 url: "/api/CalculateMap",
-                traditional: true,
-                data: {
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: JSON.stringify({
                     map: id,
                     mods: $("input:checkbox[id=mod]:checked").map(function() { return $(this).val() }).get()
-                },
+                }),
+
                 error: function(d) {
                     $('#error').html(d.responseJSON.err);
                 },

@@ -59,8 +59,12 @@ namespace WebPerformanceCalculator.Controllers
 
         [HttpPost]
         [Route("AddToQueue")]
-        public IActionResult AddToQueue(string jsonUsername)
+        [Consumes("application/x-www-form-urlencoded")]
+        public IActionResult AddToQueue([FromForm] string jsonUsername)
         {
+            if (string.IsNullOrEmpty(jsonUsername))
+                return StatusCode(400, new { err = "Incorrect username" });
+
             if (queueLocked)
                 return StatusCode(400, new { err = "Queue is temporary locked, try again later!" });
 
@@ -316,15 +320,16 @@ namespace WebPerformanceCalculator.Controllers
             return new OkResult();
         }
 
+        [HttpPost]
         [Route("CalculateMap")]
-        public async Task<IActionResult> CalculateMap(string map, string[] mods)
+        public async Task<IActionResult> CalculateMap(CalculateMapModel model)
         {
-            if (string.IsNullOrEmpty(map))
+            if (string.IsNullOrEmpty(model.Map))
                 return StatusCode(400, new { err = "Incorrect beatmap link!" });
 
-            if (!int.TryParse(map, out var mapId))
+            if (!int.TryParse(model.Map, out var mapId))
             {
-                mapId = GetMapIdFromLink(map, out var isSet);
+                mapId = GetMapIdFromLink(model.Map, out var isSet);
                 if (mapId == 0)
                     return StatusCode(400, new {err = "Incorrect beatmap link!"});
 
@@ -332,14 +337,14 @@ namespace WebPerformanceCalculator.Controllers
                     return StatusCode(400, new {err = "Beatmap set links aren't supported"});
             }
 
-            var modsJoined = string.Join(string.Empty, mods);
+            var modsJoined = string.Join(string.Empty, model.Mods);
             if (CheckFileCalcDateOutdated($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
             {
                 try
                 {
                     var commandMods = string.Empty;
-                    if (mods.Length > 0)
-                        commandMods = "-m " + string.Join(" -m ", mods);
+                    if (model.Mods.Length > 0)
+                        commandMods = "-m " + string.Join(" -m ", model.Mods);
 
                     await ProcessEx.RunAsync(new ProcessStartInfo
                     {

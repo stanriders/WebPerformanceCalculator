@@ -148,7 +148,7 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
                 $.ajax({
                     type: 'POST',
                     url: "/api/AddToQueue",
-                    data: "jsonUsername=" + $('#username').val(),
+                    data: { jsonUsername: $('#username').val() },
                     error: function (d) {
                         $('#error').html(d.responseJSON.err);
                     },
