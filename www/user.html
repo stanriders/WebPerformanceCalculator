@@ -57,7 +57,7 @@
             var user = window.location.href.slice(window.location.href.lastIndexOf('/') + 1);
             $.ajax({
                 type: 'GET',
-                url: "/GetResults?jsonUsername=" + user,
+                url: "/api/GetResults?jsonUsername=" + user,
                 complete: function (d) {
                     var json = JSON.parse(d.responseJSON);
 
@@ -75,7 +75,7 @@
 
                     $.ajax({
                         type: 'GET',
-                        url: "/GetCalcModuleUpdateDate",
+                        url: "/api/GetCalcModuleUpdateDate",
                         complete: function (d) {
                             var updateDate = new Date(json.UpdateDate);
                             var calcDate = new Date(d.responseJSON.date);

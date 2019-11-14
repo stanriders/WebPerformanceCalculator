@@ -21,6 +21,8 @@ using WebPerformanceCalculator.Shared;
 
 namespace WebPerformanceCalculator.Controllers
 {
+    [ApiController]
+    [Route("[controller]")]
     public class ApiController : Controller
     {
         private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
@@ -45,6 +47,7 @@ namespace WebPerformanceCalculator.Controllers
             workingDir = assemblyFileInfo.DirectoryName;
         }
 
+        [Route("GetCalcModuleUpdateDate")]
         public IActionResult GetCalcModuleUpdateDate()
         {
             return Json(new
@@ -55,6 +58,7 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [HttpPost]
+        [Route("AddToQueue")]
         public IActionResult AddToQueue(string jsonUsername)
         {
             if (queueLocked)
@@ -87,11 +91,13 @@ namespace WebPerformanceCalculator.Controllers
             return StatusCode(400, new {err = "Incorrect username"});
         }
 
+        [Route("GetQueue")]
         public IActionResult GetQueue()
         {
             return Json(usernameQueue.ToArray());
         }
 
+        [Route("GetResults")]
         public async Task<IActionResult> GetResults(string jsonUsername)
         {
             var result = string.Empty;
@@ -105,6 +111,7 @@ namespace WebPerformanceCalculator.Controllers
             return Json(result);
         }
 
+        [Route("GetTop")]
         public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "asc", string sort = "localPP")
         {
             await using (DatabaseContext db = new DatabaseContext())
@@ -194,6 +201,7 @@ namespace WebPerformanceCalculator.Controllers
 
         [HttpPost]
         [RequiresKey]
+        [Route("SubmitWorkerResults")]
         public async Task<IActionResult> SubmitWorkerResults([FromBody]dynamic content, string key, string jsonUsername)
         {
             string jsonString = content.ToString();
@@ -255,6 +263,7 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [RequiresKey]
+        [Route("GetUserForWorker")]
         public IActionResult GetUserForWorker(string key, long calcTimestamp)
         {
             if (calcTimestamp == 0)
@@ -279,6 +288,7 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [RequiresKey]
+        [Route("LockQueue")]
         public IActionResult LockQueue(string key)
         {
             queueLocked = true;
@@ -287,6 +297,7 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [RequiresKey]
+        [Route("RecalcTop")]
         public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0, bool force = false)
         {
             await using (DatabaseContext db = new DatabaseContext())
@@ -305,6 +316,7 @@ namespace WebPerformanceCalculator.Controllers
             return new OkResult();
         }
 
+        [Route("CalculateMap")]
         public async Task<IActionResult> CalculateMap(string map, string[] mods)
         {
             if (string.IsNullOrEmpty(map))
@@ -356,6 +368,7 @@ namespace WebPerformanceCalculator.Controllers
             return StatusCode(500, new { err = "Failed to calculate!" });
         }
 
+        [Route("GetProbabilityChart")]
         public async Task<IActionResult> GetProbabilityChart(int mapId)
         {
             var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}.txt");
@@ -378,6 +391,7 @@ namespace WebPerformanceCalculator.Controllers
             return StatusCode(400);
         }
 
+        [Route("GetHighscores")]
         public async Task<IActionResult> GetHighscores()
         {
             await using var db = new DatabaseContext();
@@ -388,6 +402,7 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [RequiresKey]
+        [Route("ClearHighscores")]
         public async Task<IActionResult> ClearHighscores(string key)
         {
             using var db = new DatabaseContext();
@@ -398,6 +413,7 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [RequiresKey]
+        [Route("RemovePlayer")]
         public async Task<IActionResult> RemovePlayer(string key, string name)
         {
             using var db = new DatabaseContext();

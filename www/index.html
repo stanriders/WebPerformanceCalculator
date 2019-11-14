@@ -106,7 +106,7 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
         $(function () {
             $.ajax({
                 type: 'GET',
-                url: "/GetCalcModuleUpdateDate",
+                url: "/api/GetCalcModuleUpdateDate",
                 complete: function (d) {
                     var calcdate = new Date(d.responseJSON.date);
                     $("#calcdate").html(calcdate.toLocaleDateString() + ' ' + calcdate.toLocaleTimeString());
@@ -134,7 +134,7 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
         function updateQueue() {
             $.ajax({
                 type: 'GET',
-                url: "/GetQueue",
+                url: "/api/GetQueue",
                 complete: function (d) {
                     convertQueue(d.responseJSON);
                     setTimeout(function () { updateQueue(); }, 7000);
@@ -147,7 +147,7 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
             function (e) {
                 $.ajax({
                     type: 'POST',
-                    url: "/AddToQueue",
+                    url: "/api/AddToQueue",
                     data: "jsonUsername=" + $('#username').val(),
                     error: function (d) {
                         $('#error').html(d.responseJSON.err);

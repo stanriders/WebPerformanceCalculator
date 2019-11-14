@@ -174,7 +174,7 @@
         function getMap(id, fromHistory) {
             $.ajax({
                 type: 'GET',
-                url: "/CalculateMap",
+                url: "/api/CalculateMap",
                 traditional: true,
                 data: {
                     map: id,
@@ -243,7 +243,7 @@
                     // load probability chart
                     $.ajax({
                         type: 'GET',
-                        url: "/GetProbabilityChart",
+                        url: "/api/GetProbabilityChart",
                         data: { mapId: json.Id },
                         success: function(d) {
                             var json = JSON.parse(d);
