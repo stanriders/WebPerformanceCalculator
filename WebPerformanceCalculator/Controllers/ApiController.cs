@@ -21,7 +21,7 @@ using WebPerformanceCalculator.Shared;
 
 namespace WebPerformanceCalculator.Controllers
 {
-    public class HomeController : Controller
+    public class ApiController : Controller
     {
         private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
         private static DateTime queueDebounce = DateTime.Now;
@@ -39,23 +39,11 @@ namespace WebPerformanceCalculator.Controllers
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
         private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
 
-        public HomeController()
+        public ApiController()
         {
             var assemblyFileInfo = new FileInfo(typeof(Program).Assembly.Location);
             workingDir = assemblyFileInfo.DirectoryName;
         }
-
-        #region Pages
-
-        public IActionResult Index() => View();
-        public IActionResult Top() => View();
-        public IActionResult Map() => View();
-        public IActionResult User() => View();
-        public IActionResult Highscores() => View();
-
-        #endregion
-
-        #region API
 
         public IActionResult GetCalcModuleUpdateDate()
         {
@@ -421,7 +409,6 @@ namespace WebPerformanceCalculator.Controllers
             return new OkResult();
         }
 
-        #endregion
 
         #region Helpers
 
