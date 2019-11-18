@@ -30,6 +30,7 @@ namespace WebPerformanceCalculator.Controllers
         private static bool queueLocked;
         private static string workingDir;
 
+        private static string commit_hash = "unknown";
         private static MemoryCache playerCache = new MemoryCache("calculated_players");
 
         private static readonly Regex mapLinkRegex = 
@@ -38,6 +39,7 @@ namespace WebPerformanceCalculator.Controllers
 
         private const double keep_scores_bigger_than = 699.5;
 
+        private const string commit_hash_file = "commithash";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
         private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
 
@@ -45,15 +47,48 @@ namespace WebPerformanceCalculator.Controllers
         {
             var assemblyFileInfo = new FileInfo(typeof(Program).Assembly.Location);
             workingDir = assemblyFileInfo.DirectoryName;
+
+            if (System.IO.File.Exists(commit_hash_file))
+                commit_hash = System.IO.File.ReadAllText(commit_hash_file);
         }
 
         [Route("GetCalcModuleUpdateDate")]
-        public IActionResult GetCalcModuleUpdateDate()
+        public async Task<IActionResult> GetCalcModuleUpdateDate()
         {
+            if (System.IO.File.Exists(commit_hash_file))
+            {
+                var fileHash = await System.IO.File.ReadAllTextAsync(commit_hash_file);
+                if (fileHash != commit_hash)
+                {
+                    commit_hash = fileHash;
+                    lock (playerCache)
+                    {
+                        // clear cache
+                        playerCache.Dispose();
+                        playerCache = new MemoryCache("calculated_players");
+
+                        // clear highscores
+                        using var db = new DatabaseContext();
+                        db.Scores.RemoveRange(db.Scores.Select(x => x).ToArray());
+                        db.SaveChanges();
+
+                        // recalc top 100
+                        var players = db.Players.OrderByDescending(x => x.LocalPP)
+                            .Take(100)
+                            .Select(x => x.JsonName)
+                            .ToArray();
+
+                        foreach (var player in players)
+                            usernameQueue.Enqueue(player);
+                    }
+                }
+            }
+                
+
             return Json(new
             {
                 date = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime(), 
-                commit = "d92b1d9"
+                commit = commit_hash
             });
         }
 
