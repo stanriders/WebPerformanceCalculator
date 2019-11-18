@@ -30,7 +30,7 @@ namespace WebPerformanceCalculator.Controllers
         private static bool queueLocked;
         private static string workingDir;
 
-        private static string commit_hash = "unknown";
+        private static string commitHash = "unknown";
         private static MemoryCache playerCache = new MemoryCache("calculated_players");
 
         private static readonly Regex mapLinkRegex = 
@@ -49,7 +49,7 @@ namespace WebPerformanceCalculator.Controllers
             workingDir = assemblyFileInfo.DirectoryName;
 
             if (System.IO.File.Exists(commit_hash_file))
-                commit_hash = System.IO.File.ReadAllText(commit_hash_file);
+                commitHash = System.IO.File.ReadAllText(commit_hash_file);
         }
 
         [Route("GetCalcModuleUpdateDate")]
@@ -88,7 +88,7 @@ namespace WebPerformanceCalculator.Controllers
             return Json(new
             {
                 date = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime(), 
-                commit = commit_hash
+                commit = commit_hash.Substring(0, 7)
             });
         }
 
