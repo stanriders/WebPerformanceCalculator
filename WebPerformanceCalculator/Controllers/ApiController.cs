@@ -28,9 +28,10 @@ namespace WebPerformanceCalculator.Controllers
         private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
-        private static string workingDir;
 
+        private static string workingDir;
         private static string commitHash = "unknown";
+
         private static MemoryCache playerCache = new MemoryCache("calculated_players");
 
         private static readonly Regex mapLinkRegex = 
@@ -92,6 +93,8 @@ namespace WebPerformanceCalculator.Controllers
             });
         }
 
+        #region /
+
         [HttpPost]
         [Route("AddToQueue")]
         [Consumes("application/x-www-form-urlencoded")]
@@ -136,6 +139,10 @@ namespace WebPerformanceCalculator.Controllers
             return Json(usernameQueue.ToArray());
         }
 
+        #endregion
+
+        #region /user
+
         [Route("GetResults")]
         public async Task<IActionResult> GetResults(string jsonUsername)
         {
@@ -149,6 +156,10 @@ namespace WebPerformanceCalculator.Controllers
 
             return Json(result);
         }
+
+        #endregion
+
+        #region /top
 
         [Route("GetTop")]
         public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "asc", string sort = "localPP")
@@ -238,122 +249,9 @@ namespace WebPerformanceCalculator.Controllers
             }
         }
 
-        [HttpPost]
-        [RequiresKey]
-        [Route("SubmitWorkerResults")]
-        public async Task<IActionResult> SubmitWorkerResults([FromBody]dynamic content, string key, string jsonUsername)
-        {
-            string jsonString = content.ToString();
-            if (!string.IsNullOrEmpty(jsonString))
-            {
-                dynamic json = JsonConvert.DeserializeObject(jsonString);
+        #endregion
 
-                await System.IO.File.WriteAllTextAsync($"players/{jsonUsername}.json", jsonString);
-
-                await using (DatabaseContext db = new DatabaseContext())
-                {
-                    long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
-                    string osuUsername = json.Username.ToString();
-                    double livePP = Convert.ToDouble(json.LivePP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
-                    double localPP = Convert.ToDouble(json.LocalPP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
-                    if (await db.Players.AnyAsync(x => x.ID == userid))
-                    {
-                        var player = await db.Players.SingleAsync(x => x.ID == userid);
-                        player.LivePP = livePP;
-                        player.LocalPP = localPP;
-                        player.PPLoss = localPP - livePP;
-                        player.JsonName = jsonUsername;
-                        player.Name = osuUsername;
-                    }
-                    else
-                    {
-                        await db.Players.AddAsync(new Player()
-                        {
-                            ID = userid,
-                            LivePP = livePP,
-                            LocalPP = localPP,
-                            PPLoss = localPP - livePP,
-                            Name = osuUsername,
-                            JsonName = jsonUsername
-                        });
-                    }
-
-                    var currentScores = await db.Scores.ToArrayAsync();
-                    
-                    JArray maps = json.Beatmaps;
-                    var highscores = maps.Where(x => Convert.ToDouble(x["LocalPP"]) > keep_scores_bigger_than).Select(x => new Score()
-                    {
-                        Map = x["Beatmap"].ToString(), 
-                        Player = osuUsername, 
-                        PP = Convert.ToDouble(x["LocalPP"]), 
-                        CalcTime = DateTime.Now.ToUniversalTime()
-                    }).ToArray();
-
-                    await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());
-
-                    await db.SaveChangesAsync();
-
-                    // one calculation a day
-                    playerCache.Add(jsonUsername, jsonUsername, DateTimeOffset.Now.AddDays(1));
-                }
-            }
-
-            return new OkResult();
-        }
-
-        [RequiresKey]
-        [Route("GetUserForWorker")]
-        public IActionResult GetUserForWorker(string key, long calcTimestamp)
-        {
-            if (calcTimestamp == 0)
-                return StatusCode(422);
-
-            var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
-
-            if (calcTimestamp < localCalcDate)
-            {
-                // send update data
-                return Json(new WorkerDataModel
-                {
-                    NeedsCalcUpdate = true,
-                    Data = calc_update_link
-                });
-            }
-
-            if (usernameQueue.TryDequeue(out var username))
-                return Json(new WorkerDataModel { Data = username });
-
-            return new OkResult();
-        }
-
-        [RequiresKey]
-        [Route("LockQueue")]
-        public IActionResult LockQueue(string key)
-        {
-            queueLocked = true;
-
-            return new OkResult();
-        }
-
-        [RequiresKey]
-        [Route("RecalcTop")]
-        public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0, bool force = false)
-        {
-            await using (DatabaseContext db = new DatabaseContext())
-            {
-                var players = await db.Players.OrderByDescending(x=> x.LocalPP)
-                    .Skip(offset)
-                    .Take(amt)
-                    .Select(x => x.JsonName)
-                    .ToArrayAsync();
-
-                foreach (var player in players)
-                    if (CheckFileCalcDateOutdated($"players/{player}.json") || force)
-                        usernameQueue.Enqueue(player);
-            }
-
-            return new OkResult();
-        }
+        #region /map
 
         [HttpPost]
         [Route("CalculateMap")]
@@ -431,6 +329,10 @@ namespace WebPerformanceCalculator.Controllers
             return StatusCode(400);
         }
 
+        #endregion
+
+        #region /highscores
+
         [Route("GetHighscores")]
         public async Task<IActionResult> GetHighscores()
         {
@@ -439,6 +341,131 @@ namespace WebPerformanceCalculator.Controllers
 
             var calcUpdateDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
             return Json(await db.Scores.Where(x => x.CalcTime > calcUpdateDate).OrderByDescending(x=> x.PP).ToArrayAsync());
+        }
+
+        #endregion
+
+        #region Workers
+
+        [HttpPost]
+        [RequiresKey]
+        [Route("SubmitWorkerResults")]
+        public async Task<IActionResult> SubmitWorkerResults([FromBody]dynamic content, string key, string jsonUsername)
+        {
+            string jsonString = content.ToString();
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                dynamic json = JsonConvert.DeserializeObject(jsonString);
+
+                await System.IO.File.WriteAllTextAsync($"players/{jsonUsername}.json", jsonString);
+
+                await using (DatabaseContext db = new DatabaseContext())
+                {
+                    long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
+                    string osuUsername = json.Username.ToString();
+                    double livePP = Convert.ToDouble(json.LivePP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
+                    double localPP = Convert.ToDouble(json.LocalPP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
+                    if (await db.Players.AnyAsync(x => x.ID == userid))
+                    {
+                        var player = await db.Players.SingleAsync(x => x.ID == userid);
+                        player.LivePP = livePP;
+                        player.LocalPP = localPP;
+                        player.PPLoss = localPP - livePP;
+                        player.JsonName = jsonUsername;
+                        player.Name = osuUsername;
+                    }
+                    else
+                    {
+                        await db.Players.AddAsync(new Player()
+                        {
+                            ID = userid,
+                            LivePP = livePP,
+                            LocalPP = localPP,
+                            PPLoss = localPP - livePP,
+                            Name = osuUsername,
+                            JsonName = jsonUsername
+                        });
+                    }
+
+                    var currentScores = await db.Scores.ToArrayAsync();
+
+                    JArray maps = json.Beatmaps;
+                    var highscores = maps.Where(x => Convert.ToDouble(x["LocalPP"]) > keep_scores_bigger_than).Select(x => new Score()
+                    {
+                        Map = x["Beatmap"].ToString(),
+                        Player = osuUsername,
+                        PP = Convert.ToDouble(x["LocalPP"]),
+                        CalcTime = DateTime.Now.ToUniversalTime()
+                    }).ToArray();
+
+                    await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());
+
+                    await db.SaveChangesAsync();
+
+                    // one calculation a day
+                    playerCache.Add(jsonUsername, jsonUsername, DateTimeOffset.Now.AddDays(1));
+                }
+            }
+
+            return new OkResult();
+        }
+
+        [RequiresKey]
+        [Route("GetUserForWorker")]
+        public IActionResult GetUserForWorker(string key, long calcTimestamp)
+        {
+            if (calcTimestamp == 0)
+                return StatusCode(422);
+
+            var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
+
+            if (calcTimestamp < localCalcDate)
+            {
+                // send update data
+                return Json(new WorkerDataModel
+                {
+                    NeedsCalcUpdate = true,
+                    Data = calc_update_link
+                });
+            }
+
+            if (usernameQueue.TryDequeue(out var username))
+                return Json(new WorkerDataModel { Data = username });
+
+            return new OkResult();
+        }
+
+        #endregion
+
+        #region Commands
+
+        [RequiresKey]
+        [Route("LockQueue")]
+        public IActionResult LockQueue(string key)
+        {
+            queueLocked = true;
+
+            return new OkResult();
+        }
+
+        [RequiresKey]
+        [Route("RecalcTop")]
+        public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0, bool force = false)
+        {
+            await using (DatabaseContext db = new DatabaseContext())
+            {
+                var players = await db.Players.OrderByDescending(x => x.LocalPP)
+                    .Skip(offset)
+                    .Take(amt)
+                    .Select(x => x.JsonName)
+                    .ToArrayAsync();
+
+                foreach (var player in players)
+                    if (CheckFileCalcDateOutdated($"players/{player}.json") || force)
+                        usernameQueue.Enqueue(player);
+            }
+
+            return new OkResult();
         }
 
         [RequiresKey]
@@ -465,6 +492,7 @@ namespace WebPerformanceCalculator.Controllers
             return new OkResult();
         }
 
+        #endregion
 
         #region Helpers
 
@@ -513,6 +541,5 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         #endregion
-
     }
 }
