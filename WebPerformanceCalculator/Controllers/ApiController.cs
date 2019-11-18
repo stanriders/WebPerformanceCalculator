@@ -58,9 +58,9 @@ namespace WebPerformanceCalculator.Controllers
             if (System.IO.File.Exists(commit_hash_file))
             {
                 var fileHash = await System.IO.File.ReadAllTextAsync(commit_hash_file);
-                if (fileHash != commit_hash)
+                if (fileHash != commitHash)
                 {
-                    commit_hash = fileHash;
+                    commitHash = fileHash;
                     lock (playerCache)
                     {
                         // clear cache
@@ -88,7 +88,7 @@ namespace WebPerformanceCalculator.Controllers
             return Json(new
             {
                 date = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime(), 
-                commit = commit_hash.Substring(0, 7)
+                commit = commitHash.Substring(0, 7)
             });
         }
 
