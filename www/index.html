@@ -103,12 +103,13 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.6.7/jquery.timeago.min.js"></script>
     <script>
+        var calcdate;
         $(function () {
             $.ajax({
                 type: 'GET',
                 url: "/api/GetCalcModuleUpdateDate",
                 complete: function (d) {
-                    var calcdate = new Date(d.responseJSON.date);
+                    calcdate = new Date(d.responseJSON.date);
                     $("#calcdate").html(calcdate.toLocaleDateString() + ' ' + calcdate.toLocaleTimeString());
                     $("#calcdateago").attr('datetime', d.responseJSON.date);
                     $("#calcdateago").timeago();
@@ -163,12 +164,21 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
                 e.preventDefault();
             });
 
+        const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+        function dateDiffInDays(a, b) {
+            // Discard the time and time-zone information.
+            const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+            const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+            return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+        }
+
         function convertQueue(json) {
             json.forEach(function (item, i, arr) {
                 json[i] = { name: item };
             });
             $('#maintable').bootstrapTable('load', json);
-            var waitTime = (json.length + 1) * 5;
+            var waitTime = (json.length + 1) * (7 - Math.min(dateDiffInDays(calcdate, new Date()) * 2, 6.0)); // since it gets faster and faster over time we decrease estimation
             if (waitTime > 60)
                 $('#expectedTime').html('Estimated wait time is ~' + (waitTime / 60).toFixed(1) + ' minutes.');
             else
