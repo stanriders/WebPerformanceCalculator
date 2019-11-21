@@ -169,35 +169,28 @@ namespace WebPerformanceCalculator.Controllers
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
                 var totalNotFilteredAmt = await db.Players.CountAsync();
-                var totalFilteredAmt = 0;
 
-                var jsonPlayers = new List<TopPlayerModel>();
+                List<TopPlayerModel> jsonPlayers;
                 if (!string.IsNullOrEmpty(search))
                 {
                     // not supporting different ordering for now
-                    var filteredPlayers = await db.PlayerSearchQuery.FromSqlInterpolated(
+                    jsonPlayers = await db.PlayerSearchQuery.FromSqlInterpolated(
                         $@"SELECT * FROM (
                             SELECT *, ROW_NUMBER() OVER(ORDER BY LocalPP DESC) AS Rank
                             from Players)")
                         .Where(x=> x.Name.ToUpper() == search.ToUpper() || x.JsonName.Contains(search.ToLower()))
                         .Skip(offset)
                         .Take(limit)
-                        .ToArrayAsync();
-
-                    for (int i = 0; i < filteredPlayers.Length; i++)
-                    {
-                        jsonPlayers.Add(new TopPlayerModel
+                        .Select(x => new TopPlayerModel
                         {
-                            ID = filteredPlayers[i].ID,
-                            JsonName = filteredPlayers[i].JsonName,
-                            LivePP = filteredPlayers[i].LivePP,
-                            LocalPP = filteredPlayers[i].LocalPP,
-                            Name = filteredPlayers[i].Name,
-                            PPLoss = Math.Round(filteredPlayers[i].PPLoss, 2),
-                            Place = filteredPlayers[i].Rank
-                        });
-                    }
-                    totalFilteredAmt = filteredPlayers.Length;
+                            ID = x.ID,
+                            JsonName = x.JsonName,
+                            LivePP = x.LivePP,
+                            LocalPP = x.LocalPP,
+                            Name = x.Name,
+                            PPLoss = Math.Round(x.PPLoss, 2),
+                            Place = x.Rank
+                        }).ToListAsync();
                 }
                 else
                 {
@@ -223,6 +216,8 @@ namespace WebPerformanceCalculator.Controllers
                     }
 
                     var players = await query.Skip(offset).Take(limit).ToArrayAsync();
+
+                    jsonPlayers = new List<TopPlayerModel>(players.Length);
                     for (int i = 0; i < players.Length; i++)
                     {
                         jsonPlayers.Add(new TopPlayerModel
@@ -236,14 +231,12 @@ namespace WebPerformanceCalculator.Controllers
                             Place = offset + i + 1
                         });
                     }
-
-                    totalFilteredAmt = players.Length;
                 }
 
                 return Json(new TopModel()
                 {
                     Rows = jsonPlayers.ToArray(),
-                    Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : totalFilteredAmt,
+                    Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : jsonPlayers.Count,
                     TotalNotFiltered = totalNotFilteredAmt
                 });
             }
@@ -440,11 +433,10 @@ namespace WebPerformanceCalculator.Controllers
         #region Commands
 
         [RequiresKey]
-        [Route("LockQueue")]
-        public IActionResult LockQueue(string key)
+        [Route("ToggleQueue")]
+        public IActionResult ToggleQueue(string key)
         {
-            queueLocked = true;
-
+            queueLocked = !queueLocked;
             return new OkResult();
         }
 
