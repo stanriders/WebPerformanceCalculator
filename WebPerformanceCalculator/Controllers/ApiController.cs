@@ -31,6 +31,7 @@ namespace WebPerformanceCalculator.Controllers
 
         private static string workingDir;
         private static string commitHash = "unknown";
+        private static object calcUpdateLock = new object();
 
         private static MemoryCache playerCache = new MemoryCache("calculated_players");
 
@@ -62,7 +63,7 @@ namespace WebPerformanceCalculator.Controllers
                 if (fileHash != commitHash)
                 {
                     commitHash = fileHash;
-                    lock (playerCache)
+                    lock (calcUpdateLock)
                     {
                         // clear cache
                         playerCache.Dispose();
