@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard (all scores) - delta_t PP Rebalance Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
+</head>
+<body>
+    <div class="container">
+        <main role="main" class="pb-1 pt-2">
+            <nav class="navbar navbar-expand-sm navbar-light bg-light">
+                <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/top">Leaderboard</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#">Leaderboard (all scores) <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/highscores">Highscores</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/map">Calculate map PP</a>
+                        </li>
+                    </ul>
+                    <span class="navbar-text">
+                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!"/></a>
+                    </span>
+                </div>
+            </nav>
+            <div class="alert alert-primary mt-2">Profiles here were calculated using the <b>01.12.19</b> <a href="https://data.ppy.sh/">dump</a> of ALL scores.<br>Because a single player can have tens of thousands of scores profiles are only calculated manually.<br>While the pages only show top 1000 scores <b>every score</b> was recalculated.</div>
+            <table class="table table-bordered table-striped table-sm table-hover" data-toggle="bootstrap-table" id="maintable">
+                <thead>
+                    <tr>
+                        <th style="text-align: center; width: 32px;">#</th>
+                        <th style="text-align: center;">Player</th>
+                        <th style="text-align: center;">Live PP</th>
+                        <th style="text-align: center;">Local PP</th>
+                        <th style="text-align: center;">PP Change</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-index="0">
+                        <td style="text-align: center; width: 32px; ">1</td>
+                        <td style="text-align: center; "><a href="/user/whitecat_full">WhiteCat</a></td>
+                        <td style="text-align: center; ">18159.2</td>
+                        <td style="text-align: center; ">16223.7</td>
+                        <td style="text-align: center; ">-1935.5</td>
+                    </tr>
+                    <tr data-index="1"><td style="text-align: center; width: 32px; ">2</td>
+                        <td style="text-align: center; "><a href="/user/vaxei_full">Vaxei</a></td>
+                        <td style="text-align: center; ">17177.0</td>
+                        <td style="text-align: center; ">15665.5</td>
+                        <td style="text-align: center; ">-1511.5</td>
+                    </tr>
+                    <tr data-index="2"><td style="text-align: center; width: 32px; ">3</td>
+                        <td style="text-align: center; "><a href="/user/idke_full">idke</a></td>
+                        <td style="text-align: center; ">16302.8</td>
+                        <td style="text-align: center; ">15007.4</td>
+                        <td style="text-align: center; ">-1295.4</td>
+                    </tr>
+                    <tr data-index="3"><td style="text-align: center; width: 32px; ">4</td>
+                        <td style="text-align: center; "><a href="/user/ryuk_full">RyuK</a></td>
+                        <td style="text-align: center; ">15518.4</td>
+                        <td style="text-align: center; ">14788.7</td>
+                        <td style="text-align: center; ">-729.7</td>
+                    </tr>
+                    <tr data-index="4"><td style="text-align: center; width: 32px; ">5</td>
+                        <td style="text-align: center; "><a href="/user/chocomint_full">chocomint</a></td>
+                        <td style="text-align: center; ">14835.1</td>
+                        <td style="text-align: center; ">14651.4</td>
+                        <td style="text-align: center; ">-183.7</td>
+                    </tr>
+                    <tr data-index="5"><td style="text-align: center; width: 32px; ">6</td>
+                        <td style="text-align: center; "><a href="/user/flyingtuna_full">FlyingTuna</a></td>
+                        <td style="text-align: center; ">16112.0</td>
+                        <td style="text-align: center; ">14533.6</td>
+                        <td style="text-align: center; ">-1578.4</td>
+                    </tr>
+                    <tr data-index="6"><td style="text-align: center; width: 32px; ">7</td>
+                        <td style="text-align: center; "><a href="/user/rafis_full">Rafis</a></td>
+                        <td style="text-align: center; ">14962.2</td>
+                        <td style="text-align: center; ">14282.6</td>
+                        <td style="text-align: center; ">-679.6</td>
+                    </tr>
+                    <tr data-index="7"><td style="text-align: center; width: 32px; ">8</td>
+                        <td style="text-align: center; "><a href="/user/varvalian_full">Varvalian</a></td>
+                        <td style="text-align: center; ">15427.8</td>
+                        <td style="text-align: center; ">14262.9</td>
+                        <td style="text-align: center; ">-1164.9</td>
+                    </tr>
+                    <tr data-index="8"><td style="text-align: center; width: 32px; ">9</td>
+                        <td style="text-align: center; "><a href="/user/karthy_full">Karthy</a></td>
+                        <td style="text-align: center; ">15610.9</td>
+                        <td style="text-align: center; ">14354.2</td>
+                        <td style="text-align: center; ">-1256.7</td>
+                    </tr>
+                    <tr data-index="9"><td style="text-align: center; width: 32px; ">10</td>
+                        <td style="text-align: center; "><a href="/user/gayzmcgee_full">Gayzmcgee</a></td>
+                        <td style="text-align: center; ">14137.0</td>
+                        <td style="text-align: center; ">14081.3</td>
+                        <td style="text-align: center; ">-55.7</td>
+                    </tr>
+                    <tr data-index="10"><td style="text-align: center; width: 32px; ">11</td>
+                        <td style="text-align: center; "><a href="/user/alumetri_full">Alumetri</a></td>
+                        <td style="text-align: center; ">16238.8</td>
+                        <td style="text-align: center; ">14012.5</td>
+                        <td style="text-align: center; ">-2226.3</td>
+                    </tr>
+                    <tr data-index="11"><td style="text-align: center; width: 32px; ">12</td>
+                        <td style="text-align: center; "><a href="/user/micca_full">Micca</a></td>
+                        <td style="text-align: center; ">16190.8 </td>
+                        <td style="text-align: center; ">13969.1</td>
+                        <td style="text-align: center; ">-2221.7</td>
+                    </tr>
+                    <tr data-index="12"><td style="text-align: center; width: 32px; ">13</td>
+                        <td style="text-align: center; "><a href="/user/mathi_full">Mathi</a></td>
+                        <td style="text-align: center; ">15068.2</td>
+                        <td style="text-align: center; ">13931.2</td>
+                        <td style="text-align: center; ">-1137.0</td>
+                    </tr>
+                    <tr data-index="13"><td style="text-align: center; width: 32px; ">14</td>
+                        <td style="text-align: center; "><a href="/user/spare_full">Spare</a></td>
+                        <td style="text-align: center; ">14861.0</td>
+                        <td style="text-align: center; ">13886.2</td>
+                        <td style="text-align: center; ">-974.8</td>
+                    </tr>
+                    <tr data-index="14"><td style="text-align: center; width: 32px; ">15</td>
+                        <td style="text-align: center; "><a href="/user/freddie benson_full">Freddie Benson</a></td>
+                        <td style="text-align: center; ">15919.9</td>
+                        <td style="text-align: center; ">13842.9</td>
+                        <td style="text-align: center; ">-2077.0</td>
+                    </tr>
+                    <tr data-index="15"><td style="text-align: center; width: 32px; ">16</td>
+                        <td style="text-align: center; "><a href="/user/dustice_full">Dustice</a></td>
+                        <td style="text-align: center; ">14841.5</td>
+                        <td style="text-align: center; ">13835.9</td>
+                        <td style="text-align: center; ">-1005.6</td>
+                    </tr>
+                    <tr data-index="16"><td style="text-align: center; width: 32px; ">17</td>
+                        <td style="text-align: center; "><a href="/user/mightydoc_full">MightyDoc</a></td>
+                        <td style="text-align: center; ">13757.9</td>
+                        <td style="text-align: center; ">13787.3</td>
+                        <td style="text-align: center; ">+29.4</td>
+                    </tr>
+                    <tr data-index="17"><td style="text-align: center; width: 32px; ">18</td>
+                        <td style="text-align: center; "><a href="/user/danyl_full">DanyL</a></td>
+                        <td style="text-align: center; ">14735.5</td>
+                        <td style="text-align: center; ">13636.7</td>
+                        <td style="text-align: center; ">-1098.8</td>
+                    </tr>
+                    <tr data-index="18"><td style="text-align: center; width: 32px; ">19</td>
+                        <td style="text-align: center; "><a href="/user/dereban_full">Dereban</a></td>
+                        <td style="text-align: center; ">14596.2</td>
+                        <td style="text-align: center; ">13554.4</td>
+                        <td style="text-align: center; ">-1041.8</td>
+                    </tr>
+                    <tr data-index="19"><td style="text-align: center; width: 32px; ">20</td>
+                        <td style="text-align: center; "><a href="/user/moeyandere_full">MoeYandere</a></td>
+                        <td style="text-align: center; ">13783.9</td>
+                        <td style="text-align: center; ">13537.3</td>
+                        <td style="text-align: center; ">-246.6</td>
+                    </tr>
+                    <tr data-index="20"><td style="text-align: center; width: 32px; ">21</td>
+                        <td style="text-align: center; "><a href="/user/filsdelama_full">filsdelama</a></td>
+                        <td style="text-align: center; ">14436.2</td>
+                        <td style="text-align: center; ">13507.8</td>
+                        <td style="text-align: center; ">-928.4</td>
+                    </tr>
+                    <tr data-index="21"><td style="text-align: center; width: 32px; ">22</td>
+                        <td style="text-align: center; "><a href="/user/azr8_full">azr8</a></td>
+                        <td style="text-align: center; ">14572.4</td>
+                        <td style="text-align: center; ">13375.3</td>
+                        <td style="text-align: center; ">-1197.1</td>
+                    </tr>
+                    <tr data-index="22"><td style="text-align: center; width: 32px; ">23</td>
+                        <td style="text-align: center; "><a href="/user/firebat92_full">firebat92</a></td>
+                        <td style="text-align: center; ">14952.8</td>
+                        <td style="text-align: center; ">13340.8</td>
+                        <td style="text-align: center; ">-1612.0</td>
+                    </tr>
+                    <tr data-index="23"><td style="text-align: center; width: 32px; ">24</td>
+                        <td style="text-align: center; "><a href="/user/fieryrage_full">fieryrage</a></td>
+                        <td style="text-align: center; ">15004.3</td>
+                        <td style="text-align: center; ">13165.1</td>
+                        <td style="text-align: center; ">-1839.2</td>
+                    </tr>
+                    <tr data-index="24"><td style="text-align: center; width: 32px; ">25</td>
+                        <td style="text-align: center; "><a href="/user/okinamo_full">okinamo</a></td>
+                        <td style="text-align: center; ">14080.1</td>
+                        <td style="text-align: center; ">13093.5</td>
+                        <td style="text-align: center; ">-986.6</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; "></td>
+                        <td style="text-align: center; "></td>
+                        <td style="text-align: center; "></td>
+                        <td style="text-align: center; "></td>
+                        <td style="text-align: center; "></td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/toy_full">Toy</a></td>
+                        <td style="text-align: center; ">13119.0</td>
+                        <td style="text-align: center; ">12899.7</td>
+                        <td style="text-align: center; ">-219.3</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/arnold24x24_full">Arnold24x24</a></td>
+                        <td style="text-align: center; ">13264.2</td>
+                        <td style="text-align: center; ">12859.8</td>
+                        <td style="text-align: center; ">-404.4</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/bubbleman_full">Bubbleman</a></td>
+                        <td style="text-align: center; ">13239.9</td>
+                        <td style="text-align: center; ">12833.7</td>
+                        <td style="text-align: center; ">-406.2</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/wubwoofwolf_full">WubWoofWolf</a></td>
+                        <td style="text-align: center; ">12587.5</td>
+                        <td style="text-align: center; ">12817.5</td>
+                        <td style="text-align: center; ">+230.0</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/merami_full">Merami</a></td>
+                        <td style="text-align: center; ">12718.0</td>
+                        <td style="text-align: center; ">12776.9</td>
+                        <td style="text-align: center; ">+58.9</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/informous_full">Informous</a></td>
+                        <td style="text-align: center; ">13277.3</td>
+                        <td style="text-align: center; ">12698.4</td>
+                        <td style="text-align: center; ">-578.9</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/rohulk_full">Rohulk</a></td>
+                        <td style="text-align: center; ">12548.4</td>
+                        <td style="text-align: center; ">12343.6</td>
+                        <td style="text-align: center; ">-204.8</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/fgsky_full">FGSky</a></td>
+                        <td style="text-align: center; ">14793.5</td>
+                        <td style="text-align: center; ">12260.2</td>
+                        <td style="text-align: center; ">-2533.3</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/xilver15_full">Xilver15</a></td>
+                        <td style="text-align: center; ">12626.0</td>
+                        <td style="text-align: center; ">12134.9</td>
+                        <td style="text-align: center; ">-491.1</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/adamqs_full">Adamqs</a></td>
+                        <td style="text-align: center; ">11662.1</td>
+                        <td style="text-align: center; ">12098.7</td>
+                        <td style="text-align: center; ">+436.5</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/unko_full">unko</a></td>
+                        <td style="text-align: center; ">10840.6</td>
+                        <td style="text-align: center; ">11774.5</td>
+                        <td style="text-align: center; ">+933.9</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/epiphany_full">Epiphany</a></td>
+                        <td style="text-align: center; ">11621.2</td>
+                        <td style="text-align: center; ">11667.5</td>
+                        <td style="text-align: center; ">+46.3</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/red_pixel_full">Red_Pixel</a></td>
+                        <td style="text-align: center; ">12499.5</td>
+                        <td style="text-align: center; ">11765.3</td>
+                        <td style="text-align: center; ">-734.2</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/gfmrt_full">GfMRT</a></td>
+                        <td style="text-align: center; ">12050.6</td>
+                        <td style="text-align: center; ">11346.9</td>
+                        <td style="text-align: center; ">-703.7</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/monk gyatso_full">Monk Gyatso</a></td>
+                        <td style="text-align: center; ">12177.5</td>
+                        <td style="text-align: center; ">11475.3</td>
+                        <td style="text-align: center; ">-702.2</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/woey_full">Woey</a></td>
+                        <td style="text-align: center; ">11221.1</td>
+                        <td style="text-align: center; ">11228.3</td>
+                        <td style="text-align: center; ">+7.2</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/matrix_full">Matrix</a></td>
+                        <td style="text-align: center; ">9754.4</td>
+                        <td style="text-align: center; ">11038.0</td>
+                        <td style="text-align: center; ">+1283.6</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/-gn_full">-GN</a></td>
+                        <td style="text-align: center; ">9878.0</td>
+                        <td style="text-align: center; ">10221.4</td>
+                        <td style="text-align: center; ">+343.3</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/rrtyui_full">rrtyui</a></td>
+                        <td style="text-align: center; ">9531.0</td>
+                        <td style="text-align: center; ">10052.4</td>
+                        <td style="text-align: center; ">+521.4</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/mismagius_full">Mismagius</a></td>
+                        <td style="text-align: center; ">9697.0</td>
+                        <td style="text-align: center; ">9590.3</td>
+                        <td style="text-align: center; ">-106.6</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/ajt_full">AJT</a></td>
+                        <td style="text-align: center; ">9603.7</td>
+                        <td style="text-align: center; ">9333.1</td>
+                        <td style="text-align: center; ">-270.6</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/digitalhypno_full">DigitalHypno</a></td>
+                        <td style="text-align: center; ">8804.2</td>
+                        <td style="text-align: center; ">9225.2</td>
+                        <td style="text-align: center; ">+421.0</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/ekoro_full">Ekoro</a></td>
+                        <td style="text-align: center; ">8961.8</td>
+                        <td style="text-align: center; ">8897.8</td>
+                        <td style="text-align: center; ">-64.0</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/ming3012_full">MinG3012</a></td>
+                        <td style="text-align: center; ">7676.6</td>
+                        <td style="text-align: center; ">6744.3</td>
+                        <td style="text-align: center; ">-932.2</td>
+                    </tr>
+                    <tr><td style="text-align: center; width: 32px; ">-</td>
+                        <td style="text-align: center; "><a href="/user/stanr_full">StanR</a></td>
+                        <td style="text-align: center; ">7015.6</td>
+                        <td style="text-align: center; ">6670.6</td>
+                        <td style="text-align: center; ">-344.9</td>
+                    </tr>
+                    </tbody>
+            </table>
+        </main>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47115002-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-47115002-3');
+    </script>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript" >
+        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+        ym(56214328, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true
+        });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+</body>
+</html>

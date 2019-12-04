@@ -63,7 +63,7 @@
 
                     $('#livePP').html(json.LivePP);
                     $('#localPP').html(json.LocalPP);
-                    $('.username').html(json.Username);
+                    $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.Username + "\">" + json.Username + "</a>");
                     $('title').html(json.Username + ' - delta_t PP Rebalance Calculator');
 
                     json.Beatmaps.forEach(function (item, i, arr) {
