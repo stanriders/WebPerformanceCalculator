@@ -80,10 +80,24 @@
             return index+1;
         }
         function beatmapFormatter(value, row, index) {
-            var split = value.split(' - ');
+            var beatmap = value;
+            var modsAndAccuracyIndex = beatmap.lastIndexOf('] ') + 1;
+            var modsAndAccuracySplit = beatmap.substring(modsAndAccuracyIndex + 1).split(' (');
+
+            var mods = modsAndAccuracySplit[0].replace('+', '').split(', ').sort().map(function(item) {
+                return '<span class="badge badge-light">' + item + '</span> '
+            }).join(" ");
+
+            var accuracy = '';
+            if (modsAndAccuracySplit.length > 1)
+                accuracy = '(' + modsAndAccuracySplit[1];
+
+            beatmap = beatmap.substring(0, modsAndAccuracyIndex);
+            var split = beatmap.split(' - ');
             var beatmapId = split[0];
             split.splice(0, 1);
-            return '<a href=\"https://osu.ppy.sh/b/'+ beatmapId +'\">' + split.join(' - ') + '</a>';
+
+            return '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + accuracy;
         }
     </script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
