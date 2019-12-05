@@ -2,19 +2,19 @@
 https://newpp.stanr.info/
 
 ## API (json)
-[GET] `/GetCalcModuleUpdateDate` - returns calculation module update date and commit hash
-[GET] `/GetTop?offset=0&limit=50&search={player name}&order=desc&sort=localPP` - returns leaderboard page  
-[GET] `/GetResults?jsonUsername={jsonName from GetTop}` - returns user data  
-[GET] `/GetQueue` - returns current queue  
-[POST] `/AddToQueue?jsonUsername={player name or user ID}` - adds player to queue and returns current queue  
+[GET] `/api/GetCalcModuleUpdateDate` - returns calculation module update date and commit hash  
+[GET] `/api/GetTop?offset=0&limit=50&search={player name}&order={desc/asc}&sort=localPP` - returns leaderboard page  
+[GET] `/api/GetResults?jsonUsername={jsonName from GetTop}` - returns user data  
+[GET] `/api/GetQueue` - returns current queue  
+[POST] `/api/AddToQueue?jsonUsername={player name or user ID}` - urlencoded - adds player to queue and returns current queue  
   
-[GET] `/CalculateMap?map={map link or id}&mods=HD&mods=HR&mods=...` - calculates map pp values for 90-100 acc values  
-[GET] `/GetProbabilityChart={map id}` - gets miss probability data for calculated map  
+[POST] `/api/CalculateMap` - json `{ Map = "{mapId}", Mods = [{mod abbreviations}] }` - calculates map pp values for 90-100 acc values  
+[GET] `/api/GetProbabilityChart={map id}` - gets miss probability data for calculated map  
   
-[GET] `/GetHighscores` - returns sorted topscores  
+[GET] `/api/GetHighscores` - returns sorted topscores  
 
 --  
 
-Requires [osu-tools](https://github.com/stanriders/osu-tools) built in the same folder as worker AND WebPerformanceCalculator.
-
-.NET Core 3.0
+Requires [osu-tools](https://github.com/stanriders/osu-tools) built in the same folder as workers for pp calculation and WebPerformanceCalculator for individual map calculation.  
+  
+ASP.NET Core 3.0
