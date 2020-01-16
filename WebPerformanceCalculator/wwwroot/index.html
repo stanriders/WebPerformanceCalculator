@@ -116,6 +116,7 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
                     $("#calcdateago").attr('datetime', d.responseJSON.date);
                     $("#calcdateago").timeago();
                     $("#commit").html(d.responseJSON.commit);
+                    updateQueue();
                 }
             });
 
@@ -131,7 +132,6 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
                     ]
                 ]
             });
-            updateQueue();
         });
 
         function updateQueue() {
