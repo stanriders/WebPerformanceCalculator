@@ -41,7 +41,7 @@
 
             <div class="pt-2 pb-2">
                 <h1 class="username">Loading...</h1>
-                <div><b>Updated on:</b> <span id="updatedate"></span></div>
+                <div><b>Updated on:</b> <span id="updatedate"></span> <span id="outdated"></span></div>
                 <div><b>Live PP:</b><div id="livePP"></div></div>
                 <div><b>Local PP:</b><div id="localPP"></div></div>
                 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
@@ -53,8 +53,9 @@
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
         <script>
+        var user = window.location.href.slice(window.location.href.lastIndexOf('/') + 1).replace(/%20/g, ' ').replace('#', '');
+        var isFullProfile = (user.lastIndexOf('_full') != -1);
         $(function () {
-            var user = window.location.href.slice(window.location.href.lastIndexOf('/') + 1);
             $.ajax({
                 type: 'GET',
                 url: "/api/GetResults?jsonUsername=" + user,
@@ -72,7 +73,13 @@
                         complete: function (d) {
                             var updateDate = new Date(json.UpdateDate);
                             var calcDate = new Date(d.responseJSON.date);
-                            $('#updatedate').html(updateDate.toLocaleDateString() + ' ' + updateDate.toLocaleTimeString() + (updateDate < calcDate ? ' (outdated!)' : ''));
+                            $('#updatedate').html(updateDate.toLocaleDateString() + ' ' + updateDate.toLocaleTimeString());
+                            if (updateDate < calcDate){
+                                if (isFullProfile)
+                                    $('#outdated').html('(outdated!)');
+                                else
+                                    $('#outdated').html('(outdated! <a href="#" onClick="updateProfile();">add to queue</a>)');
+                            }
                         }
                     });
 
@@ -145,6 +152,20 @@
         function localPPFormatter(value, row, index) {
             var weighted = Math.pow(0.95, index) * value;
             return value + ' <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span>';
+        }
+        function updateProfile() {
+            $('#outdated').html('(...)');
+                $.ajax({
+                    type: 'POST',
+                    url: "/api/AddToQueue",
+                    data: { jsonUsername: user },
+                    error: function (d) {
+                        $('#outdated').html('(failed to add to queue, <a href="#" onClick="updateProfile();">try again</a>)');
+                    },
+                    success: function (d) {
+                        $('#outdated').html('(added to queue!)');
+                    }
+                });
         }
 
     </script>
