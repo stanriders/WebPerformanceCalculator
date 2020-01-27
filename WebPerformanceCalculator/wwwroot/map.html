@@ -246,7 +246,11 @@
                     $.ajax({
                         type: 'GET',
                         url: "/api/GetProbabilityChart",
-                        data: { mapId: json.Id },
+                        data: {
+                            mapId: json.Id,
+                            mods: json.Mods.sort().map(function(item) {return item.acronym}).join('')
+                        },
+                        /*data: { mapId: json.Id },*/
                         success: function(d) {
                             var json = JSON.parse(d);
 

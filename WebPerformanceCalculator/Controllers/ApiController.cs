@@ -63,7 +63,7 @@ namespace WebPerformanceCalculator.Controllers
                 if (fileHash != commitHash)
                 {
                     commitHash = fileHash;
-                    lock (calcUpdateLock)
+                    /*lock (calcUpdateLock)
                     {
                         // clear cache
                         playerCache.Dispose();
@@ -82,10 +82,9 @@ namespace WebPerformanceCalculator.Controllers
 
                         foreach (var player in players)
                             usernameQueue.Enqueue(player);
-                    }
+                    }*/
                 }
             }
-                
 
             return Json(new
             {
@@ -183,7 +182,7 @@ namespace WebPerformanceCalculator.Controllers
                         $@"SELECT * FROM (
                             SELECT *, ROW_NUMBER() OVER(ORDER BY LocalPP DESC) AS Rank
                             from Players)")
-                        .Where(x=> x.Name.ToUpper() == search.ToUpper() || x.JsonName.Contains(search.ToLower()))
+                        .Where(x=> x.Name.ToUpper().Contains(search.ToUpper()) || x.JsonName.Contains(search.ToLower()))
                         .Skip(offset)
                         .Take(limit)
                         .Select(x => new TopPlayerModel
@@ -326,9 +325,9 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [Route("GetProbabilityChart")]
-        public async Task<IActionResult> GetProbabilityChart(int mapId)
+        public async Task<IActionResult> GetProbabilityChart(string mapId, string mods)
         {
-            var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}.txt");
+            var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}.txt");
             if (graph.Length > 0)
             {
                 var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
@@ -495,9 +494,20 @@ namespace WebPerformanceCalculator.Controllers
         [Route("ClearHighscores")]
         public async Task<IActionResult> ClearHighscores(string key)
         {
+            playerCache.Dispose();
+            playerCache = new MemoryCache("calculated_players");
+
             using var db = new DatabaseContext();
             db.Scores.RemoveRange(await db.Scores.Select(x => x).ToArrayAsync());
             await db.SaveChangesAsync();
+
+            var players = db.Players.OrderByDescending(x => x.LocalPP)
+                .Take(100)
+                .Select(x => x.JsonName)
+                .ToArray();
+
+            foreach (var player in players)
+                usernameQueue.Enqueue(player);
 
             return new OkResult();
         }
