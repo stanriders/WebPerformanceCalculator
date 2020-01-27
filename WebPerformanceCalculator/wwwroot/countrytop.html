@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Highscores - delta_t PP Rebalance Calculator</title>
+    <title>Country Leaderboards - delta_t PP Rebalance Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <main role="main" class="pb-1 pt-2">
-            <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
+            <nav class="navbar navbar-expand-sm navbar-light bg-light">
                 <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -19,11 +19,11 @@
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mr-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/top">Leaderboard</a>
-                        </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">Highscores <span class="sr-only">(current)</span></a>
+                            <a class="nav-link" href="/countrytop">Country Leaderboard <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/highscores">Highscores</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/map">Calculate map PP</a>
@@ -34,7 +34,12 @@
                     </span>
                 </div>
             </nav>
-
+            <div class="card">
+                <div class="card-body">
+                    <h3 id="countryName"></h1>
+                    <div class="row" id="countries"></div>
+                </div>
+            </div>
             <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
         </main>
     </div>
@@ -44,64 +49,76 @@
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
         <script>
         $(function () {
+
+            var country = window.location.href.slice(window.location.href.lastIndexOf('/') + 1).replace('#', '');
+            if (!!country && country != "countrytop") {
+                $('#countryName').html('<img style="width: 32px;padding-top: 5px; padding-bottom:5px;" src="https://osu.ppy.sh/images/flags/'+country+'.png"/>');
+                $('title').html(country + ' Leaderboard - delta_t PP Rebalance Calculator');
+                getCountry(country);
+            } else {
+                $.ajax({
+                    type: 'GET',
+                    url: "/api/GetCountries",
+                    error: function(d) {
+                        $('#countryName').html(d.responseJSON.err);
+                    },
+
+                    success: function(d) {
+                        for (var i = 0; i < d.length; i++) {
+                            $('#countries').append('<div class="col"><a href="/countrytop/'+d[i]+'"><img style="width: 48px;padding-top: 15px; padding-bottom:15px;" src="https://osu.ppy.sh/images/flags/'+d[i]+'.png"/></a></div>');
+                        }
+                    },
+
+                });
+            }
+        });
+        function getCountry(country){
             $('#maintable').bootstrapTable({
-                pageSize: 100,
-                pageList: [100, 150, 200, 500],
+                pageSize: 50,
+                pageList: [50, 100, 150, 200, 500],
                 pagination: true,
-                url: "/api/GetHighscores",
+                sidePagination: 'server',
+                /*search: true,
+                showSearchButton: true,
+                searchOnEnterKey: true,*/
+                url: "/api/GetTop",
                 sortOrder: 'desc',
+                queryParams: function(p){ p.country = country; return p;},
                 columns: [
                     [
                         {
-                            formatter: placeFormatter,
+                            field: 'place',
                             title: '#',
                             width: 32,
                             align: 'center'
                         }, {
                             title: 'Player',
-                            field: 'player',
+                            field: 'name',
+                            sortable: true,
                             align: 'center',
-                            formatter: playerFormatter,
+                            formatter: formatPlayerName
                         }, {
-                            title: 'Beatmap',
-                            field: 'map',
-                            align: 'center',
-                            formatter: beatmapFormatter,
+                            title: 'Live PP',
+                            field: 'livePP',
+                            sortable: true,
+                            align: 'center'
                         }, {
-                            title: 'PP',
-                            field: 'pp',
+                            title: 'Local PP',
+                            field: 'localPP',
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'PP Change',
+                            field: 'ppLoss',
                             sortable: true,
                             align: 'center'
                         }
                     ]
                 ]
             });
-        });
-        function placeFormatter(value, row, index) {
-            return index+1;
         }
-        function beatmapFormatter(value, row, index) {
-            var beatmap = value;
-            var modsAndAccuracyIndex = beatmap.lastIndexOf('] ') + 1;
-            var modsAndAccuracySplit = beatmap.substring(modsAndAccuracyIndex + 1).split(' (');
-
-            var mods = modsAndAccuracySplit[0].replace('+', '').split(', ').sort().map(function(item) {
-                return '<span class="badge badge-light">' + item + '</span> '
-            }).join(" ");
-
-            var accuracy = '';
-            if (modsAndAccuracySplit.length > 1)
-                accuracy = '(' + modsAndAccuracySplit[1];
-
-            beatmap = beatmap.substring(0, modsAndAccuracyIndex);
-            var split = beatmap.split(' - ');
-            var beatmapId = split[0];
-            split.splice(0, 1);
-
-            return '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + accuracy;
-        }
-        function playerFormatter(value, row, index) {
-            return '<a href=\"https://newpp.stanr.info/user/' + row.jsonName + '\">' + value + '</a>';
+        function formatPlayerName(value, row, index) {
+            return "<a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
         }
     </script>
     <!-- Global site tag (gtag.js) - Google Analytics -->

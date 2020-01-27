@@ -6,7 +6,11 @@ namespace WebPerformanceCalculator.DB
     {
         public double PP { get; set; }
 
+        public double? LivePP { get; set; }
+
         public string Player { get; set; }
+
+        public string JsonName { get; set; }
 
         public string Map { get; set; }
 

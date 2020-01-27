@@ -10,5 +10,6 @@ namespace WebPerformanceCalculator.DB
         public double LivePP { get; set; }
         public double LocalPP { get; set; }
         public double PPLoss { get; set; }
+        public string Country { get; set; }
     }
 }

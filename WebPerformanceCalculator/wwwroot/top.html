@@ -88,7 +88,11 @@
             });
 
             function formatPlayerName(value, row, index) {
-                return "<a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
+                if (!!row.country){
+                    return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/"+row.country+".png\"/></a><a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
+                } else {
+                    return "<a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
+                }
             }
         });
     </script>

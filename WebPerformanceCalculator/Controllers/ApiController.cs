@@ -31,7 +31,7 @@ namespace WebPerformanceCalculator.Controllers
 
         private static string workingDir;
         private static string commitHash = "unknown";
-        private static object calcUpdateLock = new object();
+        private static readonly object calcUpdateLock = new object();
 
         private static MemoryCache playerCache = new MemoryCache("calculated_players");
 
@@ -160,16 +160,20 @@ namespace WebPerformanceCalculator.Controllers
 
         #endregion
 
-        #region /top
+        #region /top, /countrytop
 
         [Route("GetTop")]
-        public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "asc", string sort = "localPP")
+        public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "desc", string sort = "localPP", string country = null)
         {
             await using (DatabaseContext db = new DatabaseContext())
             {
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
-                var totalNotFilteredAmt = await db.Players.CountAsync();
+                var totalNotFilteredAmt = 0;
+                if (string.IsNullOrEmpty(country))
+                    totalNotFilteredAmt = await db.Players.CountAsync();
+                else
+                    totalNotFilteredAmt = await db.Players.Where(x=>x.Country == country.ToUpperInvariant()).CountAsync();
 
                 List<TopPlayerModel> jsonPlayers;
                 if (!string.IsNullOrEmpty(search))
@@ -190,12 +194,16 @@ namespace WebPerformanceCalculator.Controllers
                             LocalPP = x.LocalPP,
                             Name = x.Name,
                             PPLoss = Math.Round(x.PPLoss, 2),
-                            Place = x.Rank
+                            Place = x.Rank,
+                            Country = x.Country
                         }).ToListAsync();
                 }
                 else
                 {
                     var query = db.Players.AsQueryable();
+
+                    if (!string.IsNullOrEmpty(country))
+                        query = query.Where(x => x.Country == country.ToUpperInvariant());
 
                     if (!string.IsNullOrEmpty(order))
                     {
@@ -229,7 +237,8 @@ namespace WebPerformanceCalculator.Controllers
                             LocalPP = players[i].LocalPP,
                             Name = players[i].Name,
                             PPLoss = Math.Round(players[i].PPLoss, 2),
-                            Place = offset + i + 1
+                            Place = offset + i + 1,
+                            Country = players[i].Country
                         });
                     }
                 }
@@ -240,6 +249,22 @@ namespace WebPerformanceCalculator.Controllers
                     Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : jsonPlayers.Count,
                     TotalNotFiltered = totalNotFilteredAmt
                 });
+            }
+        }
+
+        [Route("GetCountries")]
+        public async Task<IActionResult> GetCountries()
+        {
+            await using (DatabaseContext db = new DatabaseContext())
+            {
+                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+                var countries = await db.Players.Where(x => !string.IsNullOrEmpty(x.Country))
+                    .Select(x => x.Country)
+                    .Distinct()
+                    .ToArrayAsync();
+
+                return Json(countries);
             }
         }
 
@@ -357,6 +382,7 @@ namespace WebPerformanceCalculator.Controllers
                 {
                     long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
                     string osuUsername = json.Username.ToString();
+                    string country = json.UserCountry.ToString();
                     double livePP = Convert.ToDouble(json.LivePP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
                     double localPP = Convert.ToDouble(json.LocalPP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
                     if (await db.Players.AnyAsync(x => x.ID == userid))
@@ -367,6 +393,7 @@ namespace WebPerformanceCalculator.Controllers
                         player.PPLoss = localPP - livePP;
                         player.JsonName = jsonUsername;
                         player.Name = osuUsername;
+                        player.Country = country;
                     }
                     else
                     {
@@ -377,7 +404,8 @@ namespace WebPerformanceCalculator.Controllers
                             LocalPP = localPP,
                             PPLoss = localPP - livePP,
                             Name = osuUsername,
-                            JsonName = jsonUsername
+                            JsonName = jsonUsername,
+                            Country = country
                         });
                     }
 
@@ -389,7 +417,9 @@ namespace WebPerformanceCalculator.Controllers
                         Map = x["Beatmap"].ToString(),
                         Player = osuUsername,
                         PP = Convert.ToDouble(x["LocalPP"]),
-                        CalcTime = DateTime.Now.ToUniversalTime()
+                        CalcTime = DateTime.Now.ToUniversalTime(),
+                        LivePP = Convert.ToDouble(x["LivePP"]),
+                        JsonName = jsonUsername
                     }).ToArray();
 
                     await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());
