@@ -13,6 +13,7 @@ https://newpp.stanr.info/
   
 [GET] `/api/GetHighscores` - returns sorted topscores  
 [GET] `/api/GetCountries` - get all known countries in the player database  
+
 --  
 
 Requires [osu-tools](https://github.com/stanriders/osu-tools) built in the same folder as workers for pp calculation and WebPerformanceCalculator for individual map calculation.  
