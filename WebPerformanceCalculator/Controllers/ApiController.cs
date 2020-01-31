@@ -60,7 +60,7 @@ namespace WebPerformanceCalculator.Controllers
             if (System.IO.File.Exists(commit_hash_file))
             {
                 var fileHash = await System.IO.File.ReadAllTextAsync(commit_hash_file);
-                if (fileHash != commitHash)
+                //if (fileHash != commitHash)
                 {
                     commitHash = fileHash;
                     /*lock (calcUpdateLock)
@@ -88,8 +88,8 @@ namespace WebPerformanceCalculator.Controllers
 
             return Json(new
             {
-                date = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime(), 
-                commit = commitHash.Substring(0, 7)
+                date = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime(),
+                commit = commitHash
             });
         }
 
