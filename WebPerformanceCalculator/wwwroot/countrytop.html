@@ -64,6 +64,7 @@
                     },
 
                     success: function(d) {
+                        d = d.sort();
                         for (var i = 0; i < d.length; i++) {
                             $('#countries').append('<div class="col"><a href="/countrytop/'+d[i]+'"><img style="width: 48px;padding-top: 15px; padding-bottom:15px;" src="https://osu.ppy.sh/images/flags/'+d[i]+'.png"/></a></div>');
                         }
