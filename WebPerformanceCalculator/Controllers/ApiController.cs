@@ -113,6 +113,9 @@ namespace WebPerformanceCalculator.Controllers
             if (jsonUsername.Contains('-'))
                 return StatusCode(400, new {err = "Please use user ID instead"});
 
+            if (jsonUsername.Contains("_full"))
+                return StatusCode(400, new { err = "Incorrect username" });
+
             jsonUsername = jsonUsername.Trim();
 
             var regexp = new Regex(@"^[A-Za-z0-9-\[\]_ ]+$");
