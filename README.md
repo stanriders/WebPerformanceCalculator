@@ -2,11 +2,11 @@
 https://newpp.stanr.info/
 
 ## API
-[GET] `/api/GetCalcModuleUpdateDate`  
+**[GET] `/api/GetCalcModuleUpdateDate`**  
 Get calculation module update date and commit hash / name  
 
 ---
-[GET] `/api/GetTop?offset=0&limit=50&search=chocomint&order=desc&sort=localPP&country=KR`  
+**[GET] `/api/GetTop?offset=0&limit=50&search=chocomint&order=desc&sort=localPP&country=KR`**  
 Get leaderboard page  
 Params:
 * `search` - Player name or jsonname, doesn't work with `country`
@@ -17,41 +17,41 @@ Params:
 * `limit` - How many rows to return  
 
 ---
-[GET] `/api/GetResults?jsonUsername=cookiezi`  
+**[GET] `/api/GetResults?jsonUsername=cookiezi`**  
 Get user profile  
 Params:
 * `jsonUsername` - `jsonName` to use, can be obtained from GetTop  
 
 ---
-[GET] `/api/GetQueue`  
+**[GET] `/api/GetQueue`**  
 Get current queue  
 
 ---
-[POST] `/api/AddToQueue?jsonUsername=nathan on osu`  
+**[POST] `/api/AddToQueue?jsonUsername=nathan on osu`**  
 Add player to queue and returns current queue  
 Params (urlencoded):
 * `jsonUsername` = Player nickname or ID
 
 ---
-[POST] `/api/CalculateMap`  
+**[POST] `/api/CalculateMap`**  
 Calculate map pp values for 90-100 acc values  
 Params (json):
 * `Map` - Beatmap ID, can't be BeatmapSet ID
 * `Mods` - Array of mod abbreviations
 
 ---
-[GET] `/api/GetProbabilityChart?mapId=129891&mods=HDDT`  
+**[GET] `/api/GetProbabilityChart?mapId=129891&mods=HDDT`**  
 Get miss probability data for calculated map  
 Params:
 * `mapId` - Beatmap ID
 * `mods` - Joined string of mod abbreviations
 
 ---
-[GET] `/api/GetHighscores`  
+**[GET] `/api/GetHighscores`**  
 Get current top scores sorted by local PP
 
 ---
-[GET] `/api/GetCountries`  
+**[GET] `/api/GetCountries`**  
 Get all known countries in the player database  
 
 ---
