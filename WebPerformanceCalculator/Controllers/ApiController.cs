@@ -376,13 +376,13 @@ namespace WebPerformanceCalculator.Controllers
             string jsonString = content.ToString();
             if (!string.IsNullOrEmpty(jsonString))
             {
-                dynamic json = JsonConvert.DeserializeObject(jsonString);
+                dynamic json = JsonConvert.DeserializeObject(jsonString); 
+                long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
 
-                await System.IO.File.WriteAllTextAsync($"players/{jsonUsername}.json", jsonString);
+                await System.IO.File.WriteAllTextAsync($"players/{userid}.json", jsonString);
 
                 await using (DatabaseContext db = new DatabaseContext())
                 {
-                    long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
                     string osuUsername = json.Username.ToString();
                     string country = json.UserCountry.ToString();
                     double livePP = Convert.ToDouble(json.LivePP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
@@ -393,7 +393,7 @@ namespace WebPerformanceCalculator.Controllers
                         player.LivePP = livePP;
                         player.LocalPP = localPP;
                         player.PPLoss = localPP - livePP;
-                        player.JsonName = jsonUsername;
+                        player.JsonName = userid.ToString(); // TODO: remove;
                         player.Name = osuUsername;
                         player.Country = country;
                     }
@@ -406,7 +406,7 @@ namespace WebPerformanceCalculator.Controllers
                             LocalPP = localPP,
                             PPLoss = localPP - livePP,
                             Name = osuUsername,
-                            JsonName = jsonUsername,
+                            JsonName = userid.ToString(), // TODO: remove,
                             Country = country
                         });
                     }
@@ -421,7 +421,7 @@ namespace WebPerformanceCalculator.Controllers
                         PP = Convert.ToDouble(x["LocalPP"]),
                         CalcTime = DateTime.Now.ToUniversalTime(),
                         LivePP = Convert.ToDouble(x["LivePP"]),
-                        JsonName = jsonUsername
+                        JsonName = userid.ToString() // TODO: remove
                     }).ToArray();
 
                     await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());

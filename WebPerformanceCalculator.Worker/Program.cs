@@ -126,7 +126,10 @@ namespace WebPerformanceCalculator.Worker
                 process.WaitForExit(180000); // 3 mins
 
                 if (File.Exists($"players/{jsonUsername}.json"))
+                {
                     result = File.ReadAllText($"players/{jsonUsername}.json");
+                    File.Delete($"players/{jsonUsername}.json");
+                }
             }
             catch (Exception e)
             {
