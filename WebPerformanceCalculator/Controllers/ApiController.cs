@@ -60,30 +60,7 @@ namespace WebPerformanceCalculator.Controllers
             if (System.IO.File.Exists(commit_hash_file))
             {
                 var fileHash = await System.IO.File.ReadAllTextAsync(commit_hash_file);
-                //if (fileHash != commitHash)
-                {
-                    commitHash = fileHash;
-                    /*lock (calcUpdateLock)
-                    {
-                        // clear cache
-                        playerCache.Dispose();
-                        playerCache = new MemoryCache("calculated_players");
-
-                        // clear highscores
-                        using var db = new DatabaseContext();
-                        db.Scores.RemoveRange(db.Scores.Select(x => x).ToArray());
-                        db.SaveChanges();
-
-                        // recalc top 100
-                        var players = db.Players.OrderByDescending(x => x.LocalPP)
-                            .Take(100)
-                            .Select(x => x.JsonName)
-                            .ToArray();
-
-                        foreach (var player in players)
-                            usernameQueue.Enqueue(player);
-                    }*/
-                }
+                commitHash = fileHash;
             }
 
             return Json(new
@@ -147,10 +124,11 @@ namespace WebPerformanceCalculator.Controllers
         #region /user
 
         [Route("GetResults")]
+        [Produces("application/json")]
         public async Task<IActionResult> GetResults(string player)
         {
             if (string.IsNullOrEmpty(player))
-                return Json(new {Username = "Incorrect username"});
+                return Json(new { Username = "Incorrect username" });
 
             if (System.IO.File.Exists($"players/{player}.json"))
             {
@@ -287,6 +265,7 @@ namespace WebPerformanceCalculator.Controllers
 
         [HttpPost]
         [Route("CalculateMap")]
+        [Produces("application/json")]
         public async Task<IActionResult> CalculateMap(CalculateMapModel model)
         {
             if (string.IsNullOrEmpty(model.Map))
@@ -323,7 +302,7 @@ namespace WebPerformanceCalculator.Controllers
                     });
 
                     if (System.IO.File.Exists($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
-                        return Json(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
+                        return Ok(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
                 }
                 catch (Exception e)
                 {
@@ -332,7 +311,7 @@ namespace WebPerformanceCalculator.Controllers
             }
             else
             {
-                return Json(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
+                return Ok(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
             }
 
             return StatusCode(500, new { err = "Failed to calculate!" });
@@ -355,7 +334,7 @@ namespace WebPerformanceCalculator.Controllers
                     });
                 }
 
-                return Json(JsonConvert.SerializeObject(jsonGraph));
+                return Json(jsonGraph);
             }
 
             return StatusCode(400);
