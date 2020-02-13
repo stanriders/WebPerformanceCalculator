@@ -17,10 +17,10 @@ Params:
 * `limit` - How many rows to return  
 
 ---
-**[GET] `/api/GetResults?jsonUsername=cookiezi`**  
+**[GET] `/api/GetResults?player=cookiezi`**  
 Get user profile  
 Params:
-* `jsonUsername` - `jsonName` to use, can be obtained from GetTop  
+* `player` - Player user id or nickname 
 
 ---
 **[GET] `/api/GetQueue`**  
@@ -30,7 +30,7 @@ Get current queue
 **[POST] `/api/AddToQueue?jsonUsername=nathan on osu`**  
 Add player to queue and returns current queue  
 Params (urlencoded):
-* `jsonUsername` = Player nickname or ID
+* `jsonUsername` = Player nickname or ID  
 
 ---
 **[POST] `/api/CalculateMap`**  

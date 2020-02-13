@@ -58,20 +58,20 @@
         $(function () {
             $.ajax({
                 type: 'GET',
-                url: "/api/GetResults?jsonUsername=" + user,
+                url: "/api/GetResults?player=" + user,
                 complete: function (d) {
-                    var json = JSON.parse(d.responseJSON);
+                    var json = d.responseJSON;
 
-                    $('#livePP').html(json.LivePP);
-                    $('#localPP').html(json.LocalPP);
-                    $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.Username + "\">" + json.Username + "</a>");
-                    $('title').html(json.Username + ' - delta_t PP Rebalance Calculator');
+                    $('#livePP').html(json.livePP);
+                    $('#localPP').html(json.localPP);
+                    $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.username + "\">" + json.username + "</a>");
+                    $('title').html(json.username + ' - delta_t PP Rebalance Calculator');
 
                     $.ajax({
                         type: 'GET',
                         url: "/api/GetCalcModuleUpdateDate",
                         complete: function (d) {
-                            var updateDate = new Date(json.UpdateDate);
+                            var updateDate = new Date(json.updateDate);
                             var calcDate = new Date(d.responseJSON.date);
                             $('#updatedate').html(updateDate.toLocaleDateString() + ' ' + updateDate.toLocaleTimeString());
                             if (updateDate < calcDate){
@@ -83,7 +83,7 @@
                         }
                     });
 
-                    $('#maintable').bootstrapTable('load', json.Beatmaps);
+                    $('#maintable').bootstrapTable('load', json.beatmaps);
                 }
             });
 

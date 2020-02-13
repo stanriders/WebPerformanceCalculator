@@ -147,17 +147,28 @@ namespace WebPerformanceCalculator.Controllers
         #region /user
 
         [Route("GetResults")]
-        public async Task<IActionResult> GetResults(string jsonUsername)
+        public async Task<IActionResult> GetResults(string player)
         {
-            var result = string.Empty;
-            if (System.IO.File.Exists($"players/{jsonUsername}.json"))
-            {
-                dynamic json = JsonConvert.DeserializeObject(await System.IO.File.ReadAllTextAsync($"players/{jsonUsername}.json"));
-                json.UpdateDate = System.IO.File.GetLastWriteTime($"players/{jsonUsername}.json").ToUniversalTime();
-                result = JsonConvert.SerializeObject(json);
-            }
+            if (string.IsNullOrEmpty(player))
+                return Json(new {Username = "Incorrect username"});
 
-            return Json(result);
+            if (System.IO.File.Exists($"players/{player}.json"))
+            {
+                dynamic json = JsonConvert.DeserializeObject(await System.IO.File.ReadAllTextAsync($"players/{player}.json"));
+                json.UpdateDate = System.IO.File.GetLastWriteTime($"players/{player}.json").ToUniversalTime();
+                return Ok(JsonConvert.SerializeObject(json));
+            }
+            else
+            {
+                using (var dbContext = new DatabaseContext())
+                {
+                    var dbPlayer = await dbContext.Players.FirstOrDefaultAsync(x => x.Name.ToUpper() == player.ToUpper());
+                    if (dbPlayer != null)
+                        return RedirectPermanent($"/api/GetResults?player={dbPlayer.JsonName}");
+                    
+                    return Json(new { Username = "Unknown player" });
+                }
+            }
         }
 
         #endregion
