@@ -1,14 +1,14 @@
 ﻿
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace WebPerformanceCalculator.Models
 {
     public class ProbabilityGraphModel
     {
-        [JsonProperty("x")]
-        public double Time;
+        [JsonPropertyName("x")]
+        public double Time { get; set; }
 
-        [JsonProperty("y")]
-        public double Probability;
+        [JsonPropertyName("y")]
+        public double Probability { get; set; }
     }
 }

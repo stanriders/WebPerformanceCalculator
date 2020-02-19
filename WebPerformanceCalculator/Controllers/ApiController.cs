@@ -124,7 +124,6 @@ namespace WebPerformanceCalculator.Controllers
         #region /user
 
         [Route("GetResults")]
-        [Produces("application/json")]
         public async Task<IActionResult> GetResults(string player)
         {
             if (string.IsNullOrEmpty(player))
@@ -132,9 +131,9 @@ namespace WebPerformanceCalculator.Controllers
 
             if (System.IO.File.Exists($"players/{player}.json"))
             {
-                dynamic json = JsonConvert.DeserializeObject(await System.IO.File.ReadAllTextAsync($"players/{player}.json"));
+                var json = JsonConvert.DeserializeObject<PlayerModel>(await System.IO.File.ReadAllTextAsync($"players/{player}.json"));
                 json.UpdateDate = System.IO.File.GetLastWriteTime($"players/{player}.json").ToUniversalTime();
-                return Ok(JsonConvert.SerializeObject(json));
+                return Json(json);
             }
             else
             {
@@ -265,7 +264,6 @@ namespace WebPerformanceCalculator.Controllers
 
         [HttpPost]
         [Route("CalculateMap")]
-        [Produces("application/json")]
         public async Task<IActionResult> CalculateMap(CalculateMapModel model)
         {
             if (string.IsNullOrEmpty(model.Map))
@@ -318,23 +316,26 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [Route("GetProbabilityChart")]
-        public async Task<IActionResult> GetProbabilityChart(string mapId, string mods)
+        public async Task<IActionResult> GetProbabilityChart(string mapId, string mods = "")
         {
-            var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}.txt");
-            if (graph.Length > 0)
+            if (System.IO.File.Exists($"cache/graph_{mapId}_{mods}.txt"))
             {
-                var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
-                foreach (var g in graph)
+                var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}.txt");
+                if (graph.Length > 0)
                 {
-                    var split = g.Split(' ');
-                    jsonGraph.Add(new ProbabilityGraphModel
+                    var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
+                    foreach (var g in graph)
                     {
-                        Time = Convert.ToDouble(split[0]),
-                        Probability = Convert.ToDouble(split[3])
-                    });
-                }
+                        var split = g.Split(' ');
+                        jsonGraph.Add(new ProbabilityGraphModel
+                        {
+                            Time = Convert.ToDouble(split[0]),
+                            Probability = Convert.ToDouble(split[3])
+                        });
+                    }
 
-                return Json(jsonGraph);
+                    return Ok(jsonGraph);
+                }
             }
 
             return StatusCode(400);

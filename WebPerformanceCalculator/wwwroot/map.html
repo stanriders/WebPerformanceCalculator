@@ -185,9 +185,7 @@
                 error: function(d) {
                     $('#error').html(d.responseJSON.err);
                 },
-                success: function(d) {
-                    var json = JSON.parse(d);
-
+                success: function(json) {
                     // get beatmap cover if possible
                     if (json.BeatmapSetId != null && json.BeatmapSetId != 0)
                         $('#bg').attr("src",
@@ -251,14 +249,12 @@
                             mods: json.Mods.sort().map(function(item) {return item.acronym}).join('')
                         },
                         /*data: { mapId: json.Id },*/
-                        success: function(d) {
-                            var json = JSON.parse(d);
-
+                        success: function(probs) {
                             probChart.data.datasets = [
                                 {
                                     backgroundColor: "rgba(0,123,255,0.3)",
                                     label: '(aim) miss probability',
-                                    data: json
+                                    data: probs
                                 }
                             ];
                             probChart.update();
