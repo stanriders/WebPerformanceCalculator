@@ -155,7 +155,7 @@ namespace WebPerformanceCalculator.Controllers
         [Route("GetTop")]
         public async Task<IActionResult> GetTop(int offset = 0, int limit = 50, string search = null, string order = "desc", string sort = "localPP", string country = null)
         {
-            await using (DatabaseContext db = new DatabaseContext())
+            using (DatabaseContext db = new DatabaseContext())
             {
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
@@ -169,8 +169,8 @@ namespace WebPerformanceCalculator.Controllers
                 if (!string.IsNullOrEmpty(search))
                 {
                     // not supporting different ordering for now
-                    jsonPlayers = await db.PlayerSearchQuery.FromSqlInterpolated(
-                        $@"SELECT * FROM (
+                    jsonPlayers = await db.PlayerSearchQuery.FromSql(
+                        @"SELECT * FROM (
                             SELECT *, ROW_NUMBER() OVER(ORDER BY LocalPP DESC) AS Rank
                             from Players)")
                         .Where(x=> x.Name.ToUpper().Contains(search.ToUpper()) || x.JsonName.Contains(search.ToLower()))
@@ -245,7 +245,7 @@ namespace WebPerformanceCalculator.Controllers
         [Route("GetCountries")]
         public async Task<IActionResult> GetCountries()
         {
-            await using (DatabaseContext db = new DatabaseContext())
+            using (DatabaseContext db = new DatabaseContext())
             {
                 db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
@@ -348,7 +348,7 @@ namespace WebPerformanceCalculator.Controllers
         [Route("GetHighscores")]
         public async Task<IActionResult> GetHighscores()
         {
-            await using var db = new DatabaseContext();
+            using var db = new DatabaseContext();
             db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 
             var calcUpdateDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime();
@@ -372,7 +372,7 @@ namespace WebPerformanceCalculator.Controllers
 
                 await System.IO.File.WriteAllTextAsync($"players/{userid}.json", jsonString);
 
-                await using (DatabaseContext db = new DatabaseContext())
+                using (DatabaseContext db = new DatabaseContext())
                 {
                     string osuUsername = json.Username.ToString();
                     string country = json.UserCountry.ToString();
@@ -468,7 +468,7 @@ namespace WebPerformanceCalculator.Controllers
         [Route("RecalcTop")]
         public async Task<IActionResult> RecalcTop(string key, int amt = 100, int offset = 0, bool force = false)
         {
-            await using (DatabaseContext db = new DatabaseContext())
+            using (DatabaseContext db = new DatabaseContext())
             {
                 var players = await db.Players.OrderByDescending(x => x.LocalPP)
                     .Skip(offset)

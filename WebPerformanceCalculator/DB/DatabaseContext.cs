@@ -17,14 +17,14 @@ namespace WebPerformanceCalculator.DB
             // lol
             modelBuilder.Entity<Score>().HasKey(p => new {p.PP, p.Map, p.Player, p.CalcTime});
 
-            modelBuilder.Entity<PlayerSearchQuery>(eb => { eb.HasNoKey(); });
+            //modelBuilder.Entity<PlayerSearchQuery>(eb => { eb.HasNoKey(); });
         }
 
         public DbSet<Player> Players { get; set; }
 
         public DbSet<Score> Scores { get; set; }
 
-        public DbSet<PlayerSearchQuery> PlayerSearchQuery { get; set; }
+        public DbQuery<PlayerSearchQuery> PlayerSearchQuery { get; set; }
 
     }
 }
