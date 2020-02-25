@@ -180,7 +180,7 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
                 json[i] = { name: item };
             });
             $('#maintable').bootstrapTable('load', json);
-            var waitTime = (json.length + 1) * (7 - Math.min(dateDiffInDays(calcdate, new Date()) * 2, 6.0)); // since it gets faster and faster over time we decrease estimation
+            var waitTime = (json.length + 1) * (5.0 - Math.min(dateDiffInDays(calcdate, new Date()) * 2, 4.0)); // since it gets faster and faster over time we decrease estimation
             if (waitTime > 60)
                 $('#expectedTime').html('Estimated wait time is ~' + (waitTime / 60).toFixed(1) + ' minutes.');
             else
