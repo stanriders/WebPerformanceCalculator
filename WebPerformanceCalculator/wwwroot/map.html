@@ -101,6 +101,9 @@
                     <div class="chart-container" style="position: relative; min-height: 200px">
                         <canvas id="ppChart"></canvas>
                     </div>
+                    <div class="chart-container" style="position: relative; min-height: 200px">
+                        <canvas id="ppPartsChart"></canvas>
+                    </div>
                     <hr />
                     <div class="chart-container" style="position: relative; min-height: 250px">
                         <canvas id="probChart"></canvas>
@@ -116,10 +119,21 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.2/dist/Chart.min.js"></script>
     <script>
         var ppChart;
+        var ppPartsChart;
         var probChart;
         $(function() {
             var ppctx = document.getElementById('ppChart').getContext('2d');
             ppChart = new Chart(ppctx,
+                {
+                    type: 'line',
+                    data: {
+                        labels: ['90%', '91%', '92%', '93%', '94%', '95%', '96%', '97%', '98%', '99%', '100%']
+                    },
+                    options: { maintainAspectRatio: false }
+                });
+
+            var pppctx = document.getElementById('ppPartsChart').getContext('2d');
+            ppPartsChart = new Chart(pppctx,
                 {
                     type: 'line',
                     data: {
@@ -210,11 +224,11 @@
                     $('#sr').html(json.Stars.toFixed(2) + '*');
 
                     // populate the table
-                    $('#pp100').html(json.PP[10].toFixed(2));
-                    $('#pp99').html(json.PP[9].toFixed(2));
-                    $('#pp98').html(json.PP[8].toFixed(2));
-                    $('#pp95').html(json.PP[5].toFixed(2));
-                    $('#pp90').html(json.PP[0].toFixed(2));
+                    $('#pp100').html('<span title=\"aim pp=' + json.AimPP[10] + ', tap pp=' + json.TapPP[10] + ', acc pp=' + json.AccPP[10] + '\">' + json.PP[10].toFixed(2) + '</span>');
+                    $('#pp99').html('<span title=\"aim pp=' + json.AimPP[9] + ', tap pp=' + json.TapPP[9] + ', acc pp=' + json.AccPP[9] + '\">' + json.PP[9].toFixed(2) + '</span>');
+                    $('#pp98').html('<span title=\"aim pp=' + json.AimPP[8] + ', tap pp=' + json.TapPP[8] + ', acc pp=' + json.AccPP[8] + '\">' + json.PP[8].toFixed(2) + '</span>');
+                    $('#pp95').html('<span title=\"aim pp=' + json.AimPP[5] + ', tap pp=' + json.TapPP[5] + ', acc pp=' + json.AccPP[5] + '\">' + json.PP[5].toFixed(2) + '</span>');
+                    $('#pp90').html('<span title=\"aim pp=' + json.AimPP[0] + ', tap pp=' + json.TapPP[0] + ', acc pp=' + json.AccPP[0] + '\">' + json.PP[0].toFixed(2) + '</span>');
 
                     var incorrectValues = 0;
                     for (var i = 1; i < json.PP.length; i++) {
@@ -232,13 +246,36 @@
                     // load pp chart
                     ppChart.data.datasets = [
                         {
-                            backgroundColor: "rgba(0,123,255,0.3)",
+                            backgroundColor: "rgba(0,123,255,0.2)",
                             label: 'pp',
                             cubicInterpolationMode: 'monotone',
                             data: json.PP
                         }
                     ];
                     ppChart.update();
+
+                    // load pp parts chart
+                    ppPartsChart.data.datasets = [
+                        {
+                            backgroundColor: "rgba(255,123,0,0.1)",
+                            label: 'aim pp',
+                            cubicInterpolationMode: 'monotone',
+                            data: json.AimPP
+                        },
+                        {
+                            backgroundColor: "rgba(255,0,123,0.1)",
+                            label: 'tap pp',
+                            cubicInterpolationMode: 'monotone',
+                            data: json.TapPP
+                        },
+                        {
+                            backgroundColor: "rgba(0,255,123,0.1)",
+                            label: 'acc pp',
+                            cubicInterpolationMode: 'monotone',
+                            data: json.AccPP
+                        }
+                    ];
+                    ppPartsChart.update();
 
                     // load probability chart
                     $.ajax({
