@@ -44,14 +44,32 @@ namespace FullTopBuilder
             "azr8",
             "fieryrage",
             "firebat92",
-            // ---
+            "morgn",
+            "abyssal",
+            "umbre",
+            "a_blue",
+            "asecretbox",
+            "andros",
+            "beasttrollmc",
+            "mrekk",
+            "badeu",
+            "shiroha",
+            "uyghti",
+            "l0lirhythe",
+            "bartek22830",
+            "jpeg",
+            "vamhi",
             "toy",
             "wubwoofwolf",
             "informous",
-            "fgsky",
             "bubbleman",
+            "aireu",
+            "-duckleader-",
+            "ponytail",
+            "fgsky",
+            // ---
             "rohulk",
-            //"adamqs",
+            "adamqs",
             "jordan the bear",
             "xilver15",
             "unko",
@@ -75,13 +93,15 @@ namespace FullTopBuilder
         private const string user_page = "https://newpp.stanr.info/api/getresults?player=";
 
         private const string user_template = "<tr><td style=\"text-align: center; width: 32px\">{0}</td>" +
-            "<td style=\"text-align: center\"><a href=\"/user/{1}_full\">{2}</a></td>" +
+            "<td style=\"text-align: center\">{6}<a href=\"/user/{1}_full\">{2}</a></td>" +
             "<td style=\"text-align: center\">{3}</td>" +
             "<td style=\"text-align: center\">{4}</td>" +
             "<td style=\"text-align: center\">{5}</td>" +
             "</tr>";
 
-        private const int rank_separator = 27;
+        private const string country_template = "<a href=\"/countrytop/{0}\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/{0}.png\"></a>";
+
+        private const int rank_separator = 50;
 
         private static HttpClient http = new HttpClient();
 
@@ -105,6 +125,10 @@ namespace FullTopBuilder
                     json.LivePP = json.LivePP.Substring(0, json.LivePP.IndexOf(' '));
                     json.LocalPP = json.LocalPP.Substring(0, json.LocalPP.IndexOf(' '));
                     json.LocalPPNumeric = Double.Parse(json.LocalPP, CultureInfo.InvariantCulture);
+
+                    if (json.UpdateDate.Month < DateTime.Today.Month)
+                        json.Outdated = true;
+
                     players.Add(json);
                 }
             });
@@ -117,15 +141,16 @@ namespace FullTopBuilder
                 var player = orderedPlayers[i];
 
                 if (i == rank_separator)
-                    sb.AppendLine(string.Format(user_template, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty));
+                    sb.AppendLine(string.Format(user_template, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty));
 
                 sb.AppendLine(string.Format(user_template, 
                     i < rank_separator ? (i + 1).ToString() : "-", 
                     player.Username.ToLower(), 
-                    player.Username, 
+                    player.Username + (player.Outdated ? " (outdated)" : string.Empty), 
                     player.LivePP,
                     player.LocalPP,
-                    player.PPChange));
+                    player.PPChange,
+                    string.Format(country_template, player.UserCountry)));
             }
 
             File.WriteAllText("top_full.html", template.Replace("{players}", sb.ToString()));

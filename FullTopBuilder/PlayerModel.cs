@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace FullTopBuilder
 {
     public class PlayerModel
@@ -8,7 +10,10 @@ namespace FullTopBuilder
         public string LocalPP { get; set; }
         public double LocalPPNumeric { get; set; }
         public string PPChange { get; set; }
+        public DateTime UpdateDate { get; set; }
+        public bool Outdated { get; set; }
+        public string UserCountry { get; set; }
 
-        public override string ToString() => Username;
+        public override string ToString() => $"{Username} - {LocalPPNumeric}";
     }
 }
