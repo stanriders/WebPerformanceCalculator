@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -20,14 +21,16 @@ namespace WebPerformanceCalculator.Worker
         private const string remote_out_endpoint = @"http://localhost:6000/api/SubmitWorkerResults";
         private const int pooling_rate = 1000; // 1 second
 #else
-        private const string remote_in_endpoint = @"https://newpp.stanr.info/api/GetUserForWorker";
-        private const string remote_out_endpoint = @"https://newpp.stanr.info/api/SubmitWorkerResults";
+        private const string remote_in_endpoint = @"https://testpp.stanr.info/api/GetUserForWorker";
+        private const string remote_out_endpoint = @"https://testpp.stanr.info/api/SubmitWorkerResults";
         private const int pooling_rate = 5000; // 5 seconds
 #endif
 
         private const string fallback_api_key = "";
         private const string lock_file = "lockcalc";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
+
+        private const string test_auth = "";
 
         static void Main(string[] args)
         {
@@ -40,6 +43,8 @@ namespace WebPerformanceCalculator.Worker
                 Log("API Key is empty! Using fallback key...");
                 apiKey = fallback_api_key;
             }
+
+            http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes(test_auth)));
 
             Log("Started...");
 
