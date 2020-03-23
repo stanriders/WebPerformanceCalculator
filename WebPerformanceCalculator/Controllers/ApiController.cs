@@ -31,19 +31,15 @@ namespace WebPerformanceCalculator.Controllers
 
         private static string workingDir;
         private static string commitHash = "unknown";
-        private static readonly object calcUpdateLock = new object();
-
-        private static MemoryCache playerCache = new MemoryCache("calculated_players");
 
         private static readonly Regex mapLinkRegex = 
             new Regex(@"(?>https?:\/\/)?(?>osu|old)\.ppy\.sh\/([b,s]|(?>beatmaps)|(?>beatmapsets))\/(\d+\/?\#osu\/)?(\d+)?\/?(?>[&,?].=\d)?", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private const double keep_scores_bigger_than = 699.5;
+        private const double keep_scores_bigger_than = 600.0;
 
         private const string commit_hash_file = "commithash";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
-        private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
 
         public ApiController()
         {
@@ -100,14 +96,14 @@ namespace WebPerformanceCalculator.Controllers
             if (jsonUsername.Length > 2 && jsonUsername.Length < 16 && regexp.IsMatch(jsonUsername))
             {
                 jsonUsername = HttpUtility.HtmlEncode(jsonUsername).ToLowerInvariant();
-                if (!usernameQueue.Contains(jsonUsername) && !playerCache.Contains(jsonUsername))
+                if (!usernameQueue.Contains(jsonUsername))
                 {
                     usernameQueue.Enqueue(jsonUsername);
                     queueDebounce = DateTime.Now.AddSeconds(1);
                     return GetQueue();
                 }
 
-                return StatusCode(400, new { err = "This player doesn't need a recalculation yet! You can only recalculate once a day" });
+                return StatusCode(400, new { err = "This player is already in queue" });
             }
 
             return StatusCode(400, new {err = "Incorrect username"});
@@ -239,22 +235,6 @@ namespace WebPerformanceCalculator.Controllers
                     Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : jsonPlayers.Count,
                     TotalNotFiltered = totalNotFilteredAmt
                 });
-            }
-        }
-
-        [Route("GetCountries")]
-        public async Task<IActionResult> GetCountries()
-        {
-            using (DatabaseContext db = new DatabaseContext())
-            {
-                db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-
-                var countries = await db.Players.Where(x => !string.IsNullOrEmpty(x.Country))
-                    .Select(x => x.Country)
-                    .Distinct()
-                    .ToArrayAsync();
-
-                return Json(countries);
             }
         }
 
@@ -418,9 +398,6 @@ namespace WebPerformanceCalculator.Controllers
                     await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());
 
                     await db.SaveChangesAsync();
-
-                    // one calculation a day
-                    playerCache.Add(jsonUsername, jsonUsername, DateTimeOffset.Now.AddDays(1));
                 }
             }
 
@@ -433,18 +410,6 @@ namespace WebPerformanceCalculator.Controllers
         {
             if (calcTimestamp == 0)
                 return StatusCode(422);
-
-            var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
-
-            if (calcTimestamp < localCalcDate)
-            {
-                // send update data
-                return Json(new WorkerDataModel
-                {
-                    NeedsCalcUpdate = true,
-                    Data = calc_update_link
-                });
-            }
 
             if (usernameQueue.TryDequeue(out var username))
                 return Json(new WorkerDataModel { Data = username });
@@ -488,9 +453,6 @@ namespace WebPerformanceCalculator.Controllers
         [Route("ClearHighscores")]
         public async Task<IActionResult> ClearHighscores(string key)
         {
-            playerCache.Dispose();
-            playerCache = new MemoryCache("calculated_players");
-
             using var db = new DatabaseContext();
             db.Scores.RemoveRange(await db.Scores.Select(x => x).ToArrayAsync());
             await db.SaveChangesAsync();

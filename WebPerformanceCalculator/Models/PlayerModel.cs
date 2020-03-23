@@ -9,6 +9,7 @@ namespace WebPerformanceCalculator.Models
             public string Beatmap { get; set; }
             public string LivePP { get; set; }
             public string LocalPP { get; set; }
+            public string ComparePP { get; set; }
             public string PPChange { get; set; }
             public string PositionChange { get; set; }
             public string AimPP { get; set; }
