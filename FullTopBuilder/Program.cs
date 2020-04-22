@@ -55,7 +55,7 @@ namespace FullTopBuilder
             "badeu",
             "shiroha",
             "uyghti",
-            "l0lirhythe",
+            "vinno",
             "bartek22830",
             "jpeg",
             "vamhi",
@@ -77,7 +77,7 @@ namespace FullTopBuilder
             "red_pixel",
             "epiphany",
             "woey",
-            "matrix",
+            "iconoclasm",
             "gfmrt",
             "monk gyatso",
             "-gn",
@@ -154,7 +154,9 @@ namespace FullTopBuilder
                     string.Format(country_template, player.UserCountry)));
             }
 
-            File.WriteAllText("top_full.html", template.Replace("{players}", sb.ToString()));
+            var updateMonth = DateTime.Today.AddDays(-DateTime.Today.Day + 1);
+            File.WriteAllText("top_full.html", template.Replace("{updatedate}", updateMonth.ToString(CultureInfo.InvariantCulture))
+                                                                    .Replace("{players}", sb.ToString()));
         }
     }
 }

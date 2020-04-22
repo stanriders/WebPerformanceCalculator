@@ -37,7 +37,7 @@
                     </span>
                 </div>
             </nav>
-            <div class="alert alert-primary mt-2">Profiles here were calculated using the <b>01.03.20</b> <a href="https://data.ppy.sh/">dump</a> of ALL scores.<br>Because a single player can have tens of thousands of scores profiles are only calculated manually.<br>While the pages only show top 1000 scores <b>every score</b> was recalculated.<hr>Because calculating takes a lot of time and processing power, I now only accept paid requests ($2 per user). It's only possible to calculate profile if player was withing top 10000 when the score dump was made.<br>Contact me in Discord (StanR#3012)</div>
+            <div class="alert alert-primary mt-2">Profiles here were calculated using the <b id="date"></b> <a href="https://data.ppy.sh/">dump</a> of ALL scores.<br>Because a single player can have tens of thousands of scores profiles are only calculated manually.<br>While the pages only show top 1000 scores <b>every score</b> was recalculated.<hr>Because calculating takes a lot of time and processing power, I now only accept paid requests ($2 per user). It's only possible to calculate profile if player was withing top 10000 when the score dump was made.<br>Contact me in Discord (StanR#3012)</div>
             <table class="table table-bordered table-striped table-sm table-hover" data-toggle="bootstrap-table" id="maintable">
                 <thead>
                     <tr>
@@ -60,6 +60,14 @@
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47115002-3"></script>
+
+    <script>
+        var updateDate = new Date("{updatedate}");
+        $(function () {
+            $('#date').html(updateDate.toLocaleDateString());
+        });
+    </script>
+
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
