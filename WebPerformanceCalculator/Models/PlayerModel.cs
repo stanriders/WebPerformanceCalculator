@@ -22,6 +22,7 @@ namespace WebPerformanceCalculator.Models
         public string UserCountry { get; set; }
         public string LivePP { get; set; }
         public string LocalPP { get; set; }
+        public string SitePP { get; set; }
         public ResultBeatmap[] Beatmaps { get; set; }
         public DateTime UpdateDate { get; set; }
     }

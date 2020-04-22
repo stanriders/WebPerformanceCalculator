@@ -347,17 +347,17 @@ namespace WebPerformanceCalculator.Controllers
             string jsonString = content.ToString();
             if (!string.IsNullOrEmpty(jsonString))
             {
-                dynamic json = JsonConvert.DeserializeObject(jsonString); 
+                var json = JsonConvert.DeserializeObject<PlayerModel>(jsonString); 
                 long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
 
                 await System.IO.File.WriteAllTextAsync($"players/{userid}.json", jsonString);
 
                 using (DatabaseContext db = new DatabaseContext())
                 {
-                    string osuUsername = json.Username.ToString();
-                    string country = json.UserCountry.ToString();
-                    double livePP = Convert.ToDouble(json.LivePP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
-                    double localPP = Convert.ToDouble(json.LocalPP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
+                    string osuUsername = json.Username;
+                    string country = json.UserCountry;
+                    double livePP = Convert.ToDouble(json.SitePP.Split(' ')[0], CultureInfo.InvariantCulture);
+                    double localPP = Convert.ToDouble(json.LocalPP.Split(' ')[0], CultureInfo.InvariantCulture);
                     if (await db.Players.AnyAsync(x => x.ID == userid))
                     {
                         var player = await db.Players.SingleAsync(x => x.ID == userid);
@@ -384,14 +384,14 @@ namespace WebPerformanceCalculator.Controllers
 
                     var currentScores = await db.Scores.ToArrayAsync();
 
-                    JArray maps = json.Beatmaps;
-                    var highscores = maps.Where(x => Convert.ToDouble(x["LocalPP"]) > keep_scores_bigger_than).Select(x => new Score()
+                    var maps = json.Beatmaps;
+                    var highscores = maps.Where(x => Convert.ToDouble(x.LocalPP) > keep_scores_bigger_than).Select(x => new Score()
                     {
-                        Map = x["Beatmap"].ToString(),
+                        Map = x.Beatmap,
                         Player = osuUsername,
-                        PP = Convert.ToDouble(x["LocalPP"]),
+                        PP = Convert.ToDouble(x.LocalPP),
                         CalcTime = DateTime.Now.ToUniversalTime(),
-                        LivePP = Convert.ToDouble(x["LivePP"]),
+                        LivePP = Convert.ToDouble(x.LivePP),
                         JsonName = userid.ToString() // TODO: remove
                     }).ToArray();
 
