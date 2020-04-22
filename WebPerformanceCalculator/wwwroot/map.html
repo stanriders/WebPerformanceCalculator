@@ -75,7 +75,8 @@
                 <div class="card-body">
                     <div class="card-img-overlay" style="min-height: 175px; max-height: 200px;">
                         <h4 class="alert alert-light" id="mapname" style="max-height: 100px; overflow: hidden"></h4>
-                        <p id="sr" class="badge badge-primary"></p>
+                        <p id="sr" class="badge badge-primary"></p><br/>
+                        <p id="sraim" class="badge badge-secondary"></p> <p id="srtap" class="badge badge-secondary"></p> <p id="srfc" class="badge badge-secondary"></p>
                     </div>
                     <p id="ppwarning" class="text-danger"></p>
                     <div class="table-responsive">
@@ -222,6 +223,9 @@
                     $('title').html(json.Title + ' - delta_t PP Rebalance Calculator');
 
                     $('#sr').html(json.Stars.toFixed(2) + '*');
+                    $('#sraim').html('Aim: ' + json.AimSR.toFixed(2) + '*');
+                    $('#srtap').html('Tap: ' + json.TapSR.toFixed(2) + '*');
+                    $('#srfc').html('Finger Control: ' + json.FingerControlSR.toFixed(2) + '*');
 
                     // populate the table
                     $('#pp100').html('<span title=\"aim pp=' + json.AimPP[10] + ', tap pp=' + json.TapPP[10] + ', acc pp=' + json.AccPP[10] + '\">' + json.PP[10].toFixed(2) + '</span>');

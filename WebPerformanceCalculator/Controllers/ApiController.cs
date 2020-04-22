@@ -25,21 +25,20 @@ namespace WebPerformanceCalculator.Controllers
     [Route("[controller]")]
     public class ApiController : Controller
     {
-        private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
+        private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>(); // main calculation queue
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
 
         private static string workingDir;
         private static string commitHash = "unknown";
-        private static readonly object calcUpdateLock = new object();
 
-        private static MemoryCache playerCache = new MemoryCache("calculated_players");
+        private static MemoryCache playerCache = new MemoryCache("calculated_players"); // cache for recently calculated players
 
         private static readonly Regex mapLinkRegex = 
             new Regex(@"(?>https?:\/\/)?(?>osu|old)\.ppy\.sh\/([b,s]|(?>beatmaps)|(?>beatmapsets))\/(\d+\/?\#osu\/)?(\d+)?\/?(?>[&,?].=\d)?", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private const double keep_scores_bigger_than = 699.5;
+        private const double keep_scores_bigger_than = 699.5; // pp threshold for /highscores/
 
         private const string commit_hash_file = "commithash";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
@@ -523,6 +522,9 @@ namespace WebPerformanceCalculator.Controllers
 
         #region Helpers
 
+        /// <summary>
+        /// Check if a file is older than the calculation module
+        /// </summary>
         private bool CheckFileCalcDateOutdated(string path)
         {
             if (!System.IO.File.Exists(path))
@@ -536,6 +538,12 @@ namespace WebPerformanceCalculator.Controllers
             return false;
         }
 
+        /// <summary>
+        /// Parse beatmap link
+        /// </summary>
+        /// <param name="link">Link to parse</param>
+        /// <param name="isSet">True if it's a beatmapset link</param>
+        /// <returns>Beatmap ID</returns>
         private int GetMapIdFromLink(string link, out bool isSet)
         {
             int beatmapId = 0;
