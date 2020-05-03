@@ -451,19 +451,23 @@ namespace WebPerformanceCalculator.Controllers
 
         [RequiresKey]
         [Route("ClearHighscores")]
-        public async Task<IActionResult> ClearHighscores(string key)
+        public async Task<IActionResult> ClearHighscores(string key, bool noRecalc = false)
         {
             using var db = new DatabaseContext();
             db.Scores.RemoveRange(await db.Scores.Select(x => x).ToArrayAsync());
             await db.SaveChangesAsync();
 
-            var players = db.Players.OrderByDescending(x => x.LocalPP)
-                .Take(100)
-                .Select(x => x.JsonName)
-                .ToArray();
+            if (!noRecalc)
+            {
+                var players = db.Players.OrderByDescending(x => x.LocalPP)
+                    .Take(25)
+                    .Select(x => x.JsonName)
+                    .ToArray();
 
-            foreach (var player in players)
-                usernameQueue.Enqueue(player);
+                foreach (var player in players)
+                    usernameQueue.Enqueue(player);
+
+            }
 
             return new OkResult();
         }
