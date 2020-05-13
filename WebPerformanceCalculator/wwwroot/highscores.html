@@ -11,8 +11,8 @@
 <body>
     <div class="container">
         <main role="main" class="pb-1 pt-2">
-            <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-2">
+                <a class="navbar-brand" href="/">delta_t Rebalance Calculator (testing)</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -101,31 +101,8 @@
             return '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + accuracy;
         }
         function playerFormatter(value, row, index) {
-            return '<a href=\"https://newpp.stanr.info/user/' + row.jsonName + '\">' + value + '</a>';
+            return '<a href=\"https://testpp.stanr.info/user/' + row.jsonName + '\">' + value + '</a>';
         }
     </script>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47115002-3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-47115002-3');
-    </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>

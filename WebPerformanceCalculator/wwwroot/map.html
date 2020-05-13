@@ -11,8 +11,8 @@
 <body>
     <div class="container">
         <main role="main" class="pb-1 pt-2">
-            <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-2">
+                <a class="navbar-brand" href="/">delta_t Rebalance Calculator (testing)</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -76,6 +76,7 @@
                     <div class="card-img-overlay" style="min-height: 175px; max-height: 200px;">
                         <h4 class="alert alert-light" id="mapname" style="max-height: 100px; overflow: hidden"></h4>
                         <p id="sr" class="badge badge-primary"></p>
+                        <p id="sraim" class="badge badge-secondary"></p> <p id="srtap" class="badge badge-secondary"></p> <p id="srfc" class="badge badge-secondary"></p>
                     </div>
                     <p id="ppwarning" class="text-danger"></p>
                     <div class="table-responsive">
@@ -104,9 +105,15 @@
                     <div class="chart-container" style="position: relative; min-height: 200px">
                         <canvas id="ppPartsChart"></canvas>
                     </div>
+                    <!--<div class="chart-container" style="position: relative; min-height: 200px">
+                        <canvas id="missChart"></canvas>
+                    </div>-->
                     <hr />
                     <div class="chart-container" style="position: relative; min-height: 250px">
                         <canvas id="probChart"></canvas>
+                    </div>
+                    <div class="chart-container" style="position: relative; min-height: 250px">
+                        <canvas id="ipChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -120,7 +127,9 @@
     <script>
         var ppChart;
         var ppPartsChart;
+        var missChart;
         var probChart;
+        var ipChart;
         $(function() {
             var ppctx = document.getElementById('ppChart').getContext('2d');
             ppChart = new Chart(ppctx,
@@ -139,11 +148,47 @@
                     data: {
                         labels: ['90%', '91%', '92%', '93%', '94%', '95%', '96%', '97%', '98%', '99%', '100%']
                     },
-                    options: { maintainAspectRatio: false }
+                    options: { maintainAspectRatio: false}
                 });
+
+            /*var missctx = document.getElementById('missChart').getContext('2d');
+            missChart = new Chart(missctx,
+            {
+                    type: 'scatter',
+                    options: { 
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [
+                                {
+                                    scaleLabel: { display: true, labelString: 'time' },
+                                    type: 'linear',
+                                    position: 'bottom'
+                                }
+                            ]
+                        }
+                    }
+            });*/
 
             var probctx = document.getElementById('probChart').getContext('2d');
             probChart = new Chart(probctx,
+                {
+                    type: 'scatter',
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [
+                                {
+                                    scaleLabel: { display: true, labelString: 'time' },
+                                    type: 'linear',
+                                    position: 'bottom'
+                                }
+                            ]
+                        }
+                    }
+                });
+
+            var ipctx = document.getElementById('ipChart').getContext('2d');
+            ipChart = new Chart(ipctx,
                 {
                     type: 'scatter',
                     options: {
@@ -222,6 +267,9 @@
                     $('title').html(json.Title + ' - delta_t PP Rebalance Calculator');
 
                     $('#sr').html(json.Stars.toFixed(2) + '*');
+                    $('#sraim').html('Aim: ' + json.AimSR.toFixed(2) + '*');
+                    $('#srtap').html('Tap: ' + json.TapSR.toFixed(2) + '*');
+                    $('#srfc').html('Finger Control: ' + json.FingerControlSR.toFixed(2) + '*');
 
                     // populate the table
                     $('#pp100').html('<span title=\"aim pp=' + json.AimPP[10] + ', tap pp=' + json.TapPP[10] + ', acc pp=' + json.AccPP[10] + '\">' + json.PP[10].toFixed(2) + '</span>');
@@ -277,6 +325,17 @@
                     ];
                     ppPartsChart.update();
 
+                    /*missChart.data.datasets = [
+                        {
+                            backgroundColor: "rgba(0,123,255,0.2)",
+                            label: 'pp',
+                            cubicInterpolationMode: 'monotone',
+                            data: json.MissPP
+                        }
+                    ];
+                
+                    missChart.update();*/
+
                     // load probability chart
                     $.ajax({
                         type: 'GET',
@@ -291,14 +350,27 @@
                                 {
                                     backgroundColor: "rgba(0,123,255,0.3)",
                                     label: '(aim) miss probability',
-                                    data: probs
+                                    data: probs.probGraph
                                 }
                             ];
                             probChart.update();
+
+                            ipChart.data.datasets = [
+                                {
+                                    backgroundColor: "rgba(0,123,255,0.3)",
+                                    label: 'index of performance',
+                                    data: probs.ipGraph,
+                                    pointRadius: 2
+                                }
+                            ];
+                            ipChart.update();
+
                             $('#probChart').show();
+                            $('#ipChart').show();
                         },
                         error: function(d) {
                             $('#probChart').hide();
+                            $('#ipChart').hide();
                         },
                     });
 
@@ -320,28 +392,5 @@
             });
         }
     </script>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47115002-3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-47115002-3');
-    </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>

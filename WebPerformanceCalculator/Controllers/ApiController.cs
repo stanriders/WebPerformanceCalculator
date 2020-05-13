@@ -303,18 +303,25 @@ namespace WebPerformanceCalculator.Controllers
                 var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}.txt");
                 if (graph.Length > 0)
                 {
-                    var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
+                    var probGraph = new List<ProbabilityGraphModel>(graph.Length);
+                    var ipGraph = new List<IndexGraphModel>(graph.Length);
                     foreach (var g in graph)
                     {
                         var split = g.Split(' ');
-                        jsonGraph.Add(new ProbabilityGraphModel
+                        probGraph.Add(new ProbabilityGraphModel
                         {
                             Time = Convert.ToDouble(split[0]),
                             Probability = Convert.ToDouble(split[3])
                         });
+
+                        ipGraph.Add(new IndexGraphModel
+                        {
+                            Time = Convert.ToDouble(split[0]),
+                            IPCorrected = Convert.ToDouble(split[2])
+                        });
                     }
 
-                    return Ok(jsonGraph);
+                    return Ok(new { probGraph, ipGraph });
                 }
             }
 

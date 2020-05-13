@@ -11,4 +11,13 @@ namespace WebPerformanceCalculator.Models
         [JsonPropertyName("y")]
         public double Probability { get; set; }
     }
+
+    public class IndexGraphModel
+    {
+        [JsonPropertyName("x")]
+        public double Time { get; set; }
+
+        [JsonPropertyName("y")]
+        public double IPCorrected { get; set; }
+    }
 }
