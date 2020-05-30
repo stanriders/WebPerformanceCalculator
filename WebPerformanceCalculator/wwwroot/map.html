@@ -117,11 +117,38 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.2/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
     <script>
         var ppChart;
         var ppPartsChart;
         var probChart;
+
+        var chartZoom = {
+                            zoom: {
+                                // Container for pan options
+                                pan: {
+                                    // Boolean to enable panning
+                                    enabled: true,
+                                    mode: 'x',
+                                    rangeMin: { x: 0 },
+                                    speed: 20,
+                                    threshold: 10,
+                                },
+
+                                zoom: {
+                                    enabled: true,
+                                    drag: false,
+                                    mode: 'x',
+                                    rangeMin: { x: 0 },
+                                    speed: 0.1,
+                                    threshold: 2,
+                                    sensitivity: 3
+                                }
+                            }
+                        };
+
         $(function() {
             var ppctx = document.getElementById('ppChart').getContext('2d');
             ppChart = new Chart(ppctx,
@@ -157,7 +184,8 @@
                                     position: 'bottom'
                                 }
                             ]
-                        }
+                        },
+                        plugins: chartZoom
                     }
                 });
 
