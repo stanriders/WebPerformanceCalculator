@@ -66,6 +66,9 @@
                     <div>
                         <p id="error" class="text-danger"></p>
                         <input type="submit" class="btn btn-secondary" value="Calculate" id="submit" />
+                        <div class="spinner-border" role="status" id="spinner">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -124,7 +127,7 @@
         var ppChart;
         var ppPartsChart;
         var probChart;
-
+        $('#spinner').hide();
         var chartZoom = {
                             zoom: {
                                 // Container for pan options
@@ -343,11 +346,13 @@
                 },
                 complete: function() {
                     $('#submit').show();
+                    $('#spinner').hide();
                 },
                 beforeSend: function() {
                     $('#error').html('');
                     $('#username').val('');
                     $('#submit').hide();
+                    $('#spinner').show();
                 }
             });
         }
