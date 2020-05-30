@@ -298,6 +298,9 @@ namespace WebPerformanceCalculator.Controllers
         [Route("GetProbabilityChart")]
         public async Task<IActionResult> GetProbabilityChart(string mapId, string mods = "")
         {
+            if (mods == null)
+                mods = string.Empty;
+
             if (System.IO.File.Exists($"cache/graph_{mapId}_{mods}.txt"))
             {
                 var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}.txt");

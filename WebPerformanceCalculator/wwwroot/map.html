@@ -172,7 +172,9 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.2/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
     <script>
         var ppChart;
         var ppPartsChart;
@@ -181,6 +183,30 @@
         var ipChart;
         var fingerChart;
         var tapChart;
+
+        var chartZoom = {
+                            zoom: {
+                                pan: {
+                                    // Boolean to enable panning
+                                    enabled: true,
+                                    mode: 'x',
+                                    rangeMin: { x: 0 },
+                                    speed: 20,
+                                    threshold: 10,
+                                },
+
+                                zoom: {
+                                    enabled: true,
+                                    drag: false,
+                                    mode: 'x',
+                                    rangeMin: { x: 0 },
+                                    speed: 0.1,
+                                    threshold: 2,
+                                    sensitivity: 3
+                                }
+                            }
+                        };
+
         $(function() {
             $('#spinner').hide();
             var ppctx = document.getElementById('ppChart').getContext('2d');
@@ -200,7 +226,7 @@
                     data: {
                         labels: ['90%', '91%', '92%', '93%', '94%', '95%', '96%', '97%', '98%', '99%', '100%']
                     },
-                    options: { maintainAspectRatio: false}
+                    options: { maintainAspectRatio: false }
                 });
 
             /*var missctx = document.getElementById('missChart').getContext('2d');
@@ -235,7 +261,8 @@
                                     position: 'bottom'
                                 }
                             ]
-                        }
+                        }, 
+                        plugins: chartZoom
                     }
                 });
 
@@ -253,7 +280,8 @@
                                     position: 'bottom'
                                 }
                             ]
-                        }
+                        }, 
+                        plugins: chartZoom
                     }
                 });
 
@@ -271,7 +299,8 @@
                                     position: 'bottom'
                                 }
                             ]
-                        }
+                        }, 
+                        plugins: chartZoom
                     }
                 });
 
@@ -289,7 +318,8 @@
                                     position: 'bottom'
                                 }
                             ]
-                        }
+                        }, 
+                        plugins: chartZoom
                     }
                 });
 
@@ -458,7 +488,7 @@
                                     backgroundColor: "rgba(0,255,123,0.5)",
                                     label: 'finger control object strain',
                                     data: probs.fingerGraph,
-                                    pointRadius: 2
+                                    pointRadius: 2.5
                                 }
                             ];
                             fingerChart.update();
@@ -468,7 +498,7 @@
                                     backgroundColor: "rgba(255,0,123,0.3)",
                                     label: 'tap object strain',
                                     data: probs.tapGraph,
-                                    pointRadius: 2
+                                    pointRadius: 2.5
                                 }
                             ];
                             tapChart.update();
@@ -481,6 +511,8 @@
                         error: function(d) {
                             $('#probChart').hide();
                             $('#ipChart').hide();
+                            $('#fingerChart').hide();
+                            $('#tapChart').hide();
                         },
                     });
 
