@@ -20,4 +20,22 @@ namespace WebPerformanceCalculator.Models
         [JsonPropertyName("y")]
         public double IPCorrected { get; set; }
     }
+
+    public class FingerGraphModel
+    {
+        [JsonPropertyName("x")]
+        public double Time { get; set; }
+
+        [JsonPropertyName("y")]
+        public double Difficulty { get; set; }
+    }
+
+    public class TapGraphModel
+    {
+        [JsonPropertyName("x")]
+        public double Time { get; set; }
+
+        [JsonPropertyName("y")]
+        public double Difficulty { get; set; }
+    }
 }

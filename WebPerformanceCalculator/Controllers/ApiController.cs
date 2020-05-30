@@ -305,6 +305,8 @@ namespace WebPerformanceCalculator.Controllers
                 {
                     var probGraph = new List<ProbabilityGraphModel>(graph.Length);
                     var ipGraph = new List<IndexGraphModel>(graph.Length);
+                    var fingerGraph = new List<FingerGraphModel>();
+                    var tapGraph = new List<TapGraphModel>();
                     foreach (var g in graph)
                     {
                         var split = g.Split(' ');
@@ -321,7 +323,34 @@ namespace WebPerformanceCalculator.Controllers
                         });
                     }
 
-                    return Ok(new { probGraph, ipGraph });
+                    var finger = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_finger.txt");
+                    if (finger.Length > 0)
+                    {
+                        foreach (var g in finger)
+                        {
+                            var split = g.Split(' ');
+                            fingerGraph.Add(new FingerGraphModel
+                            {
+                                Time = Convert.ToDouble(split[0]),
+                                Difficulty = Convert.ToDouble(split[2])
+                            });
+                        }
+                    }
+
+                    var tap = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_tap.txt");
+                    if (tap.Length > 0)
+                    {
+                        foreach (var g in tap)
+                        {
+                            var split = g.Split(' ');
+                            tapGraph.Add(new TapGraphModel
+                            {
+                                Time = Convert.ToDouble(split[0]),
+                                Difficulty = Convert.ToDouble(split[5])
+                            });
+                        }
+                    }
+                    return Ok(new { probGraph, ipGraph, fingerGraph, tapGraph });
                 }
             }
 
