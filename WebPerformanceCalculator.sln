@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebPerformanceCalculator.Wo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebPerformanceCalculator.Shared", "WebPerformanceCalculator.Shared\WebPerformanceCalculator.Shared.csproj", "{C6CF5217-E786-4C3D-9B84-2573E0DA6535}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FullTopBuilder", "FullTopBuilder\FullTopBuilder.csproj", "{F849C070-5FE8-4DC8-B717-A48AA00054A3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{C6CF5217-E786-4C3D-9B84-2573E0DA6535}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6CF5217-E786-4C3D-9B84-2573E0DA6535}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6CF5217-E786-4C3D-9B84-2573E0DA6535}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F849C070-5FE8-4DC8-B717-A48AA00054A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F849C070-5FE8-4DC8-B717-A48AA00054A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F849C070-5FE8-4DC8-B717-A48AA00054A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F849C070-5FE8-4DC8-B717-A48AA00054A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
