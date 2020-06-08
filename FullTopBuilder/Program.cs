@@ -76,7 +76,7 @@ namespace FullTopBuilder
             "unko",
             "red_pixel",
             "epiphany",
-            "woey",
+            "heroin_player67",
             "heaven punisher",
             "gfmrt",
             "monk the don",
