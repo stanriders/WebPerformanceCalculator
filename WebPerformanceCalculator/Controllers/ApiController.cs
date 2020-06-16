@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,7 @@ namespace WebPerformanceCalculator.Controllers
         private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
+        private static readonly SemaphoreSlim mapCalcSemaphore = new SemaphoreSlim(3);
 
         private static string workingDir;
         private static string commitHash = "unknown";
@@ -268,6 +270,8 @@ namespace WebPerformanceCalculator.Controllers
                     if (model.Mods.Length > 0)
                         commandMods = "-m " + string.Join(" -m ", model.Mods);
 
+                    await mapCalcSemaphore.WaitAsync();
+
                     await ProcessEx.RunAsync(new ProcessStartInfo
                     {
                         FileName = "dotnet",
@@ -278,6 +282,8 @@ namespace WebPerformanceCalculator.Controllers
                         UseShellExecute = true,
                         CreateNoWindow = true,
                     });
+
+                    mapCalcSemaphore.Release();
 
                     if (System.IO.File.Exists($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
                         return Ok(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
