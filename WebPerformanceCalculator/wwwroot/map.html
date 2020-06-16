@@ -11,8 +11,8 @@
 <body>
     <div class="container">
         <main role="main" class="pb-1 pt-2">
-            <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-2">
+                <a class="navbar-brand" href="/">delta_t Rebalance Calculator (testing)</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -66,6 +66,9 @@
                     <div>
                         <p id="error" class="text-danger"></p>
                         <input type="submit" class="btn btn-secondary" value="Calculate" id="submit" />
+                        <div class="spinner-border" role="status" id="spinner">
+                            <span class="sr-only">Loading...</span>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -76,6 +79,7 @@
                     <div class="card-img-overlay" style="min-height: 175px; max-height: 200px;">
                         <h4 class="alert alert-light" id="mapname" style="max-height: 100px; overflow: hidden"></h4>
                         <p id="sr" class="badge badge-primary"></p>
+                        <p id="sraim" class="badge badge-secondary"></p> <p id="srtap" class="badge badge-secondary"></p> <p id="srfc" class="badge badge-secondary"></p>
                     </div>
                     <p id="ppwarning" class="text-danger"></p>
                     <div class="table-responsive">
@@ -98,15 +102,67 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="chart-container" style="position: relative; min-height: 200px">
-                        <canvas id="ppChart"></canvas>
+                    <div class="accordion" id="accordionExample">
+                    <div class="card" >
+                        <div class="card-header" id="ppheading">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapsePp" aria-expanded="false" aria-controls="collapsePp">
+                              PP Graphs
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapsePp" class="collapse" aria-labelledby="ppheading" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <div class="chart-container" style="position: relative; min-height: 200px">
+                                    <canvas id="ppChart"></canvas>
+                                </div>
+                                <div class="chart-container" style="position: relative; min-height: 200px">
+                                    <canvas id="ppPartsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="chart-container" style="position: relative; min-height: 200px">
-                        <canvas id="ppPartsChart"></canvas>
+                    <!--<div class="chart-container" style="position: relative; min-height: 200px">
+                        <canvas id="missChart"></canvas>
                     </div>
-                    <hr />
-                    <div class="chart-container" style="position: relative; min-height: 250px">
-                        <canvas id="probChart"></canvas>
+                    <hr />-->
+                    <div class="card" >
+                        <div class="card-header" id="aimheading">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseAim" aria-expanded="false" aria-controls="collapseAim">
+                              Aim Graphs
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseAim" class="collapse" aria-labelledby="aimheading" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <div class="chart-container" style="position: relative; min-height: 250px">
+                                    <canvas id="probChart"></canvas>
+                                </div>
+                                <div class="chart-container" style="position: relative; min-height: 250px">
+                                    <canvas id="ipChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" >
+                        <div class="card-header" id="fingermheading">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseFinger" aria-expanded="false" aria-controls="collapseFinger">
+                              Finger Graphs
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="collapseFinger" class="collapse" aria-labelledby="fingermheading" data-parent="#accordionExample">
+                            <div class="card-body">
+                                <div class="chart-container" style="position: relative; min-height: 250px">
+                                    <canvas id="tapChart"></canvas>
+                                </div>
+                                <div class="chart-container" style="position: relative; min-height: 250px">
+                                    <canvas id="fingerChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -116,12 +172,43 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.2/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
     <script>
         var ppChart;
         var ppPartsChart;
+        var missChart;
         var probChart;
+        var ipChart;
+        var fingerChart;
+        var tapChart;
+
+        var chartZoom = {
+                            zoom: {
+                                pan: {
+                                    // Boolean to enable panning
+                                    enabled: true,
+                                    mode: 'x',
+                                    rangeMin: { x: 0 },
+                                    speed: 20,
+                                    threshold: 10,
+                                },
+
+                                zoom: {
+                                    enabled: true,
+                                    drag: false,
+                                    mode: 'x',
+                                    rangeMin: { x: 0 },
+                                    speed: 0.1,
+                                    threshold: 2,
+                                    sensitivity: 3
+                                }
+                            }
+                        };
+
         $(function() {
+            $('#spinner').hide();
             var ppctx = document.getElementById('ppChart').getContext('2d');
             ppChart = new Chart(ppctx,
                 {
@@ -142,6 +229,24 @@
                     options: { maintainAspectRatio: false }
                 });
 
+            /*var missctx = document.getElementById('missChart').getContext('2d');
+            missChart = new Chart(missctx,
+            {
+                    type: 'scatter',
+                    options: { 
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [
+                                {
+                                    scaleLabel: { display: true, labelString: 'time' },
+                                    type: 'linear',
+                                    position: 'bottom'
+                                }
+                            ]
+                        }
+                    }
+            });*/
+
             var probctx = document.getElementById('probChart').getContext('2d');
             probChart = new Chart(probctx,
                 {
@@ -156,7 +261,65 @@
                                     position: 'bottom'
                                 }
                             ]
-                        }
+                        }, 
+                        plugins: chartZoom
+                    }
+                });
+
+            var ipctx = document.getElementById('ipChart').getContext('2d');
+            ipChart = new Chart(ipctx,
+                {
+                    type: 'scatter',
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [
+                                {
+                                    scaleLabel: { display: true, labelString: 'time' },
+                                    type: 'linear',
+                                    position: 'bottom'
+                                }
+                            ]
+                        }, 
+                        plugins: chartZoom
+                    }
+                });
+
+            var fingerctx = document.getElementById('fingerChart').getContext('2d');
+            fingerChart = new Chart(fingerctx,
+                {
+                    type: 'scatter',
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [
+                                {
+                                    scaleLabel: { display: true, labelString: 'time' },
+                                    type: 'linear',
+                                    position: 'bottom'
+                                }
+                            ]
+                        }, 
+                        plugins: chartZoom
+                    }
+                });
+
+            var tapctx = document.getElementById('tapChart').getContext('2d');
+            tapChart = new Chart(tapctx,
+                {
+                    type: 'scatter',
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            xAxes: [
+                                {
+                                    scaleLabel: { display: true, labelString: 'time' },
+                                    type: 'linear',
+                                    position: 'bottom'
+                                }
+                            ]
+                        }, 
+                        plugins: chartZoom
                     }
                 });
 
@@ -222,6 +385,9 @@
                     $('title').html(json.Title + ' - delta_t PP Rebalance Calculator');
 
                     $('#sr').html(json.Stars.toFixed(2) + '*');
+                    $('#sraim').html('Aim: ' + json.AimSR.toFixed(2) + '*');
+                    $('#srtap').html('Tap: ' + json.TapSR.toFixed(2) + '*');
+                    $('#srfc').html('Finger Control: ' + json.FingerControlSR.toFixed(2) + '*');
 
                     // populate the table
                     $('#pp100').html('<span title=\"aim pp=' + json.AimPP[10] + ', tap pp=' + json.TapPP[10] + ', acc pp=' + json.AccPP[10] + '\">' + json.PP[10].toFixed(2) + '</span>');
@@ -277,6 +443,17 @@
                     ];
                     ppPartsChart.update();
 
+                    /*missChart.data.datasets = [
+                        {
+                            backgroundColor: "rgba(0,123,255,0.2)",
+                            label: 'pp',
+                            cubicInterpolationMode: 'monotone',
+                            data: json.MissPP
+                        }
+                    ];
+                
+                    missChart.update();*/
+
                     // load probability chart
                     $.ajax({
                         type: 'GET',
@@ -291,14 +468,51 @@
                                 {
                                     backgroundColor: "rgba(0,123,255,0.3)",
                                     label: '(aim) miss probability',
-                                    data: probs
+                                    data: probs.probGraph
                                 }
                             ];
                             probChart.update();
+
+                            ipChart.data.datasets = [
+                                {
+                                    backgroundColor: "rgba(0,123,255,0.3)",
+                                    label: 'index of performance',
+                                    data: probs.ipGraph,
+                                    pointRadius: 2
+                                }
+                            ];
+                            ipChart.update();
+
+                            fingerChart.data.datasets = [
+                                {
+                                    backgroundColor: "rgba(0,255,123,0.5)",
+                                    label: 'finger control object strain',
+                                    data: probs.fingerGraph,
+                                    pointRadius: 2.5
+                                }
+                            ];
+                            fingerChart.update();
+
+                            tapChart.data.datasets = [
+                                {
+                                    backgroundColor: "rgba(255,0,123,0.3)",
+                                    label: 'tap object strain',
+                                    data: probs.tapGraph,
+                                    pointRadius: 2.5
+                                }
+                            ];
+                            tapChart.update();
+
                             $('#probChart').show();
+                            $('#ipChart').show();
+                            $('#fingerChart').show();
+                            $('#tapChart').show();
                         },
                         error: function(d) {
                             $('#probChart').hide();
+                            $('#ipChart').hide();
+                            $('#fingerChart').hide();
+                            $('#tapChart').hide();
                         },
                     });
 
@@ -311,37 +525,16 @@
                 },
                 complete: function() {
                     $('#submit').show();
+                    $('#spinner').hide();
                 },
                 beforeSend: function() {
                     $('#error').html('');
                     $('#username').val('');
                     $('#submit').hide();
+                    $('#spinner').show();
                 }
             });
         }
     </script>
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47115002-3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-47115002-3');
-    </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>

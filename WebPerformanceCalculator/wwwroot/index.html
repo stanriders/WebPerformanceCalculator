@@ -45,8 +45,8 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
 <body>
     <div class="container">
         <main role="main" class="pb-1 pt-2">
-            <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-2">
+                <a class="navbar-brand" href="/">delta_t Rebalance Calculator (testing)</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -71,21 +71,13 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
 
             <div class="card">
                 <div class="card-body">
-                    <p><b>Current build:</b> <span id="calcdate"></span> (<time id="calcdateago"></time>) | <a href="https://github.com/HeBuwei/osu">GitHub</a> (<span id="commit"></span>)</p>
-                    <p>Keep in mind that this is <b>NOT</b> final result and its not meant to represent what rebalance will look like when it's done. It is yet unknown when it will be done.</p>
-                    <p>If you have any questions about new PP system please look at <a href="https://docs.google.com/document/d/1rymnSJ35avbWLwFe45twHnB5zM1BIQcj_mV6D4RE-H8/edit?usp=sharing">this</a> <b>incomplete</b> document.</p>
-                    <p>If you have any questions about this website give me a shout at Discord (StanR#3012) or <a href="https://osu.ppy.sh/users/7217455">on osu!</a></p>
-                    <hr>
-                    <span>Extra stuff: <a href="/top_full">Full scores profiles leaderboard</a> | <a href="https://sotarks.stanr.info/">Sotarks nerf "rebalance"</a> | <a href="https://paypal.me/stanriders">Help me cover server costs</a> | <a href="https://github.com/stanriders/WebPerformanceCalculator">Source code + API</a></span>
-                    <!--<a href="https://paypal.me/stanriders"><b>You can also help me cover some of the server costs!</b></a>-->
-                    <!--while i appreciate pentesting please send me a message if you find a bug instead of abusing it, thanks-->
+                    <p><b>Current build:</b> <span id="calcdate"></span> (<time id="calcdateago"></time>) | <span id="commit"></span></p>
+                    <a href="https://newpp.stanr.info/">Main site</a>
                 </div>
             </div>
             <hr />
             <div class="card">
                 <div class="card-body">
-                    <p>Try searching the leaderboard before adding someone to the calculation queue.</p>
-
                     <form class="form-row align-items-right">
                         <div class="col-auto" style="width: 300px;"><input type="text" id="username" name="username" class="form-control" placeholder="Username or user ID (preferable)" /></div>
                         <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Calculate" id="submit" /></div>
@@ -188,29 +180,5 @@ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/ ./ -MMMMMMMMMMMMMMMMMMMMMM
         }
 
     </script>
-
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47115002-3"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'UA-47115002-3');
-    </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>

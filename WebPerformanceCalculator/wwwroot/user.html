@@ -11,8 +11,8 @@
 <body>
     <div class="container">
         <main role="main" class="pb-1 pt-2">
-            <nav class="navbar navbar-expand-sm navbar-light bg-light">
-                <a class="navbar-brand" href="/">delta_t Rebalance Calculator</a>
+            <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+                <a class="navbar-brand" href="/">delta_t Rebalance Calculator (testing)</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -43,6 +43,7 @@
                 <h1 class="username">Loading...</h1>
                 <div><b>Updated on:</b> <span id="updatedate"></span> <span id="outdated"></span></div>
                 <div><b>Live PP:</b><div id="livePP"></div></div>
+                <div><b>Site PP:</b><div id="sitePP"></div></div>
                 <div><b>Local PP:</b><div id="localPP"></div></div>
                 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
             </div>
@@ -65,6 +66,7 @@
                 success: function (json) {
                     $('#livePP').html(json.livePP);
                     $('#localPP').html(json.localPP);
+                    $('#sitePP').html(json.sitePP);
                     $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.username + "\">" + json.username + "</a>");
                     $('title').html(json.username + ' - delta_t PP Rebalance Calculator');
 
@@ -106,6 +108,7 @@
                             sortable: true,
                             align: 'center'
                         }, {
+                            formatter: localPPFormatter,
                             title: 'Test PP',
                             field: 'localPP',
                             sortable: true,
@@ -152,6 +155,9 @@
             split.splice(0, 1);
 
             return '<a href=\"https://testpp.stanr.info/map/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + accuracy;
+        }
+        function localPPFormatter(value, row, index) {
+            return '<span title=\"aim pp=' + row.aimPP + ', tap pp=' + row.tapPP + ', acc pp=' + row.accPP + '\">' + value + '</span>';
         }
         function updateProfile() {
             $('#outdated').html('(...)');

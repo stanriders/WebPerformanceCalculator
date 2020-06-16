@@ -304,23 +304,62 @@ namespace WebPerformanceCalculator.Controllers
         [Route("GetProbabilityChart")]
         public async Task<IActionResult> GetProbabilityChart(string mapId, string mods = "")
         {
+            if (mods == null)
+                mods = string.Empty;
+
             if (System.IO.File.Exists($"cache/graph_{mapId}_{mods}.txt"))
             {
                 var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}.txt");
                 if (graph.Length > 0)
                 {
-                    var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
+                    var probGraph = new List<ProbabilityGraphModel>(graph.Length);
+                    var ipGraph = new List<IndexGraphModel>(graph.Length);
+                    var fingerGraph = new List<FingerGraphModel>();
+                    var tapGraph = new List<TapGraphModel>();
                     foreach (var g in graph)
                     {
                         var split = g.Split(' ');
-                        jsonGraph.Add(new ProbabilityGraphModel
+                        probGraph.Add(new ProbabilityGraphModel
                         {
                             Time = Convert.ToDouble(split[0]),
                             Probability = Convert.ToDouble(split[3])
                         });
+
+                        ipGraph.Add(new IndexGraphModel
+                        {
+                            Time = Convert.ToDouble(split[0]),
+                            IPCorrected = Convert.ToDouble(split[2])
+                        });
                     }
 
-                    return Ok(jsonGraph);
+                    var finger = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_finger.txt");
+                    if (finger.Length > 0)
+                    {
+                        foreach (var g in finger)
+                        {
+                            var split = g.Split(' ');
+                            fingerGraph.Add(new FingerGraphModel
+                            {
+                                Time = Convert.ToDouble(split[0]),
+                                Difficulty = Convert.ToDouble(split[2])
+                            });
+                        }
+                    }
+
+                    var tap = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_tap.txt");
+                    if (tap.Length > 0)
+                    {
+                        foreach (var g in tap)
+                        {
+                            var split = g.Split(' ');
+                            tapGraph.Add(new TapGraphModel
+                            {
+                                Time = Convert.ToDouble(split[0]),
+                                Difficulty = Convert.ToDouble(split[5])
+                            });
+                        }
+                    }
+                    return Ok(new { probGraph, ipGraph, fingerGraph, tapGraph });
                 }
             }
 
@@ -353,17 +392,17 @@ namespace WebPerformanceCalculator.Controllers
             string jsonString = content.ToString();
             if (!string.IsNullOrEmpty(jsonString))
             {
-                dynamic json = JsonConvert.DeserializeObject(jsonString); 
+                var json = JsonConvert.DeserializeObject<PlayerModel>(jsonString); 
                 long userid = Convert.ToInt64(json.UserID.ToString().Split(' ')[0]);
 
                 await System.IO.File.WriteAllTextAsync($"players/{userid}.json", jsonString);
 
                 using (DatabaseContext db = new DatabaseContext())
                 {
-                    string osuUsername = json.Username.ToString();
-                    string country = json.UserCountry.ToString();
-                    double livePP = Convert.ToDouble(json.LivePP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
-                    double localPP = Convert.ToDouble(json.LocalPP.ToString().Split(' ')[0], CultureInfo.InvariantCulture);
+                    string osuUsername = json.Username;
+                    string country = json.UserCountry;
+                    double livePP = Convert.ToDouble(json.SitePP.Split(' ')[0], CultureInfo.InvariantCulture);
+                    double localPP = Convert.ToDouble(json.LocalPP.Split(' ')[0], CultureInfo.InvariantCulture);
                     if (await db.Players.AnyAsync(x => x.ID == userid))
                     {
                         var player = await db.Players.SingleAsync(x => x.ID == userid);
@@ -390,14 +429,14 @@ namespace WebPerformanceCalculator.Controllers
 
                     var currentScores = await db.Scores.ToArrayAsync();
 
-                    JArray maps = json.Beatmaps;
-                    var highscores = maps.Where(x => Convert.ToDouble(x["LocalPP"]) > keep_scores_bigger_than).Select(x => new Score()
+                    var maps = json.Beatmaps;
+                    var highscores = maps.Where(x => Convert.ToDouble(x.LocalPP) > keep_scores_bigger_than).Select(x => new Score()
                     {
-                        Map = x["Beatmap"].ToString(),
+                        Map = x.Beatmap,
                         Player = osuUsername,
-                        PP = Convert.ToDouble(x["LocalPP"]),
+                        PP = Convert.ToDouble(x.LocalPP),
                         CalcTime = DateTime.Now.ToUniversalTime(),
-                        LivePP = Convert.ToDouble(x["LivePP"]),
+                        LivePP = Convert.ToDouble(x.LivePP),
                         JsonName = userid.ToString() // TODO: remove
                     }).ToArray();
 
@@ -457,19 +496,23 @@ namespace WebPerformanceCalculator.Controllers
 
         [RequiresKey]
         [Route("ClearHighscores")]
-        public async Task<IActionResult> ClearHighscores(string key)
+        public async Task<IActionResult> ClearHighscores(string key, bool noRecalc = false)
         {
             using var db = new DatabaseContext();
             db.Scores.RemoveRange(await db.Scores.Select(x => x).ToArrayAsync());
             await db.SaveChangesAsync();
 
-            var players = db.Players.OrderByDescending(x => x.LocalPP)
-                .Take(100)
-                .Select(x => x.JsonName)
-                .ToArray();
+            if (!noRecalc)
+            {
+                var players = db.Players.OrderByDescending(x => x.LocalPP)
+                    .Take(25)
+                    .Select(x => x.JsonName)
+                    .ToArray();
 
-            foreach (var player in players)
-                usernameQueue.Enqueue(player);
+                foreach (var player in players)
+                    usernameQueue.Enqueue(player);
+
+            }
 
             return new OkResult();
         }
