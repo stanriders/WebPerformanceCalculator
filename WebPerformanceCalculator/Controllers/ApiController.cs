@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +13,6 @@ using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RunProcessAsTask;
 using WebPerformanceCalculator.DB;
 using WebPerformanceCalculator.Models;
@@ -514,6 +512,14 @@ namespace WebPerformanceCalculator.Controllers
 
             }
 
+            return new OkResult();
+        }
+
+        [RequiresKey]
+        [Route("ClearQueue")]
+        public IActionResult ClearQueue(string key)
+        {
+            usernameQueue.Clear();
             return new OkResult();
         }
 
