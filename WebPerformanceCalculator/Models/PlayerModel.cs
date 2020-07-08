@@ -15,6 +15,7 @@ namespace WebPerformanceCalculator.Models
             public string AimPP { get; set; }
             public string TapPP { get; set; }
             public string AccPP { get; set; }
+            public string ReadingPP { get; set; }
         }
 
         public int UserID { get; set; }

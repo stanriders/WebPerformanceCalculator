@@ -314,6 +314,7 @@ namespace WebPerformanceCalculator.Controllers
                     var ipGraph = new List<IndexGraphModel>(graph.Length);
                     var fingerGraph = new List<FingerGraphModel>();
                     var tapGraph = new List<TapGraphModel>();
+                    var readingGraph = new List<ReadingGraphModel>();
                     foreach (var g in graph)
                     {
                         var split = g.Split(' ');
@@ -357,7 +358,21 @@ namespace WebPerformanceCalculator.Controllers
                             });
                         }
                     }
-                    return Ok(new { probGraph, ipGraph, fingerGraph, tapGraph });
+
+                    var reading = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_reading.txt");
+                    if (reading.Length > 0)
+                    {
+                        foreach (var g in reading)
+                        {
+                            var split = g.Split(' ');
+                            readingGraph.Add(new ReadingGraphModel
+                            {
+                                Time = Convert.ToDouble(split[0]),
+                                Difficulty = Convert.ToDouble(split[1])
+                            });
+                        }
+                    }
+                    return Ok(new { probGraph, ipGraph, fingerGraph, tapGraph, readingGraph });
                 }
             }
 

@@ -38,4 +38,13 @@ namespace WebPerformanceCalculator.Models
         [JsonPropertyName("y")]
         public double Difficulty { get; set; }
     }
+
+    public class ReadingGraphModel
+    {
+        [JsonPropertyName("x")]
+        public double Time { get; set; }
+
+        [JsonPropertyName("y")]
+        public double Difficulty { get; set; }
+    }
 }
