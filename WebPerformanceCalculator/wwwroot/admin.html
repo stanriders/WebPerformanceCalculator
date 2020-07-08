@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>delta_t's PP Rework Calculator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
+</head>
+<body>
+    <div class="container">
+        <main role="main" class="pb-1 pt-2">
+            <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
+                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/top">Leaderboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/highscores">Highscores</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/map">Calculate map PP</a>
+                        </li>
+                    </ul>
+                    <span class="navbar-text">
+                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!"/></a>
+                    </span>
+                </div>
+            </nav>
+
+            <div class="card">
+                <div class="card-body">
+                    <form class="form-row align-items-right" id="keyform">
+                        <div class="col-auto" width="100%"><input type="password" id="key" name="key" class="form-control" placeholder="Key" /></div>
+                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Save" id="submit" /></div>
+                    </form>
+                </div>
+            </div>
+            <div id="things">
+                <hr />
+                <div class="card">
+                    <div class="card-body">
+                        <p>Recalc top</p>
+                        <form id="recalctop">
+                            <div class="form-group">
+                                <input type="text" id="amt" name="amt" class="form-control" placeholder="Amount" />
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="offset" name="offset" class="form-control" placeholder="Offset" />
+                            </div>
+                            <div class="form-group form-check">
+                                <input type="checkbox" class="form-check-input" value="true" id="force" name="force">
+                                <label class="form-check-label" for="force">Force</label>
+                            </div>
+                            <div class="col-auto"><p id="errorRecalc" class="text-danger"></p></div>
+                            <input type="submit" class="btn btn-secondary" value="Go" id="submit" />
+                        </form>
+                    </div>
+                </div>
+                <br />
+                <div class="card">
+                    <div class="card-body">
+                        <p>Remove player</p>
+                        <form class="form-row align-items-right" id="removeplayer">
+                            <div class="col-auto"><input type="text" id="nickname" name="name" class="form-control" placeholder="Nickname" /></div>
+                            <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Go" id="submit" /></div>
+                            <div class="col-auto"><p id="errorRemove" class="text-danger"></p></div>
+                        </form>
+                    </div>
+                </div>
+                <br />
+                <div class="card">
+                    <div class="card-body">
+                        <p>Misc</p>
+                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Clear Highscores" id="clear" onclick="clearHighscores()" /></div>
+                        <div class="col-auto"><p id="errorClear" class="text-danger"></p></div>
+                        <br />
+                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Toggle Queue" id="toggle" onclick="toggleQueue()" /></div>
+                        <div class="col-auto"><p id="errorToggle" class="text-danger"></p></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.6.7/jquery.timeago.min.js"></script>
+    <script>
+        $(function () {
+            key = getCookie("key");
+            if (key == null){
+                $('#things').hide();
+            } else {
+                $('#key').val(key);
+            }
+        });
+
+        var key;
+        $("#keyform").on('submit',
+            function (e) {
+                key = $('#key').val();
+                setCookie("key", key);
+                $('#things').show();
+                e.preventDefault();
+        });
+
+        $("#recalctop").on('submit',
+            function (e) {
+                var params = $("#recalctop").serialize();
+                $.ajax({
+                    type: 'GET',
+                    url: "/api/RecalcTop?key=" + key + '&' + params,
+                    error: function (d) {
+                        $('#errorRecalc').html('Failed');
+                    },
+                    success: function (d) {
+                        $('#errorRecalc').html('Succ');
+                    }
+                });
+                
+                e.preventDefault();
+        });
+
+        $("#removeplayer").on('submit',
+            function (e) {
+                var params = $("#removeplayer").serialize();
+                $.ajax({
+                    type: 'GET',
+                    url: "/api/RemovePlayer?key=" + key + '&' + params,
+                    error: function (d) {
+                        $('#errorRemove').html('Failed');
+                    },
+                    success: function (d) {
+                        $('#errorRemove').html('Succ');
+                    }
+                });
+                e.preventDefault();
+        });
+
+        function clearHighscores() {
+                $.ajax({
+                    type: 'GET',
+                    url: "/api/ClearHighscores?key=" + key,
+                    error: function (d) {
+                        $('#errorClear').html('Failed');
+                    },
+                    success: function (d) {
+                        $('#errorClear').html('Succ');
+                    }
+                });
+                e.preventDefault();
+        };
+
+        function toggleQueue() {
+                $.ajax({
+                    type: 'GET',
+                    url: "/api/ToggleQueue?key=" + key,
+                    error: function (d) {
+                        $('#errorToggle').html('Failed');
+                    },
+                    success: function (d) {
+                        $('#errorToggle').html('Succ');
+                    }
+                });
+                e.preventDefault();
+        };
+
+
+        function setCookie(key, value) {
+            var expires = new Date();
+            expires.setTime(expires.getTime() + (30 * 24 * 60 * 60 * 1000));
+            document.cookie = key + '=' + value + ';expires=' + expires.toUTCString();
+        }
+
+        function getCookie(key) {
+            var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
+            return keyValue ? keyValue[2] : null;
+        }
+    </script>
+</body>
+</html>
