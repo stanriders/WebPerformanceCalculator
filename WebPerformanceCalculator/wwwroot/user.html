@@ -142,7 +142,7 @@
         }
         function localPPFormatter(value, row, index) {
             var weighted = Math.pow(0.95, index) * value;
-            return '<span title=\"live pp=' + row.livePP + '\naim pp=' + row.aimPP + ', tap pp=' + row.tapPP + ', acc pp=' + row.accPP + '\">' + value + ' <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
+            return '<span title=\"live pp=' + row.livePP + '\naim pp=' + row.aimPP + ', tap pp=' + row.tapPP + ', acc pp=' + row.accPP + '\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
         }
         function updateProfile() {
             $('#outdated').html('(...)');
