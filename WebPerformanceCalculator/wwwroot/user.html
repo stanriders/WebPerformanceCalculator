@@ -138,7 +138,7 @@
             var beatmapId = split[0];
             split.splice(0, 1);
 
-            return '<a href=\"https://newpp.stanr.info/map/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + accuracy;
+            return '<a href=\"https://newpp.stanr.info/map/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + '<span style="font-size: 11px">' + accuracy + '</span>';
         }
         function localPPFormatter(value, row, index) {
             var weighted = Math.pow(0.95, index) * value;
