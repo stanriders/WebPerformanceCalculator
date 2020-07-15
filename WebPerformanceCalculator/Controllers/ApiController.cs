@@ -177,71 +177,57 @@ namespace WebPerformanceCalculator.Controllers
                     totalNotFilteredAmt = await db.Players.Where(x=>x.Country == country.ToUpperInvariant()).CountAsync();
 
                 List<TopPlayerModel> jsonPlayers;
-                if (!string.IsNullOrEmpty(search))
+
+                var query = db.PlayerSearchQuery.FromSql(
+                    @"SELECT *, 
+                            ROW_NUMBER() OVER(ORDER BY LocalPP DESC) AS Rank, 
+                            ROW_NUMBER() OVER(ORDER BY LivePP DESC) AS LiveRank
+                            from Players").AsQueryable();
+
+                if (!string.IsNullOrEmpty(country))
+                    query = query.Where(x => x.Country == country.ToUpperInvariant());
+
+                if (!string.IsNullOrEmpty(order))
                 {
-                    // not supporting different ordering for now
-                    jsonPlayers = await db.PlayerSearchQuery.FromSql(
-                        @"SELECT * FROM (
-                            SELECT *, ROW_NUMBER() OVER(ORDER BY LocalPP DESC) AS Rank
-                            from Players)")
-                        .Where(x=> x.Name.ToUpper().Contains(search.ToUpper()) || x.JsonName.Contains(search.ToLower()))
-                        .Skip(offset)
-                        .Take(limit)
-                        .Select(x => new TopPlayerModel
-                        {
-                            ID = x.ID,
-                            JsonName = x.JsonName,
-                            LivePP = x.LivePP,
-                            LocalPP = x.LocalPP,
-                            Name = x.Name,
-                            PPLoss = Math.Round(x.PPLoss, 2),
-                            Place = x.Rank,
-                            Country = x.Country
-                        }).ToListAsync();
+                    // this is stupid
+                    sort = sort switch
+                    {
+                        "jsonName" => "JsonName",
+                        "name" => "Name",
+                        "livePP" => "LivePP",
+                        "localPP" => "LocalPP",
+                        "ppLoss" => "PPLoss",
+                        _ => string.Empty
+                    };
+
+                    if (order == "asc")
+                        query = query.OrderBy(sort);
+                    else
+                        query = query.OrderByDescending(sort);
                 }
-                else
+
+                if (!string.IsNullOrEmpty(search))
+                    query = query.Where(x =>
+                        x.Name.ToUpper().Contains(search.ToUpper()) || x.JsonName.Contains(search.ToLower()));
+
+                var players = await query.Skip(offset).Take(limit).ToArrayAsync();
+
+                jsonPlayers = new List<TopPlayerModel>(players.Length);
+                for (int i = 0; i < players.Length; i++)
                 {
-                    var query = db.Players.AsQueryable();
-
-                    if (!string.IsNullOrEmpty(country))
-                        query = query.Where(x => x.Country == country.ToUpperInvariant());
-
-                    if (!string.IsNullOrEmpty(order))
+                    jsonPlayers.Add(new TopPlayerModel
                     {
-                        // this is stupid
-                        sort = sort switch
-                        {
-                            "jsonName" => "JsonName",
-                            "name" => "Name",
-                            "livePP" => "LivePP",
-                            "localPP" => "LocalPP",
-                            "ppLoss" => "PPLoss",
-                            _ => string.Empty
-                        };
-
-                        if (order == "asc")
-                            query = query.OrderBy(sort);
-                        else
-                            query = query.OrderByDescending(sort);
-                    }
-
-                    var players = await query.Skip(offset).Take(limit).ToArrayAsync();
-
-                    jsonPlayers = new List<TopPlayerModel>(players.Length);
-                    for (int i = 0; i < players.Length; i++)
-                    {
-                        jsonPlayers.Add(new TopPlayerModel
-                        {
-                            ID = players[i].ID,
-                            JsonName = players[i].JsonName,
-                            LivePP = players[i].LivePP,
-                            LocalPP = players[i].LocalPP,
-                            Name = players[i].Name,
-                            PPLoss = Math.Round(players[i].PPLoss, 2),
-                            Place = offset + i + 1,
-                            Country = players[i].Country
-                        });
-                    }
+                        ID = players[i].ID,
+                        JsonName = players[i].JsonName,
+                        LivePP = players[i].LivePP,
+                        LocalPP = players[i].LocalPP,
+                        Name = players[i].Name,
+                        PPLoss = Math.Round(players[i].PPLoss, 2),
+                        Place = players[i].Rank,
+                        Country = players[i].Country,
+                        LivePlace = players[i].LiveRank,
+                        RankChange = players[i].Rank - players[i].LiveRank
+                    });
                 }
 
                 return Json(new TopModel()
@@ -423,10 +409,10 @@ namespace WebPerformanceCalculator.Controllers
                         PP = Convert.ToDouble(x["LocalPP"]),
                         CalcTime = DateTime.Now.ToUniversalTime(),
                         LivePP = Convert.ToDouble(x["LivePP"]),
-                        JsonName = userid.ToString() // TODO: remove
+                        JsonName = userid.ToString() // TODO: rename into PlayerId?
                     }).ToArray();
 
-                    await db.Scores.AddRangeAsync(highscores.Except(currentScores).ToArray());
+                    await db.Scores.AddRangeAsync(highscores.Except(currentScores).Where(x=> currentScores.All(y => y.JsonName != x.JsonName)).ToArray());
 
                     await db.SaveChangesAsync();
 
@@ -523,7 +509,9 @@ namespace WebPerformanceCalculator.Controllers
         {
             using var db = new DatabaseContext();
 
-            db.Players.Remove(await db.Players.SingleAsync(x => x.Name == name));
+            if (db.Players.Any(x=> x.Name == name))
+                db.Players.Remove(await db.Players.SingleAsync(x => x.Name == name));
+
             db.Scores.RemoveRange(await db.Scores.Where(x => x.Player == name).ToArrayAsync());
             await db.SaveChangesAsync();
 

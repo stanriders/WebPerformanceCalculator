@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Highscores - delta_t's PP Rework Calculator</title>
+    <title>Highscores (all scores) - delta_t PP Rebalance Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -11,8 +11,8 @@
 <body>
     <div class="container">
         <main role="main" class="pb-1 pt-2">
-            <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
+            <nav class="navbar navbar-expand-sm navbar-light bg-light">
+                <a class="navbar-brand" href="/">delta_t's Rebalance Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -22,8 +22,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/top">Leaderboard</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/highscores">Highscores</a>
+                        </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">Highscores <span class="sr-only">(current)</span></a>
+                            <a class="nav-link" href="#">Highscores (all scores) <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/map">Calculate map PP</a>
@@ -34,79 +37,29 @@
                     </span>
                 </div>
             </nav>
-
-            <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
+            <div class="alert alert-primary mt-2">based on <a href="/top_full">full profiles</a></div>
+            <table class="table table-bordered table-striped table-sm table-hover" data-toggle="bootstrap-table" id="maintable">
+                <thead>
+                    <tr>
+                        <th style="text-align: center; width: 32px;">#</th>
+                        <th style="text-align: center;">Player</th>
+                        <th style="text-align: center;">Beatmap</th>
+                        <th style="text-align: center;">PP</th>
+                    </tr>
+                </thead>
+                <tbody>
+{scores}
+                </tbody>
+            </table>
         </main>
     </div>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-        <script>
-        $(function () {
-            $('#maintable').bootstrapTable({
-                pageSize: 100,
-                pageList: [100, 150, 200, 500],
-                pagination: true,
-                url: "/api/GetHighscores",
-                sortOrder: 'desc',
-                columns: [
-                    [
-                        {
-                            formatter: placeFormatter,
-                            title: '#',
-                            width: 32,
-                            align: 'center'
-                        }, {
-                            title: 'Player',
-                            field: 'player',
-                            align: 'center',
-                            formatter: playerFormatter,
-                        }, {
-                            title: 'Beatmap',
-                            field: 'map',
-                            align: 'center',
-                            formatter: beatmapFormatter,
-                        }, {
-                            title: 'PP',
-                            field: 'pp',
-                            sortable: true,
-                            align: 'center',
-                            width: 100
-                        }
-                    ]
-                ]
-            });
-        });
-        function placeFormatter(value, row, index) {
-            return index+1;
-        }
-        function beatmapFormatter(value, row, index) {
-            var beatmap = value;
-            var modsAndAccuracyIndex = beatmap.lastIndexOf('] ') + 1;
-            var modsAndAccuracySplit = beatmap.substring(modsAndAccuracyIndex + 1).split(' (');
-
-            var mods = modsAndAccuracySplit[0].replace('+', '').split(', ').sort().map(function(item) {
-                return '<span class="badge badge-light">' + item + '</span> '
-            }).join(" ");
-
-            var accuracy = '';
-            if (modsAndAccuracySplit.length > 1)
-                accuracy = '(' + modsAndAccuracySplit[1];
-
-            beatmap = beatmap.substring(0, modsAndAccuracyIndex);
-            var split = beatmap.split(' - ');
-            var beatmapId = split[0];
-            split.splice(0, 1);
-
-            return '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + accuracy;
-        }
-        function playerFormatter(value, row, index) {
-            return '<a href=\"https://newpp.stanr.info/user/' + row.jsonName + '\">' + value + '</a>';
-        }
-    </script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47115002-3"></script>
+
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }

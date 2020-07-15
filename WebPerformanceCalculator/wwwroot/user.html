@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Loading... - delta_t's PP Rebalance Calculator</title>
+    <title>Loading... - delta_t's PP Rework Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -12,7 +12,7 @@
     <div class="container">
         <main role="main" class="pb-1 pt-2">
             <nav class="navbar navbar-expand-sm navbar-light bg-light">
-                <a class="navbar-brand" href="/">delta_t's Rebalance Calculator</a>
+                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -42,8 +42,8 @@
             <div class="pt-2 pb-2">
                 <h1 class="username">Loading...</h1>
                 <div><b>Updated on:</b> <span id="updatedate"></span> <span id="outdated"></span></div>
-                <div><b>Live PP:</b><div id="livePP"></div></div>
-                <div><b>Local PP:</b><div id="localPP"></div></div>
+                <div><b>Total PP:</b> <span id="localPP"></span></div>
+                <br>
                 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
             </div>
         </main>
@@ -63,8 +63,7 @@
                     $('#username').html("Failed to load");
                 },
                 success: function (json) {
-                    $('#livePP').html(json.livePP);
-                    $('#localPP').html(json.localPP);
+                    $('#localPP').html(json.localPP.split(' ')[0]);
                     $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.username + "\">" + json.username + "</a>");
                     $('title').html(json.username + ' - delta_t PP Rebalance Calculator');
 
@@ -101,27 +100,18 @@
                             title: 'Beatmap',
                             field: 'beatmap'
                         }, {
-                            title: 'Live PP',
-                            field: 'livePP',
-                            sortable: true,
-                            align: 'center'
-                        }, {
                             formatter: localPPFormatter,
-                            title: 'New PP',
+                            title: 'PP',
                             field: 'localPP',
-                            width: 82,
-                            sortable: true,
-                            align: 'center'
-                        }, {
-                            title: 'PP Change',
-                            field: 'ppChange',
+                            width: 100,
                             sortable: true,
                             align: 'center'
                         }, {
                             title: 'Position change',
                             field: 'positionChange',
                             sortable: true,
-                            align: 'center'
+                            align: 'center',
+                            width: 64,
                         }
                     ]
                 ]
@@ -152,7 +142,7 @@
         }
         function localPPFormatter(value, row, index) {
             var weighted = Math.pow(0.95, index) * value;
-            return '<span title=\"aim pp=' + row.aimPP + ', tap pp=' + row.tapPP + ', acc pp=' + row.accPP + '\">' + value + ' <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
+            return '<span title=\"live pp=' + row.livePP + '\naim pp=' + row.aimPP + ', tap pp=' + row.tapPP + ', acc pp=' + row.accPP + '\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
         }
         function updateProfile() {
             $('#outdated').html('(...)');

@@ -1,17 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using System.Linq;
 
-// ReSharper disable StringLiteralTypo
-
-namespace FullTopBuilder
+namespace HighscoreBuilder
 {
     class Program
     {
@@ -94,16 +92,13 @@ namespace FullTopBuilder
 
         private const string user_page = "https://newpp.stanr.info/api/getresults?player=";
 
-        private const string user_template = "<tr><td style=\"text-align: center; width: 32px\">{0}</td>" +
-            "<td style=\"text-align: center\">{6}<a href=\"/user/{1}_full\">{2}</a></td>" +
+        private const string score_template = "<tr><td style=\"text-align: center; width: 32px\">{0}</td>" +
+            "<td style=\"text-align: center\"><a href=\"/user/{1}_full\">{2}</a></td>" +
             "<td style=\"text-align: center\">{3}</td>" +
             "<td style=\"text-align: center\">{4}</td>" +
-            "<td style=\"text-align: center\">{5}</td>" +
             "</tr>";
 
-        private const string country_template = "<a href=\"/countrytop/{0}\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/{0}.png\"></a>";
-
-        private const int rank_separator = 50;
+        private const double pp_cutoff = 699.5;
 
         private static HttpClient http = new HttpClient();
 
@@ -113,51 +108,66 @@ namespace FullTopBuilder
 
             var template = File.ReadAllText("template.html");
 
-            var players = new ConcurrentBag<PlayerModel>();
+            var scores = new ConcurrentBag<ScoreModel>();
             Parallel.ForEach(pages, (player) =>
             {
                 var playerLink = $"{user_page}{player}_full";
                 var jsonString = http.GetStringAsync(playerLink).Result;
                 if (!string.IsNullOrEmpty(jsonString))
                 {
-                    var json = JsonConvert.DeserializeObject<PlayerModel>(jsonString);
+                    var json = JObject.Parse(jsonString);
+                    var playerCapitalized = json["username"].ToString();
+                    var playerScores = json["beatmaps"].ToObject<ScoreModel[]>();
 
-                    var bracketIndex = json.LocalPP.IndexOf('(') + 1;
-                    json.PPChange = json.LocalPP.Substring(bracketIndex, json.LocalPP.Length - bracketIndex - 1);
-                    json.LivePP = json.LivePP.Substring(0, json.LivePP.IndexOf(' '));
-                    json.LocalPP = json.LocalPP.Substring(0, json.LocalPP.IndexOf(' '));
-                    json.LocalPPNumeric = Double.Parse(json.LocalPP, CultureInfo.InvariantCulture);
-
-                    if (json.UpdateDate.Month < DateTime.Today.Month)
-                        json.Outdated = true;
-
-                    players.Add(json);
+                    foreach (var score in playerScores)
+                    {
+                        if (score.LocalPP > pp_cutoff)
+                        {
+                            score.Player = playerCapitalized;
+                            scores.Add(score);
+                        }
+                    }
                 }
             });
 
-            var orderedPlayers = players.OrderByDescending(x => x.LocalPPNumeric).ToArray();
+            var orderedScores = scores.OrderByDescending(x => x.LocalPP).ToArray();
 
             var sb = new StringBuilder();
-            for (int i = 0; i < orderedPlayers.Length; i++)
+            for (int i = 0; i < orderedScores.Length; i++)
             {
-                var player = orderedPlayers[i];
+                var score = orderedScores[i];
 
-                if (i == rank_separator)
-                    sb.AppendLine(string.Format(user_template, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty));
-
-                sb.AppendLine(string.Format(user_template, 
-                    i < rank_separator ? (i + 1).ToString() : "-", 
-                    player.Username.ToLower(), 
-                    player.Username + (player.Outdated ? " (outdated)" : string.Empty), 
-                    player.LivePP,
-                    player.LocalPP,
-                    player.PPChange,
-                    string.Format(country_template, player.UserCountry)));
+                sb.AppendLine(string.Format(score_template,
+                    (i + 1).ToString(),
+                    score.Player.ToLower(),
+                    score.Player,
+                    formatBeatmap(score.Beatmap),
+                    score.LocalPP));
             }
 
-            var updateMonth = DateTime.Today.AddDays(-DateTime.Today.Day + 1);
-            File.WriteAllText("top_full.html", template.Replace("{updatedate}", updateMonth.ToString(CultureInfo.InvariantCulture))
-                                                                    .Replace("{players}", sb.ToString()));
+            File.WriteAllText("highscores_full.html", template.Replace("{scores}", sb.ToString()));
+        }
+
+        private static string formatBeatmap(string beatmap)
+        {
+            var modsAndAccuracyIndex = beatmap.LastIndexOf("] ") + 1;
+            var modsAndAccuracySplit = beatmap.Substring(modsAndAccuracyIndex + 1).Split(" (");
+
+            var mods = string.Join(" ", modsAndAccuracySplit[0].Replace("+", "")
+                .Split(", ")
+                .OrderBy(x => x)
+                .Select(item => $"<span class=\"badge badge-light\">{item}</span> "));
+
+            var accuracy = string.Empty;
+            if (modsAndAccuracySplit.Length > 1)
+                accuracy = '(' + modsAndAccuracySplit[1];
+
+            beatmap = beatmap.Substring(0, modsAndAccuracyIndex);
+            var split = beatmap.Split(" - ").ToList();
+            var beatmapId = split[0];
+            split.RemoveAt(0);
+
+            return $"<a href=\"https://osu.ppy.sh/b/{beatmapId}\">{string.Join(" - ", split)}</a> {mods}{accuracy}";
         }
     }
 }

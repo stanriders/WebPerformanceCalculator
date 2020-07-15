@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Leaderboard - delta_t's PP Rebalance Calculator</title>
+    <title>Leaderboard - delta_t's PP Rework Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -12,7 +12,7 @@
     <div class="container">
         <main role="main" class="pb-1 pt-2">
             <nav class="navbar navbar-expand-sm navbar-light bg-light">
-                <a class="navbar-brand" href="/">delta_t's Rebalance Calculator</a>
+                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -59,34 +59,38 @@
                         {
                             field: 'place',
                             title: '#',
-                            width: 32,
-                            align: 'center'
+                            width: 120,
+                            align: 'center',
+                            formatter: formatRank
                         }, {
                             title: 'Player',
                             field: 'name',
                             sortable: true,
-                            align: 'center',
+                            align: 'left',
                             formatter: formatPlayerName
-                        }, {
-                            title: 'Live PP',
-                            field: 'livePP',
-                            sortable: true,
-                            align: 'center'
-                        }, {
-                            title: 'New PP',
+                        },{
+                            title: 'PP',
                             field: 'localPP',
                             sortable: true,
-                            align: 'center'
-                        }, {
-                            title: 'PP Change',
-                            field: 'ppLoss',
-                            sortable: true,
-                            align: 'center'
+                            align: 'center',
+                            width: 128,
                         }
                     ]
                 ]
             });
-
+            function formatRank(value, row, index) {
+                if (row.rankChange != 0) {
+                    var rankChange;
+                    if (row.rankChange > 0) {
+                        rankChange = '<span style="color: red;">▾'+row.rankChange+' </span>'
+                    } else {
+                        rankChange = '<span style="color: limegreen;">▴'+Math.abs(row.rankChange)+' </span>'
+                    }
+                    return value + ' (' + rankChange + ')';
+                }
+                else
+                    return value;
+            }
             function formatPlayerName(value, row, index) {
                 if (!!row.country){
                     return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/"+row.country+".png\"/></a><a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
