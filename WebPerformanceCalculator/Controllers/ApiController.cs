@@ -33,12 +33,14 @@ namespace WebPerformanceCalculator.Controllers
         private static string commitHash = "unknown";
 
         private static MemoryCache playerCache = new MemoryCache("calculated_players"); // cache for recently calculated players
+        private static MemoryCache usersCache = new MemoryCache("users"); // cache for recently calculated players
 
         private static readonly Regex mapLinkRegex = 
             new Regex(@"(?>https?:\/\/)?(?>osu|old)\.ppy\.sh\/([b,s]|(?>beatmaps)|(?>beatmapsets))\/(\d+\/?\#osu\/)?(\d+)?\/?(?>[&,?].=\d)?", 
                 RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private const double keep_scores_bigger_than = 699.5; // pp threshold for /highscores/
+        private const double calcs_per_hour = 15.0; // how many profiles one user can calc in an hour
 
         private const string commit_hash_file = "commithash";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
@@ -76,6 +78,14 @@ namespace WebPerformanceCalculator.Controllers
         [Consumes("application/x-www-form-urlencoded")]
         public IActionResult AddToQueue([FromForm] string jsonUsername)
         {
+            var remoteIp = HttpContext.Connection.RemoteIpAddress.ToString();
+            var userCalcs = 0;
+            if (usersCache.Contains(remoteIp))
+                userCalcs = (int) usersCache[remoteIp];
+
+            if (userCalcs > calcs_per_hour)
+                return StatusCode(400, new { err = "Chill" });
+
             if (string.IsNullOrEmpty(jsonUsername))
                 return StatusCode(400, new { err = "Incorrect username" });
 
@@ -103,6 +113,8 @@ namespace WebPerformanceCalculator.Controllers
                 {
                     usernameQueue.Enqueue(jsonUsername);
                     queueDebounce = DateTime.Now.AddSeconds(1);
+                    userCalcs++;
+                    usersCache.Set(remoteIp, userCalcs, DateTimeOffset.Now.AddHours(userCalcs / calcs_per_hour));
                     return GetQueue();
                 }
 
