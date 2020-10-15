@@ -99,7 +99,7 @@
             var beatmapId = split[0];
             split.splice(0, 1);
 
-            return '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + accuracy;
+            return '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + '<span style="font-size: 11px">' + accuracy + '</span>';
         }
         function playerFormatter(value, row, index) {
             return '<a href=\"https://newpp.stanr.info/user/' + row.jsonName + '\">' + value + '</a>';
