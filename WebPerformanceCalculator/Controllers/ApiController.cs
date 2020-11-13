@@ -215,17 +215,34 @@ namespace WebPerformanceCalculator.Controllers
                     jsonPlayers = new List<TopPlayerModel>(players.Length);
                     for (int i = 0; i < players.Length; i++)
                     {
-                        jsonPlayers.Add(new TopPlayerModel
+                        if (!CheckFileCalcDateOutdated($"players/{players[i].JsonName}.json"))
                         {
-                            ID = players[i].ID,
-                            JsonName = players[i].JsonName,
-                            LivePP = players[i].LivePP,
-                            LocalPP = players[i].LocalPP,
-                            Name = players[i].Name,
-                            PPLoss = Math.Round(players[i].PPLoss, 2),
-                            Place = offset + i + 1,
-                            Country = players[i].Country
-                        });
+                            jsonPlayers.Add(new TopPlayerModel
+                            {
+                                ID = players[i].ID,
+                                JsonName = players[i].JsonName,
+                                LivePP = players[i].LivePP,
+                                LocalPP = players[i].LocalPP,
+                                Name = players[i].Name,
+                                PPLoss = Math.Round(players[i].PPLoss, 2),
+                                Place = offset + i + 1,
+                                Country = players[i].Country
+                            });
+                        }
+                        else
+                        {
+                            jsonPlayers.Add(new TopPlayerModel
+                            {
+                                ID = players[i].ID,
+                                JsonName = players[i].JsonName,
+                                LivePP = players[i].LivePP,
+                                LocalPP = 0,
+                                Name = players[i].Name,
+                                PPLoss = 0.0,
+                                Place = offset + i + 1,
+                                Country = players[i].Country
+                            });
+                        }
                     }
                 }
 
