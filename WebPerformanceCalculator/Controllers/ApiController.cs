@@ -6,14 +6,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RunProcessAsTask;
 using WebPerformanceCalculator.DB;
 using WebPerformanceCalculator.Models;
@@ -28,6 +27,7 @@ namespace WebPerformanceCalculator.Controllers
         private static readonly ConcurrentQueue<string> usernameQueue = new ConcurrentQueue<string>();
         private static DateTime queueDebounce = DateTime.Now;
         private static bool queueLocked;
+        private static readonly SemaphoreSlim mapCalcSemaphore = new SemaphoreSlim(3);
 
         private static string workingDir;
         private static string commitHash = "unknown";
@@ -285,6 +285,8 @@ namespace WebPerformanceCalculator.Controllers
                     if (model.Mods.Length > 0)
                         commandMods = "-m " + string.Join(" -m ", model.Mods);
 
+                    await mapCalcSemaphore.WaitAsync();
+
                     await ProcessEx.RunAsync(new ProcessStartInfo
                     {
                         FileName = "dotnet",
@@ -295,6 +297,8 @@ namespace WebPerformanceCalculator.Controllers
                         UseShellExecute = true,
                         CreateNoWindow = true,
                     });
+
+                    mapCalcSemaphore.Release();
 
                     if (System.IO.File.Exists($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
                         return Ok(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
@@ -327,6 +331,7 @@ namespace WebPerformanceCalculator.Controllers
                     var ipGraph = new List<IndexGraphModel>(graph.Length);
                     var fingerGraph = new List<FingerGraphModel>();
                     var tapGraph = new List<TapGraphModel>();
+                    var readingGraph = new List<ReadingGraphModel>();
                     foreach (var g in graph)
                     {
                         var split = g.Split(' ');
@@ -370,7 +375,21 @@ namespace WebPerformanceCalculator.Controllers
                             });
                         }
                     }
-                    return Ok(new { probGraph, ipGraph, fingerGraph, tapGraph });
+
+                    var reading = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_reading.txt");
+                    if (reading.Length > 0)
+                    {
+                        foreach (var g in reading)
+                        {
+                            var split = g.Split(' ');
+                            readingGraph.Add(new ReadingGraphModel
+                            {
+                                Time = Convert.ToDouble(split[0]),
+                                Difficulty = Convert.ToDouble(split[1])
+                            });
+                        }
+                    }
+                    return Ok(new { probGraph, ipGraph, fingerGraph, tapGraph, readingGraph });
                 }
             }
 
@@ -525,6 +544,14 @@ namespace WebPerformanceCalculator.Controllers
 
             }
 
+            return new OkResult();
+        }
+
+        [RequiresKey]
+        [Route("ClearQueue")]
+        public IActionResult ClearQueue(string key)
+        {
+            usernameQueue.Clear();
             return new OkResult();
         }
 
