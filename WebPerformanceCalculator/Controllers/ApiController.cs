@@ -348,45 +348,54 @@ namespace WebPerformanceCalculator.Controllers
                         });
                     }
 
-                    var finger = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_finger.txt");
-                    if (finger.Length > 0)
+                    if (System.IO.File.Exists($"cache/graph_{mapId}_{mods}_finger.txt"))
                     {
-                        foreach (var g in finger)
+                        var finger = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_finger.txt");
+                        if (finger.Length > 0)
                         {
-                            var split = g.Split(' ');
-                            fingerGraph.Add(new FingerGraphModel
+                            foreach (var g in finger)
                             {
-                                Time = Convert.ToDouble(split[0]),
-                                Difficulty = Convert.ToDouble(split[2])
-                            });
+                                var split = g.Split(' ');
+                                fingerGraph.Add(new FingerGraphModel
+                                {
+                                    Time = Convert.ToDouble(split[0]),
+                                    Difficulty = Convert.ToDouble(split[2])
+                                });
+                            }
                         }
                     }
 
-                    var tap = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_tap.txt");
-                    if (tap.Length > 0)
+                    if (System.IO.File.Exists($"cache/graph_{mapId}_{mods}_tap.txt"))
                     {
-                        foreach (var g in tap)
+                        var tap = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_tap.txt");
+                        if (tap.Length > 0)
                         {
-                            var split = g.Split(' ');
-                            tapGraph.Add(new TapGraphModel
+                            foreach (var g in tap)
                             {
-                                Time = Convert.ToDouble(split[0]),
-                                Difficulty = Convert.ToDouble(split[5])
-                            });
+                                var split = g.Split(' ');
+                                tapGraph.Add(new TapGraphModel
+                                {
+                                    Time = Convert.ToDouble(split[0]),
+                                    Difficulty = Convert.ToDouble(split[5])
+                                });
+                            }
                         }
                     }
 
-                    var reading = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_reading.txt");
-                    if (reading.Length > 0)
+                    if (System.IO.File.Exists($"cache/graph_{mapId}_{mods}_reading.txt"))
                     {
-                        foreach (var g in reading)
+                        var reading = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}_reading.txt");
+                        if (reading.Length > 0)
                         {
-                            var split = g.Split(' ');
-                            readingGraph.Add(new ReadingGraphModel
+                            foreach (var g in reading)
                             {
-                                Time = Convert.ToDouble(split[0]),
-                                Difficulty = Convert.ToDouble(split[1])
-                            });
+                                var split = g.Split(' ');
+                                readingGraph.Add(new ReadingGraphModel
+                                {
+                                    Time = Convert.ToDouble(split[0]),
+                                    Difficulty = Convert.ToDouble(split[1])
+                                });
+                            }
                         }
                     }
                     return Ok(new { probGraph, ipGraph, fingerGraph, tapGraph, readingGraph });
