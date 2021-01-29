@@ -44,7 +44,6 @@ namespace WebPerformanceCalculator.Controllers
 
         private const string commit_hash_file = "commithash";
         private const string calc_file = "osu.Game.Rulesets.Osu.dll";
-        private const string calc_update_link = "http://dandan.kikoe.ru/osu.Game.Rulesets.Osu.dll";
 
         public ApiController()
         {
@@ -113,12 +112,15 @@ namespace WebPerformanceCalculator.Controllers
                 {
                     usernameQueue.Enqueue(jsonUsername);
                     queueDebounce = DateTime.Now.AddSeconds(1);
-                    userCalcs++;
-                    usersCache.Set(remoteIp, userCalcs, DateTimeOffset.Now.AddHours(userCalcs / calcs_per_hour));
+                    if (userCalcs != -1)
+                    {
+                        userCalcs++;
+                        usersCache.Set(remoteIp, userCalcs, DateTimeOffset.Now.AddHours(userCalcs / calcs_per_hour));
+                    }
                     return GetQueue();
                 }
 
-                return StatusCode(400, new { err = "This player doesn't need a recalculation yet! You can only recalculate once a day" });
+                return StatusCode(400, new { err = "This player doesn't need a recalculation yet! You can only recalculate once an hour" });
             }
 
             return StatusCode(400, new {err = "Incorrect username"});
@@ -152,7 +154,7 @@ namespace WebPerformanceCalculator.Controllers
                 {
                     var dbPlayer = await dbContext.Players.FirstOrDefaultAsync(x => x.Name.ToUpper() == player.ToUpper());
                     if (dbPlayer != null)
-                        return RedirectPermanent($"/api/GetResults?player={dbPlayer.JsonName}");
+                        return RedirectPermanent($"/api/GetResults?player={dbPlayer.ID}");
                     
                     return Json(new { Username = "Unknown player" });
                 }
@@ -208,7 +210,7 @@ namespace WebPerformanceCalculator.Controllers
 
                 if (!string.IsNullOrEmpty(search))
                     query = query.Where(x =>
-                        x.Name.ToUpper().Contains(search.ToUpper()) || x.JsonName.Contains(search.ToLower()));
+                        x.Name.ToUpper().Contains(search.ToUpper()) || x.ID.ToString() == search);
 
                 var players = await query.Skip(offset).Take(limit).ToArrayAsync();
 
@@ -218,7 +220,6 @@ namespace WebPerformanceCalculator.Controllers
                     jsonPlayers.Add(new TopPlayerModel
                     {
                         ID = players[i].ID,
-                        JsonName = players[i].JsonName,
                         LivePP = players[i].LivePP,
                         LocalPP = players[i].LocalPP,
                         Name = players[i].Name,
@@ -297,7 +298,7 @@ namespace WebPerformanceCalculator.Controllers
                     });
 
                     if (System.IO.File.Exists($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"))
-                        return Ok(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
+                        return Ok(await System.IO.File.ReadAllTextAsync($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
                 }
                 catch (Exception e)
                 {
@@ -306,36 +307,10 @@ namespace WebPerformanceCalculator.Controllers
             }
             else
             {
-                return Ok(System.IO.File.ReadAllText($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
+                return Ok(await System.IO.File.ReadAllTextAsync($"{workingDir}/mapinfo/{mapId}_{modsJoined}.json"));
             }
 
             return StatusCode(500, new { err = "Failed to calculate!" });
-        }
-
-        [Route("GetProbabilityChart")]
-        public async Task<IActionResult> GetProbabilityChart(string mapId, string mods = "")
-        {
-            if (System.IO.File.Exists($"cache/graph_{mapId}_{mods}.txt"))
-            {
-                var graph = await System.IO.File.ReadAllLinesAsync($"cache/graph_{mapId}_{mods}.txt");
-                if (graph.Length > 0)
-                {
-                    var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
-                    foreach (var g in graph)
-                    {
-                        var split = g.Split(' ');
-                        jsonGraph.Add(new ProbabilityGraphModel
-                        {
-                            Time = Convert.ToDouble(split[0]),
-                            Probability = Convert.ToDouble(split[3])
-                        });
-                    }
-
-                    return Ok(jsonGraph);
-                }
-            }
-
-            return StatusCode(400);
         }
 
         #endregion
@@ -381,7 +356,6 @@ namespace WebPerformanceCalculator.Controllers
                         player.LivePP = livePP;
                         player.LocalPP = localPP;
                         player.PPLoss = localPP - livePP;
-                        player.JsonName = userid.ToString(); // TODO: remove;
                         player.Name = osuUsername;
                         player.Country = country;
                     }
@@ -394,8 +368,8 @@ namespace WebPerformanceCalculator.Controllers
                             LocalPP = localPP,
                             PPLoss = localPP - livePP,
                             Name = osuUsername,
-                            JsonName = userid.ToString(), // TODO: remove,
-                            Country = country
+                            Country = country,
+                            UpdateDate = DateTime.UtcNow
                         });
                     }
 
@@ -409,15 +383,15 @@ namespace WebPerformanceCalculator.Controllers
                         PP = Convert.ToDouble(x["LocalPP"]),
                         CalcTime = DateTime.Now.ToUniversalTime(),
                         LivePP = Convert.ToDouble(x["LivePP"]),
-                        JsonName = userid.ToString() // TODO: rename into PlayerId?
+                        PlayerId = userid
                     }).ToArray();
 
-                    await db.Scores.AddRangeAsync(highscores.Except(currentScores).Where(x=> currentScores.All(y => y.JsonName != x.JsonName)).ToArray());
+                    await db.Scores.AddRangeAsync(highscores.Except(currentScores).Where(x=> currentScores.All(y => y.PlayerId != x.PlayerId)).ToArray());
 
                     await db.SaveChangesAsync();
 
-                    // one calculation a day
-                    playerCache.Add(jsonUsername, jsonUsername, DateTimeOffset.Now.AddDays(1));
+                    // one calculation an hour
+                    playerCache.Add(jsonUsername, jsonUsername, DateTimeOffset.Now.AddHours(1));
                 }
             }
 
@@ -434,14 +408,7 @@ namespace WebPerformanceCalculator.Controllers
             var localCalcDate = System.IO.File.GetLastWriteTime(calc_file).ToUniversalTime().Ticks;
 
             if (calcTimestamp < localCalcDate)
-            {
-                // send update data
-                return Json(new WorkerDataModel
-                {
-                    NeedsCalcUpdate = true,
-                    Data = calc_update_link
-                });
-            }
+                return StatusCode(400);
 
             if (usernameQueue.TryDequeue(out var username))
                 return Json(new WorkerDataModel { Data = username });
@@ -470,7 +437,7 @@ namespace WebPerformanceCalculator.Controllers
                 var players = await db.Players.OrderByDescending(x => x.LocalPP)
                     .Skip(offset)
                     .Take(amt)
-                    .Select(x => x.JsonName)
+                    .Select(x => x.ID.ToString())
                     .ToArrayAsync();
 
                 foreach (var player in players)
@@ -494,7 +461,7 @@ namespace WebPerformanceCalculator.Controllers
 
             var players = db.Players.OrderByDescending(x => x.LocalPP)
                 .Take(100)
-                .Select(x => x.JsonName)
+                .Select(x => x.ID.ToString())
                 .ToArray();
 
             foreach (var player in players)
@@ -514,6 +481,18 @@ namespace WebPerformanceCalculator.Controllers
 
             db.Scores.RemoveRange(await db.Scores.Where(x => x.Player == name).ToArrayAsync());
             await db.SaveChangesAsync();
+
+            return new OkResult();
+        }
+
+        [RequiresKey]
+        [Route("SetAdmin")]
+        public async Task<IActionResult> SetAdmin(string key)
+        {
+            using var db = new DatabaseContext();
+
+            var remoteIp = HttpContext.Connection.RemoteIpAddress.ToString();
+            usersCache.Set(remoteIp, -1, DateTimeOffset.Now.AddDays(30));
 
             return new OkResult();
         }

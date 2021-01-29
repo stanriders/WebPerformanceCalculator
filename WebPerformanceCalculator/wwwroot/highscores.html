@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Highscores - delta_t's PP Rework Calculator</title>
+    <title>Highscores - Xexxar/joz Rework Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -12,7 +12,7 @@
     <div class="container">
         <main role="main" class="pb-1 pt-2">
             <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
+                <a class="navbar-brand" href="/">Xexxar/joz Rework Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -102,22 +102,8 @@
             return '<a href=\"https://osu.ppy.sh/b/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + '<span style="font-size: 11px">' + accuracy + '</span>';
         }
         function playerFormatter(value, row, index) {
-            return '<a href=\"https://newpp.stanr.info/user/' + row.jsonName + '\">' + value + '</a>';
+            return '<a href=\"https://xexxar.stanr.info/user/' + row.playerId + '\">' + value + '</a>';
         }
     </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calculate Map PP - delta_t's PP Rework Calculator</title>
+    <title>Calculate Map PP - Xexxar/joz Rework Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -12,7 +12,7 @@
     <div class="container">
         <main role="main" class="pb-1 pt-2">
             <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
+                <a class="navbar-brand" href="/">Xexxar/joz Rework Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -108,10 +108,6 @@
                     <div class="chart-container" style="position: relative; min-height: 200px">
                         <canvas id="ppPartsChart"></canvas>
                     </div>
-                    <hr />
-                    <div class="chart-container" style="position: relative; min-height: 250px">
-                        <canvas id="probChart"></canvas>
-                    </div>
                 </div>
             </div>
         </main>
@@ -173,25 +169,6 @@
                     options: { maintainAspectRatio: false }
                 });
 
-            var probctx = document.getElementById('probChart').getContext('2d');
-            probChart = new Chart(probctx,
-                {
-                    type: 'scatter',
-                    options: {
-                        maintainAspectRatio: false,
-                        scales: {
-                            xAxes: [
-                                {
-                                    scaleLabel: { display: true, labelString: 'time' },
-                                    type: 'linear',
-                                    position: 'bottom'
-                                }
-                            ]
-                        },
-                        plugins: chartZoom
-                    }
-                });
-
             // load map data if we have an id in the url
             var map = window.location.href.slice(window.location.href.lastIndexOf('/') + 1);
             if (!isNaN(map)) {
@@ -251,19 +228,16 @@
                         json.Title +
                         '</a> ' +
                         mods);
-                    $('title').html(json.Title + ' - delta_t PP Rebalance Calculator');
+                    $('title').html(json.Title + ' - Xexxar/joz Rework Calculator');
 
                     $('#sr').html(json.Stars.toFixed(2) + '*');
-                    $('#sraim').html('Aim: ' + json.AimSR.toFixed(2) + '*');
-                    $('#srtap').html('Tap: ' + json.TapSR.toFixed(2) + '*');
-                    $('#srfc').html('Finger Control: ' + json.FingerControlSR.toFixed(2) + '*');
 
                     // populate the table
-                    $('#pp100').html('<span title=\"aim pp=' + json.AimPP[10] + ', tap pp=' + json.TapPP[10] + ', acc pp=' + json.AccPP[10] + '\">' + json.PP[10].toFixed(2) + '</span>');
-                    $('#pp99').html('<span title=\"aim pp=' + json.AimPP[9] + ', tap pp=' + json.TapPP[9] + ', acc pp=' + json.AccPP[9] + '\">' + json.PP[9].toFixed(2) + '</span>');
-                    $('#pp98').html('<span title=\"aim pp=' + json.AimPP[8] + ', tap pp=' + json.TapPP[8] + ', acc pp=' + json.AccPP[8] + '\">' + json.PP[8].toFixed(2) + '</span>');
-                    $('#pp95').html('<span title=\"aim pp=' + json.AimPP[5] + ', tap pp=' + json.TapPP[5] + ', acc pp=' + json.AccPP[5] + '\">' + json.PP[5].toFixed(2) + '</span>');
-                    $('#pp90').html('<span title=\"aim pp=' + json.AimPP[0] + ', tap pp=' + json.TapPP[0] + ', acc pp=' + json.AccPP[0] + '\">' + json.PP[0].toFixed(2) + '</span>');
+                    $('#pp100').html('<span title=\"aim pp=' + json.AimPP[10] + ', speed pp=' + json.TapPP[10] + ', acc pp=' + json.AccPP[10] + '\">' + json.PP[10].toFixed(2) + '</span>');
+                    $('#pp99').html('<span title=\"aim pp=' + json.AimPP[9] + ', speed pp=' + json.TapPP[9] + ', acc pp=' + json.AccPP[9] + '\">' + json.PP[9].toFixed(2) + '</span>');
+                    $('#pp98').html('<span title=\"aim pp=' + json.AimPP[8] + ', speed pp=' + json.TapPP[8] + ', acc pp=' + json.AccPP[8] + '\">' + json.PP[8].toFixed(2) + '</span>');
+                    $('#pp95').html('<span title=\"aim pp=' + json.AimPP[5] + ', speed pp=' + json.TapPP[5] + ', acc pp=' + json.AccPP[5] + '\">' + json.PP[5].toFixed(2) + '</span>');
+                    $('#pp90').html('<span title=\"aim pp=' + json.AimPP[0] + ', speed pp=' + json.TapPP[0] + ', acc pp=' + json.AccPP[0] + '\">' + json.PP[0].toFixed(2) + '</span>');
 
                     var incorrectValues = 0;
                     for (var i = 1; i < json.PP.length; i++) {
@@ -299,43 +273,18 @@
                         },
                         {
                             backgroundColor: "rgba(255,0,123,0.1)",
-                            label: 'tap pp',
+                            label: 'speed pp',
                             cubicInterpolationMode: 'monotone',
                             data: json.TapPP
-                        },
+                        }/*,
                         {
                             backgroundColor: "rgba(0,255,123,0.1)",
                             label: 'acc pp',
                             cubicInterpolationMode: 'monotone',
                             data: json.AccPP
-                        }
+                        }*/
                     ];
                     ppPartsChart.update();
-
-                    // load probability chart
-                    $.ajax({
-                        type: 'GET',
-                        url: "/api/GetProbabilityChart",
-                        data: {
-                            mapId: json.Id,
-                            mods: json.Mods.sort().map(function(item) {return item.acronym}).join('')
-                        },
-                        /*data: { mapId: json.Id },*/
-                        success: function(probs) {
-                            probChart.data.datasets = [
-                                {
-                                    backgroundColor: "rgba(0,123,255,0.3)",
-                                    label: '(aim) miss probability',
-                                    data: probs
-                                }
-                            ];
-                            probChart.update();
-                            $('#probChart').show();
-                        },
-                        error: function(d) {
-                            $('#probChart').hide();
-                        },
-                    });
 
                     // keep calculated maps in history
                     if (!fromHistory)
@@ -357,19 +306,5 @@
             });
         }
     </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>

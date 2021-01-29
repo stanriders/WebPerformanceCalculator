@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Loading... - delta_t's PP Rework Calculator</title>
+    <title>Loading... - Xexxar/joz Rework Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -12,7 +12,7 @@
     <div class="container">
         <main role="main" class="pb-1 pt-2">
             <nav class="navbar navbar-expand-sm navbar-light bg-light">
-                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
+                <a class="navbar-brand" href="/">Xexxar/joz Rework Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -42,7 +42,8 @@
             <div class="pt-2 pb-2">
                 <h1 class="username">Loading...</h1>
                 <div><b>Updated on:</b> <span id="updatedate"></span> <span id="outdated"></span></div>
-                <div><b>Total PP:</b> <span id="localPP"></span></div>
+                <div><b>Old PP:</b> <span id="livePP"></span></div>
+                <div><b>New PP:</b> <span id="localPP"></span></div>
                 <br>
                 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
             </div>
@@ -63,7 +64,8 @@
                     $('#username').html("Failed to load");
                 },
                 success: function (json) {
-                    $('#localPP').html(json.localPP.split(' ')[0]);
+                    $('#livePP').html(json.livePP.split(' ')[0]);
+                    $('#localPP').html(json.localPP);
                     $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.username + "\">" + json.username + "</a>");
                     $('title').html(json.username + ' - delta_t PP Rebalance Calculator');
 
@@ -100,10 +102,22 @@
                             title: 'Beatmap',
                             field: 'beatmap'
                         }, {
+                            title: 'Old PP',
+                            field: 'livePP',
+                            width: 80,
+                            sortable: true,
+                            align: 'center'
+                        }, {
                             formatter: localPPFormatter,
-                            title: 'PP',
+                            title: 'New PP',
                             field: 'localPP',
                             width: 100,
+                            sortable: true,
+                            align: 'center'
+                        }, {
+                            title: 'PP difference',
+                            field: 'ppChange',
+                            width: 80,
                             sortable: true,
                             align: 'center'
                         }, {
@@ -138,11 +152,11 @@
             var beatmapId = split[0];
             split.splice(0, 1);
 
-            return '<a href=\"https://newpp.stanr.info/map/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + '<span style="font-size: 11px">' + accuracy + '</span>';
+            return '<a href=\"https://xexxar.stanr.info/map/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + '<span style="font-size: 11px">' + accuracy + '</span>';
         }
         function localPPFormatter(value, row, index) {
             var weighted = Math.pow(0.95, index) * value;
-            return '<span title=\"live pp=' + row.livePP + '\naim pp=' + row.aimPP + ', tap pp=' + row.tapPP + ', acc pp=' + row.accPP + '\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
+            return '<span title=\"live pp=' + row.livePP + '\naim pp=' + row.aimPP + ', speed pp=' + row.tapPP + ', acc pp=' + row.accPP + '\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
         }
         function updateProfile() {
             $('#outdated').html('(...)');
@@ -160,19 +174,5 @@
         }
 
     </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </body>
 </html>

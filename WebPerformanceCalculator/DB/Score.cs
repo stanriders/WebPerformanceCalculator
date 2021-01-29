@@ -10,7 +10,7 @@ namespace WebPerformanceCalculator.DB
 
         public string Player { get; set; }
 
-        public string JsonName { get; set; }
+        public long PlayerId { get; set; }
 
         public string Map { get; set; }
 
@@ -20,7 +20,7 @@ namespace WebPerformanceCalculator.DB
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return PP.Equals(other.PP) && Player == other.Player && Map == other.Map;
+            return PP.Equals(other.PP) && PlayerId == other.PlayerId && Map == other.Map;
         }
 
         public override bool Equals(object obj)
@@ -36,7 +36,7 @@ namespace WebPerformanceCalculator.DB
             unchecked
             {
                 var hashCode = PP.GetHashCode();
-                hashCode = (hashCode * 397) ^ (Player != null ? Player.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (PlayerId != null ? PlayerId.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Map != null ? Map.GetHashCode() : 0);
                 return hashCode;
             }

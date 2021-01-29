@@ -20,8 +20,8 @@ namespace WebPerformanceCalculator.Worker
         private const string remote_out_endpoint = @"http://localhost:6000/api/SubmitWorkerResults";
         private const int pooling_rate = 1000; // 1 second
 #else
-        private const string remote_in_endpoint = @"https://newpp.stanr.info/api/GetUserForWorker";
-        private const string remote_out_endpoint = @"https://newpp.stanr.info/api/SubmitWorkerResults";
+        private const string remote_in_endpoint = @"https://xexxar.stanr.info/api/GetUserForWorker";
+        private const string remote_out_endpoint = @"https://xexxar.stanr.info/api/SubmitWorkerResults";
         private const int pooling_rate = 5000; // 5 seconds
 #endif
 

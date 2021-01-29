@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>delta_t's PP Rework Calculator</title>
+    <title>Xexxar/joz Rework Calculator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
@@ -12,7 +12,7 @@
     <div class="container">
         <main role="main" class="pb-1 pt-2">
             <nav class="navbar navbar-expand-sm navbar-light bg-light mb-2">
-                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
+                <a class="navbar-brand" href="/">Xexxar/joz Rework Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -39,7 +39,7 @@
                 <div class="card-body">
                     <form class="form-row align-items-right" id="keyform">
                         <div class="col-auto" width="100%"><input type="password" id="key" name="key" class="form-control" placeholder="Key" /></div>
-                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Save" id="submit" /></div>
+                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Save" id="submit" /><p id="errorKey" class="text-danger"></p></div>
                     </form>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                 <hr />
                 <div class="card">
                     <div class="card-body">
-                        <p>Recalc top</p>
+                        <p>Recalc top (takes players from leaderboard here, not osu)</p>
                         <form id="recalctop">
                             <div class="form-group">
                                 <input type="text" id="amt" name="amt" class="form-control" placeholder="Amount" />
@@ -79,7 +79,7 @@
                 <div class="card">
                     <div class="card-body">
                         <p>Misc</p>
-                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Clear Highscores" id="clear" onclick="clearHighscores()" /></div>
+                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Clear Highscores & Recalc Top 100" id="clear" onclick="clearHighscores()" /></div>
                         <div class="col-auto"><p id="errorClear" class="text-danger"></p></div>
                         <br />
                         <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Toggle Queue" id="toggle" onclick="toggleQueue()" /></div>
@@ -108,8 +108,18 @@
         $("#keyform").on('submit',
             function (e) {
                 key = $('#key').val();
-                setCookie("key", key);
-                $('#things').show();
+                $.ajax({
+                    type: 'GET',
+                    url: "/api/SetAdmin?key=" + key,
+                    error: function (d) {
+                        $('#errorKey').html('no.');
+                    },
+                    success: function (d) {
+                        $('#things').show();
+                        setCookie("key", key);
+                    }
+                });
+                
                 e.preventDefault();
         });
 
