@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -86,7 +86,22 @@
                         <div class="col-auto"><p id="errorToggle" class="text-danger"></p></div>
                     </div>
                 </div>
+                <br />
+                <div class="card">
+                    <div class="card-body">
+                        <p>Stats</p>
+                        <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="usertable"></table>
+                    </div>
+                </div>
             </div>
+            <br />
+            <div class="card">
+                <div class="card-body">
+                    <p>Calculating</p>
+                    <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="calctable"></table>
+                </div>
+            </div>
+            <br />
         </main>
     </div>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -96,11 +111,14 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.6.7/jquery.timeago.min.js"></script>
     <script>
         $(function () {
+            updateCalcTable();
+
             key = getCookie("key");
             if (key == null){
                 $('#things').hide();
             } else {
                 $('#key').val(key);
+                updateUserTable();
             }
         });
 
@@ -110,6 +128,7 @@
                 key = $('#key').val();
                 setCookie("key", key);
                 $('#things').show();
+                updateUserTable();
                 e.preventDefault();
         });
 
@@ -118,7 +137,7 @@
                 var params = $("#recalctop").serialize();
                 $.ajax({
                     type: 'GET',
-                    url: "/api/RecalcTop?key=" + key + '&' + params,
+                    url: "/api/admin/RecalcTop?key=" + key + '&' + params,
                     error: function (d) {
                         $('#errorRecalc').html('Failed');
                     },
@@ -135,7 +154,7 @@
                 var params = $("#removeplayer").serialize();
                 $.ajax({
                     type: 'GET',
-                    url: "/api/RemovePlayer?key=" + key + '&' + params,
+                    url: "/api/admin/RemovePlayer?key=" + key + '&' + params,
                     error: function (d) {
                         $('#errorRemove').html('Failed');
                     },
@@ -149,7 +168,7 @@
         function clearHighscores() {
                 $.ajax({
                     type: 'GET',
-                    url: "/api/ClearHighscores?key=" + key,
+                    url: "/api/admin/ClearHighscores?key=" + key,
                     error: function (d) {
                         $('#errorClear').html('Failed');
                     },
@@ -163,7 +182,7 @@
         function toggleQueue() {
                 $.ajax({
                     type: 'GET',
-                    url: "/api/ToggleQueue?key=" + key,
+                    url: "/api/admin/ToggleQueue?key=" + key,
                     error: function (d) {
                         $('#errorToggle').html('Failed');
                     },
@@ -174,6 +193,47 @@
                 e.preventDefault();
         };
 
+        function toggleQueue() {
+            $.ajax({
+                type: 'GET',
+                url: "/api/admin/ToggleQueue?key=" + key,
+                error: function (d) {
+                    $('#errorToggle').html('Failed');
+                },
+                success: function (d) {
+                    $('#errorToggle').html('Succ');
+                }
+            });
+            e.preventDefault();
+        };
+
+        function updateUserTable() {
+            $.ajax({
+                type: 'GET',
+                url: "/api/admin/getusers?key=" + key,
+                success: function (d) {
+                    $('#usertable').empty();
+                    Object.keys(d).forEach(function (key) {
+                        $('#usertable').append('<tr><td>' + key + '</td><td>' + d[key] + '</td>');
+                    });
+                    setTimeout(function () { updateUserTable(); }, 10000);
+                }
+            });
+        };
+
+        function updateCalcTable() {
+            $.ajax({
+                type: 'GET',
+                url: "/api/calculating",
+                success: function (d) {
+                    $('#calctable').empty();
+                    for(var i = 0; i < d.length; i++) {
+                        $('#calctable').append('<tr><td>' + d[i] + '</td>');
+                    }
+                    setTimeout(function () { updateCalcTable(); }, 3000);
+                }
+            });
+        };
 
         function setCookie(key, value) {
             var expires = new Date();

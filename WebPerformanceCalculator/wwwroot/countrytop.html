@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -58,7 +58,7 @@
             } else {
                 $.ajax({
                     type: 'GET',
-                    url: "/api/GetCountries",
+                    url: "/api/countries",
                     error: function(d) {
                         $('#countryName').html(d.responseJSON.err);
                     },
@@ -82,7 +82,7 @@
                 /*search: true,
                 showSearchButton: true,
                 searchOnEnterKey: true,*/
-                url: "/api/GetTop",
+                url: "/api/top",
                 sortOrder: 'desc',
                 queryParams: function(p){ p.country = country; return p;},
                 columns: [
@@ -100,26 +100,29 @@
                             formatter: formatPlayerName
                         }, {
                             title: 'Live PP',
-                            field: 'livePP',
+                            field: 'livePp',
                             sortable: true,
                             align: 'center'
                         }, {
                             title: 'New PP',
-                            field: 'localPP',
+                            field: 'localPp',
                             sortable: true,
                             align: 'center'
                         }, {
                             title: 'PP Change',
-                            field: 'ppLoss',
                             sortable: true,
-                            align: 'center'
+                            align: 'center',
+                            formatter: formatPpChange
                         }
                     ]
                 ]
             });
         }
             function formatPlayerName(value, row, index) {
-                return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/"+row.country+".png\"/></a><a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
+                return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/"+row.country+".png\"/></a><a href=\"/user/" + row.id + "\">" + value + "</a>";
+            }
+            function formatPpChange(value, row, index) {
+                return (row.localPp - row.livePp).toFixed(1);
             }
     </script>
     <!-- Yandex.Metrika counter -->

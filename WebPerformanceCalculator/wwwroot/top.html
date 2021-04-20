@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -52,7 +52,7 @@
                 search: true,
                 showSearchButton: true,
                 searchOnEnterKey: true,
-                url: "/api/GetTop",
+                url: "/api/top",
                 sortOrder: 'desc',
                 columns: [
                     [
@@ -70,7 +70,7 @@
                             formatter: formatPlayerName
                         },{
                             title: 'PP',
-                            field: 'localPP',
+                            field: 'localPp',
                             sortable: true,
                             align: 'center',
                             width: 128,
@@ -93,9 +93,9 @@
             }
             function formatPlayerName(value, row, index) {
                 if (!!row.country){
-                    return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/"+row.country+".png\"/></a><a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
+                    return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/"+row.country+".png\"/></a><a href=\"/user/" + row.id + "\">" + value + "</a>";
                 } else {
-                    return "<a href=\"/user/" + row.jsonName + "\">" + value + "</a>";
+                    return "<a href=\"/user/" + row.id + "\">" + value + "</a>";
                 }
             }
         });

@@ -3,8 +3,8 @@ using WebPerformanceCalculator.DB.Types;
 
 namespace WebPerformanceCalculator.Models
 {
-    public class PlayerModel : Player
+    public class HighscoreModel : Score
     {
-        public bool Outdated { get; set; }
+        public int Position { get; set; }
     }
 }

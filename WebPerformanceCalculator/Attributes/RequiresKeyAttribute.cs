@@ -1,17 +1,22 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using WebPerformanceCalculator.Shared;
+using Microsoft.Extensions.Configuration;
 
-namespace WebPerformanceCalculator.Controllers
+namespace WebPerformanceCalculator.Attributes
 {
     public class RequiresKeyAttribute : Attribute, IActionFilter
     {
+
         public void OnActionExecuted(ActionExecutedContext context) { }
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            if (!context.ActionArguments.ContainsKey("key") || (string) context.ActionArguments["key"] != Config.auth_key)
+            var service = (IConfiguration?)context.HttpContext.RequestServices.GetService(typeof(IConfiguration));
+
+            if (service == null || 
+                !context.ActionArguments.ContainsKey("key") || 
+                (string) context.ActionArguments["key"] != service["Key"])
                 context.Result = new StatusCodeResult(403);
         }
     }

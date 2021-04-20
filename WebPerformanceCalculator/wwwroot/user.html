@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -58,32 +58,26 @@
         $(function () {
             $.ajax({
                 type: 'GET',
-                url: "/api/GetResults?player=" + user,
+                url: "/api/player/" + user,
                 error: function(d) {
                     $('#username').html("Failed to load");
                 },
                 success: function (json) {
-                    $('#localPP').html(json.localPP.split(' ')[0]);
-                    $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.username + "\">" + json.username + "</a>");
-                    $('title').html(json.username + ' - delta_t PP Rebalance Calculator');
+                    $('#localPP').html(json.localPp);
+                    $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.id + "\">" + json.name + "</a>");
+                    $('title').html(json.name + ' - delta_t PP Rebalance Calculator');
 
-                    $.ajax({
-                        type: 'GET',
-                        url: "/api/GetCalcModuleUpdateDate",
-                        complete: function (d) {
-                            var updateDate = new Date(json.updateDate);
-                            var calcDate = new Date(d.responseJSON.date);
-                            $('#updatedate').html(updateDate.toLocaleDateString() + ' ' + updateDate.toLocaleTimeString());
-                            if (updateDate < calcDate){
-                                if (isFullProfile)
-                                    $('#outdated').html('(outdated!)');
-                                else
-                                    $('#outdated').html('(outdated! <a href="#" onClick="updateProfile();">add to queue</a>)');
-                            }
-                        }
-                    });
+                    var updateDate = new Date(json.updateTime);
+                    $('#updatedate').html(updateDate.toLocaleDateString() + ' ' + updateDate.toLocaleTimeString());
 
-                    $('#maintable').bootstrapTable('load', json.beatmaps);
+                    if (json.outdated){
+                        if (isFullProfile)
+                            $('#outdated').html('(outdated!)');
+                        else
+                            $('#outdated').html('(outdated! <a href="#" onClick="updateProfile();">add to queue</a>)');
+                    }
+
+                    $('#maintable').bootstrapTable('load', json.scores);
                 }
             });
 
@@ -98,15 +92,16 @@
                         }, {
                             formatter: beatmapFormatter,
                             title: 'Beatmap',
-                            field: 'beatmap'
+                            field: 'map'
                         }, {
                             formatter: localPPFormatter,
                             title: 'PP',
-                            field: 'localPP',
+                            field: 'localPp',
                             width: 100,
                             sortable: true,
                             align: 'center'
                         }, {
+                            formatter: positionChangeFormatter,
                             title: 'Position change',
                             field: 'positionChange',
                             sortable: true,
@@ -119,37 +114,33 @@
         });
         function placeFormatter(value, row, index) {
             return index + 1;
+            }
+        function positionChangeFormatter(value, row, index) {
+            if (value > 0)
+                return '+' + value;
+            return value;
         }
         function beatmapFormatter(value, row, index) {
-            var beatmap = value;
-            var modsAndAccuracyIndex = beatmap.lastIndexOf('] ') + 1;
-            var modsAndAccuracySplit = beatmap.substring(modsAndAccuracyIndex + 1).split(' (');
-
-            var mods = modsAndAccuracySplit[0].replace('+', '').split(', ').sort().map(function(item) {
+            var mods = row.mods.split(', ').sort().map(function(item) {
                 return '<span class="badge badge-light">' + item + '</span> '
             }).join(" ");
 
-            var accuracy = '';
-            if (modsAndAccuracySplit.length > 1)
-                accuracy = '(' + modsAndAccuracySplit[1];
+            var misses = '';
+            if (row.misses > 0)
+                misses += ', ' + row.misses + ' misses';
 
-            beatmap = beatmap.substring(0, modsAndAccuracyIndex);
-            var split = beatmap.split(' - ');
-            var beatmapId = split[0];
-            split.splice(0, 1);
-
-            return '<a href=\"https://newpp.stanr.info/map/' + beatmapId + '\">' + split.join(' - ') + '</a> ' + mods + '<span style="font-size: 11px">' + accuracy + '</span>';
+            return '<a href=\"https://newpp.stanr.info/map/' + row.mapId + '\">' + value.name + '</a> ' + mods + '<span style="font-size: 11px">(' + row.accuracy + '%, ' + row.combo + '/' + value.maxCombo + 'x' + misses + ')</span>';
         }
         function localPPFormatter(value, row, index) {
             var weighted = Math.pow(0.95, index) * value;
-            return '<span title=\"live pp=' + row.livePP + '\naim pp=' + row.aimPP + ', tap pp=' + row.tapPP + ', acc pp=' + row.accPP + '\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
+            return '<span title=\"Live PP: ' + row.livePp + '\n' + row.additionalPpData +'\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
         }
         function updateProfile() {
             $('#outdated').html('(...)');
                 $.ajax({
                     type: 'POST',
-                    url: "/api/AddToQueue",
-                    data: { jsonUsername: user },
+                    url: "/api/queue",
+                    data: { player: user },
                     error: function (d) {
                         $('#outdated').html('(failed to add to queue, <a href="#" onClick="updateProfile();">try again</a>)');
                     },

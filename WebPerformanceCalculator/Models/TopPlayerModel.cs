@@ -1,5 +1,5 @@
 ﻿
-using WebPerformanceCalculator.DB;
+using WebPerformanceCalculator.DB.Types;
 
 namespace WebPerformanceCalculator.Models
 {
@@ -8,14 +8,5 @@ namespace WebPerformanceCalculator.Models
         public int LivePlace { get; set; }
         public int Place { get; set; }
         public int RankChange { get; set; }
-    }
-
-    public class TopModel
-    {
-        public int Total { get; set; }
-
-        public int TotalNotFiltered { get; set; }
-
-        public TopPlayerModel[] Rows { get; set; }
     }
 }

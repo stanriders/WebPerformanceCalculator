@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -220,7 +220,7 @@
         function getMap(id, fromHistory) {
             $.ajax({
                 type: 'POST',
-                url: "/api/CalculateMap",
+                url: "/api/maps/calculate",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
                 data: JSON.stringify({
@@ -315,9 +315,8 @@
                     // load probability chart
                     $.ajax({
                         type: 'GET',
-                        url: "/api/GetProbabilityChart",
+                        url: "/api/maps/probabilitychart/" + json.Id,
                         data: {
-                            mapId: json.Id,
                             mods: json.Mods.sort().map(function(item) {return item.acronym}).join('')
                         },
                         /*data: { mapId: json.Id },*/
