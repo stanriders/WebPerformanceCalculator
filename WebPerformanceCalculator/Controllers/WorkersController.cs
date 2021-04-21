@@ -45,15 +45,15 @@ namespace WebPerformanceCalculator.Controllers
                 var playcountPp = double.Parse(livePpRegexMatches[2].Value, CultureInfo.InvariantCulture);
                 var localPp = Convert.ToDouble(content.LocalPP.Split(' ')[0], CultureInfo.InvariantCulture);
 
-                if (await db.Players.AnyAsync(x => x.Id == content.UserID))
+                var dbPlayer = await db.Players.FirstOrDefaultAsync(x => x.Id == content.UserID);
+                if (dbPlayer != null)
                 {
-                    var player = await db.Players.SingleAsync(x => x.Id == content.UserID);
-                    player.LivePp = livePp;
-                    player.LocalPp = localPp;
-                    player.PlaycountPp = playcountPp;
-                    player.Name = content.Username;
-                    player.Country = content.UserCountry;
-                    player.UpdateTime = DateTime.UtcNow;
+                    dbPlayer.LivePp = livePp;
+                    dbPlayer.LocalPp = localPp;
+                    dbPlayer.PlaycountPp = playcountPp;
+                    dbPlayer.Name = content.Username;
+                    dbPlayer.Country = content.UserCountry;
+                    dbPlayer.UpdateTime = DateTime.UtcNow;
                 }
                 else
                 {
@@ -86,7 +86,7 @@ namespace WebPerformanceCalculator.Controllers
                 }
 
                 await db.AddRangeAsync(mapsToAdd);
-                await db.SaveChangesAsync(); // we save maps first so that scores won't fail because of failed foreing key constraint
+                await db.SaveChangesAsync(); // we save maps first so that scores won't fail because of failed foreign key constraint
 
                 await db.AddRangeAsync(scoresToAdd);
                 await db.SaveChangesAsync();

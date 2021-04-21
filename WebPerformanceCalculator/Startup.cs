@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WebPerformanceCalculator.DB;
@@ -21,6 +22,7 @@ namespace WebPerformanceCalculator
 
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddDbContext<DatabaseContext>();
+            services.AddHttpContextAccessor();
             services.AddControllers();
             services.AddCors(options =>
             {
@@ -33,7 +35,7 @@ namespace WebPerformanceCalculator
             });
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DatabaseContext db)
         {
             if (env.IsDevelopment())
             {
@@ -50,11 +52,14 @@ namespace WebPerformanceCalculator
             }
             else
             {
+                db.Database.Migrate();
+
                 app.UseForwardedHeaders(new ForwardedHeadersOptions
                 {
                     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                 });
             }
+
             app.UseCors();
             app.UseHsts();
             app.UseRouting();

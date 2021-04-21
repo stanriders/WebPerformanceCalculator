@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -151,18 +152,26 @@ namespace WebPerformanceCalculator.Controllers
             if (limit > 500)
                 limit = 500;
 
-            var players = await query.Skip(offset).Take(limit).ToArrayAsync();
-
-            var jsonPlayers = new List<TopPlayerModel>(players.Length);
-            for (int i = 0; i < players.Length; i++)
-            {
-                jsonPlayers.Add(mapper.Map<TopPlayerModel>(players[i]));
-            }
+            var players = await query
+                .Skip(offset)
+                .Take(limit)
+                .Select(x=> new TopPlayerModel
+                {
+                     Id = x.Id,
+                     Name = x.Name,
+                     LivePp = x.LivePp,
+                     LocalPp = x.LocalPp,
+                     Country = x.Country,
+                     LivePlace = x.LiveRank,
+                     Place = x.Rank,
+                     RankChange = x.Rank - x.LiveRank
+                })
+                .ToArrayAsync();
 
             return new JsonResult(new PaginationModel<TopPlayerModel>
             {
-                Rows = jsonPlayers.ToArray(),
-                Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : jsonPlayers.Count,
+                Rows = players,
+                Total = string.IsNullOrEmpty(search) ? totalNotFilteredAmt : players.Length,
                 TotalNotFiltered = totalNotFilteredAmt
             });
         }
@@ -186,7 +195,8 @@ namespace WebPerformanceCalculator.Controllers
         {
             await using var db = new DatabaseContext();
 
-            var query = db.Scores.AsNoTracking()
+            var query = db.Scores
+                .AsNoTracking()
                 .Where(x => x.UpdateTime > updateService.CalculationModuleUpdateTime && x.LocalPp > highscoreThreshold);
 
             var totalNotFilteredAmt = await query.CountAsync();
@@ -203,22 +213,31 @@ namespace WebPerformanceCalculator.Controllers
             var scores = await query.Skip(offset)
                 .Take(limit)
                 .Include(x => x.Map)
-                .Include(x=> x.Player)
+                .Include(x => x.Player)
+                .Select(x=> new HighscoreModel
+                {
+                    Accuracy = x.Accuracy,
+                    Combo = x.Combo,
+                    LivePp = x.LivePp,
+                    LocalPp = x.LocalPp,
+                    Map = x.Map,
+                    Misses = x.Misses,
+                    Mods = x.Mods,
+                    Player = x.Player
+                })
                 .ToArrayAsync();
 
-            var highscores = new List<HighscoreModel>();
             for (int i = 0; i < scores.Length; i++)
             {
-                var score = mapper.Map<HighscoreModel>(scores[i]);
-                if (score.Player != null)
-                    score.Player.Scores = null; // fixes recursive referencing
-                score.Position = i + offset + 1;
-                highscores.Add(score);
+                if (scores[i].Player != null)
+                    scores[i].Player.Scores = null; // fixes recursive referencing
+
+                scores[i].Position = i + offset + 1;
             }
 
             return new JsonResult(new PaginationModel<HighscoreModel>
             {
-                Rows = highscores.ToArray(),
+                Rows = scores.ToArray(),
                 Total = totalNotFilteredAmt,
                 TotalNotFiltered = totalNotFilteredAmt,
                 Offset = offset

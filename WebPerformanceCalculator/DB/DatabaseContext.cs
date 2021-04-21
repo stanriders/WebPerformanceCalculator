@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using WebPerformanceCalculator.DB.Types;
 
 namespace WebPerformanceCalculator.DB
@@ -9,14 +10,27 @@ namespace WebPerformanceCalculator.DB
         #nullable disable
         private const string connection_string = "Filename=./top.db";
 
+        private readonly ILoggerFactory loggerFactory;
+
+        public DatabaseContext()
+        {
+            loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite(connection_string);
+
+#if DEBUG
+            optionsBuilder.UseLoggerFactory(loggerFactory);
+#endif
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PlayerSearchQuery>().ToView(null);
+
+            modelBuilder.Entity<Score>().HasIndex(x=> new {x.UpdateTime, x.LocalPp});
         }
 
         public DbSet<Player> Players { get; set; }
