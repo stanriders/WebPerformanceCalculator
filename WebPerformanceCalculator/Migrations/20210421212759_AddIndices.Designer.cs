@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebPerformanceCalculator.DB;
 
 namespace WebPerformanceCalculator.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20210421212759_AddIndices")]
+    partial class AddIndices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,6 +64,37 @@ namespace WebPerformanceCalculator.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("WebPerformanceCalculator.DB.Types.PlayerSearchQuery", b =>
+                {
+                    b.Property<string>("Country")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("LivePp")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("LiveRank")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<double>("LocalPp")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("PlaycountPp")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdateTime")
+                        .HasColumnType("TEXT");
                 });
 
             modelBuilder.Entity("WebPerformanceCalculator.DB.Types.Score", b =>

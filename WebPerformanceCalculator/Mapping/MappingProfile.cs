@@ -9,14 +9,7 @@ namespace WebPerformanceCalculator.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<PlayerSearchQuery, TopPlayerModel>()
-                .ForMember(dest => dest.LivePlace, src => src.MapFrom(x => x.LiveRank))
-                .ForMember(dest => dest.Place, src => src.MapFrom(x => x.Rank))
-                .ForMember(dest => dest.RankChange, src => src.MapFrom(x => x.Rank - x.LiveRank));
-
             CreateMap<Player, PlayerModel>();
-
-            CreateMap<Score, HighscoreModel>();
 
             CreateMap<CalculatedPlayerModel, Player>()
                 .ForMember(dest => dest.Id, src => src.MapFrom(x => x.UserID))
