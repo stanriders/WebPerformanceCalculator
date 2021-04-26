@@ -41,7 +41,8 @@
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/addrbar/bootstrap-table-addrbar.min.js"></script>
         <script>
         $(function () {
             $('#maintable').bootstrapTable({
@@ -49,6 +50,7 @@
                 pageList: [50, 100, 150, 200, 500],
                 pagination: true,
                 sidePagination: 'server',
+                addrbar: true,
                 search: true,
                 showSearchButton: true,
                 searchOnEnterKey: true,

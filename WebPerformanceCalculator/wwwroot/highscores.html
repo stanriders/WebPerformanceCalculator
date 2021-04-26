@@ -30,7 +30,7 @@
                         </li>
                     </ul>
                     <span class="navbar-text">
-                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!"/></a>
+                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!" /></a>
                     </span>
                 </div>
             </nav>
@@ -41,14 +41,16 @@
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
-        <script>
+    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/extensions/addrbar/bootstrap-table-addrbar.min.js"></script>
+    <script>
         $(function () {
             $('#maintable').bootstrapTable({
                 pageSize: 100,
                 pageList: [100, 150, 200, 500],
                 pagination: true,
                 sidePagination: 'server',
+                addrbar: true,
                 url: "/api/highscores",
                 sortOrder: 'desc',
                 columns: [
@@ -80,7 +82,7 @@
             });
         });
         function beatmapFormatter(value, row, index) {
-            var mods = row.mods.split(', ').sort().map(function(item) {
+            var mods = row.mods.split(', ').sort().map(function (item) {
                 return '<span class="badge badge-light">' + item + '</span> '
             }).join(" ");
 
@@ -95,15 +97,17 @@
         }
     </script>
     <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    <script type="text/javascript">
+        (function (m, e, t, r, i, k, a) {
+            m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+            m[i].l = 1 * new Date(); k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+        })
             (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
 
         ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
+            clickmap: true,
+            trackLinks: true,
+            accurateTrackBounce: true
         });
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
