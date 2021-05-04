@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿
 using Microsoft.EntityFrameworkCore;
 using WebPerformanceCalculator.DbConvert.New.Types;
 
@@ -16,17 +14,10 @@ namespace WebPerformanceCalculator.DbConvert.New
             optionsBuilder.UseSqlite(connection_string);
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-
-        }
-
         public DbSet<Player> Players { get; set; }
 
         public DbSet<Score> Scores { get; set; }
 
         public DbSet<Map> Maps { get; set; }
-        
-
     }
 }

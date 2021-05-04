@@ -24,11 +24,11 @@ var oldPlayers = oldDb.Players
 
 var playerCount = oldPlayers.Length;
 
-var playerList = new List<int>(); // stupid hack but its much lighter than checking db for map existance
+List<int> playerList; // stupid hack but its much lighter than checking db for map existence
 playerList = newDb.Players.Select(x => x.Id).ToList();
 var addedPlayers = 0;
 
-var mapList = new List<int>(); // stupid hack but its much lighter than checking db for map existance
+List<int> mapList; // stupid hack but its much lighter than checking db for map existence
 mapList = newDb.Maps.Select(x=> x.Id).ToList();
 
 Console.WriteLine($"Players: {playerCount}");

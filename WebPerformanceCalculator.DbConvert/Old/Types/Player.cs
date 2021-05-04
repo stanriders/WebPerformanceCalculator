@@ -1,4 +1,4 @@
-﻿using System;
+﻿
 using System.ComponentModel.DataAnnotations;
 
 namespace WebPerformanceCalculator.DbConvert.Old.Types
@@ -20,7 +20,6 @@ namespace WebPerformanceCalculator.DbConvert.Old.Types
         public double PpLoss { get; set; }
 
         public string Country { get; set; }
-
-        //public DateTime UpdateTime { get; set; }
+        
     }
 }
