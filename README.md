@@ -33,14 +33,14 @@ Params (url encoded):
 * `player` = Player nickname or ID  
 
 ---
-**[POST] `/api/map/calculate`**  
+**[POST] `/api/maps/calculate`**  
 Calculate map pp values for 90-100 acc values  
 Params (json):
 * `Map` - Beatmap ID, can't be BeatmapSet ID
 * `Mods` - Array of mod abbreviations
 
 ---
-**[GET] `/api/map/probabilitychart/129891?mods=HDDT`**  
+**[GET] `/api/maps/probabilitychart/129891?mods=HDDT`**  
 Get miss probability data for calculated map  
 Params:
 * `mapId` - Beatmap ID
