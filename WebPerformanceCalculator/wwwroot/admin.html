@@ -3,8 +3,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark">
     <title>delta_t's PP Rework Calculator</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" id="css-light" type="text/css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vinorodrigues/bootstrap-dark@0.0/dist/bootstrap-night.min.css" id="css-dark" type="text/css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
 </head>
@@ -29,8 +31,14 @@
                             <a class="nav-link" href="/map">Calculate map PP</a>
                         </li>
                     </ul>
+                    <div class="nav-link">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="darkSwitch">
+                            <label class="custom-control-label" for="darkSwitch">Dark Mode</label>
+                        </div>
+                    </div>
                     <span class="navbar-text">
-                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!"/></a>
+                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!" /></a>
                     </span>
                 </div>
             </nav>
@@ -105,16 +113,15 @@
         </main>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
-    <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.6.7/jquery.timeago.min.js"></script>
-    <script>
+    <script type="text/javascript">
         $(function () {
             updateCalcTable();
 
             key = getCookie("key");
-            if (key == null){
+            if (key == null) {
                 $('#things').hide();
             } else {
                 $('#key').val(key);
@@ -130,7 +137,7 @@
                 $('#things').show();
                 updateUserTable();
                 e.preventDefault();
-        });
+            });
 
         $("#recalctop").on('submit',
             function (e) {
@@ -145,9 +152,9 @@
                         $('#errorRecalc').html('Succ');
                     }
                 });
-                
+
                 e.preventDefault();
-        });
+            });
 
         $("#removeplayer").on('submit',
             function (e) {
@@ -163,34 +170,34 @@
                     }
                 });
                 e.preventDefault();
-        });
+            });
 
         function clearHighscores() {
-                $.ajax({
-                    type: 'GET',
-                    url: "/api/admin/ClearHighscores?key=" + key,
-                    error: function (d) {
-                        $('#errorClear').html('Failed');
-                    },
-                    success: function (d) {
-                        $('#errorClear').html('Succ');
-                    }
-                });
-                e.preventDefault();
+            $.ajax({
+                type: 'GET',
+                url: "/api/admin/ClearHighscores?key=" + key,
+                error: function (d) {
+                    $('#errorClear').html('Failed');
+                },
+                success: function (d) {
+                    $('#errorClear').html('Succ');
+                }
+            });
+            e.preventDefault();
         };
 
         function toggleQueue() {
-                $.ajax({
-                    type: 'GET',
-                    url: "/api/admin/ToggleQueue?key=" + key,
-                    error: function (d) {
-                        $('#errorToggle').html('Failed');
-                    },
-                    success: function (d) {
-                        $('#errorToggle').html('Succ');
-                    }
-                });
-                e.preventDefault();
+            $.ajax({
+                type: 'GET',
+                url: "/api/admin/ToggleQueue?key=" + key,
+                error: function (d) {
+                    $('#errorToggle').html('Failed');
+                },
+                success: function (d) {
+                    $('#errorToggle').html('Succ');
+                }
+            });
+            e.preventDefault();
         };
 
         function toggleQueue() {
@@ -227,13 +234,79 @@
                 url: "/api/calculating",
                 success: function (d) {
                     $('#calctable').empty();
-                    for(var i = 0; i < d.length; i++) {
+                    for (var i = 0; i < d.length; i++) {
                         $('#calctable').append('<tr><td>' + d[i] + '</td>');
                     }
                     setTimeout(function () { updateCalcTable(); }, 3000);
                 }
             });
         };
+    </script>
+    <!-- Dark mode -->
+    <script type="text/javascript">
+        $(function () {
+            function updateDarkToggleButton() {
+                $dark = get_color_mode() == "dark";
+                $("#darkSwitch").prop("checked", $dark);
+            }
+
+            function updateDarkModeFromCookie() {
+                $mode = $("#css").attr("data-color-scheme");
+                if (typeof $mode === 'undefined') {
+                    $mode = get_color_mode();
+                    init_color_scheme_css("css", $mode);
+                }
+                toggle_color_scheme_css("css", get_color_mode());
+            }
+
+            updateDarkModeFromCookie();
+            updateDarkToggleButton();
+            if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addListener(updateDarkToggleButton);
+
+            function get_color_mode() {
+                $mode = 'light';
+                $modeCookie = getCookie("darkMode");
+                if ($modeCookie == null) {
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                        $mode = 'dark';
+                } else {
+                    $mode = $modeCookie;
+                }
+                return $mode;
+            }
+
+            function init_color_scheme_css($id, $mode) {
+                if ($("#" + $id)) $("#" + $id).remove();
+                $("#" + $id + "-" + $mode).attr({
+                    "data-href-light": $("#" + $id + "-light").attr("href"),  // store the light CSS url
+                    "data-href-dark": $("#" + $id + "-dark").attr("href"), // store the dark CSS url
+                    "data-color-scheme": $mode,  // store the mode, so that we don't re-initalise
+                    "media": "all",  // drop the media filter
+                    "id": $id  // rename the id (drop the `-{mode}` bit)
+                });
+                $other = ($mode == 'dark') ? 'light' : 'dark';
+                $("#" + $id + "-" + $other).remove();
+            }
+
+            function toggle_color_scheme_css($id, $mode) {
+                $href = $("#" + $id).data("href-" + $mode);
+                $("#" + $id).attr({
+                    "href": $href,
+                    "data-color-scheme": $mode,
+                });
+                setCookie("darkMode", $mode);
+            }
+
+            $("#darkSwitch").bind("click", function () {
+                $mode = $("#css").attr("data-color-scheme");
+                if (typeof $mode === 'undefined') {
+                    $mode = get_color_mode();
+                    init_color_scheme_css("css", $mode);
+                }
+                $new_mode = ($mode == 'dark') ? 'light' : 'dark';
+                toggle_color_scheme_css("css", $new_mode);
+            });
+        });
 
         function setCookie(key, value) {
             var expires = new Date();
@@ -246,5 +319,6 @@
             return keyValue ? keyValue[2] : null;
         }
     </script>
+    <!--  /Dark mode -->
 </body>
 </html>

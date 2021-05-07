@@ -3,10 +3,24 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark">
     <title>Calculate Map PP - delta_t's PP Rework Calculator</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" id="css-light" type="text/css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vinorodrigues/bootstrap-dark@0.0/dist/bootstrap-night.min.css" id="css-dark" type="text/css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.css" type="text/css" />
+    <style>
+        img:not([src*=".svg"]) {
+                filter: grayscale(50%);
+                opacity: .75;
+                transition: all .5s ease-in-out;
+            }
+        img:hover {
+                filter: none;
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -29,8 +43,14 @@
                             <a class="nav-link" href="#">Calculate map PP <span class="sr-only">(current)</span></a>
                         </li>
                     </ul>
+                    <div class="nav-link">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="darkSwitch">
+                            <label class="custom-control-label" for="darkSwitch">Dark Mode</label>
+                        </div>
+                    </div>
                     <span class="navbar-text">
-                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!"/></a>
+                        <a href="https://paypal.me/stanriders"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="Help me cover some of the server costs!" /></a>
                     </span>
                 </div>
             </nav>
@@ -72,24 +92,24 @@
                     </div>
                 </form>
             </div>
-            <hr id="hr" style="display: none"/>
+            <hr id="hr" style="display: none" />
             <div class="card" id="map" style="display: none">
                 <img id="bg" class="card-img-top" style="min-height: 175px; max-height: 200px; object-fit: cover;" />
                 <div class="card-body">
                     <div class="card-img-overlay" style="min-height: 175px; max-height: 200px;">
                         <h4 class="alert alert-light" id="mapname" style="max-height: 100px; overflow: hidden"></h4>
-                        <p id="sr" class="badge badge-primary"></p><br/>
+                        <p id="sr" class="badge badge-primary"></p><br />
                         <p id="sraim" class="badge badge-secondary"></p> <p id="srtap" class="badge badge-secondary"></p> <p id="srfc" class="badge badge-secondary"></p>
                     </div>
                     <p id="ppwarning" class="text-danger"></p>
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead>
-                                <th>90%</th>
-                                <th>95%</th>
-                                <th>98%</th>
-                                <th>99%</th>
-                                <th>100%</th>
+                            <th>90%</th>
+                            <th>95%</th>
+                            <th>98%</th>
+                            <th>99%</th>
+                            <th>100%</th>
                             </thead>
                             <tbody>
                                 <tr>
@@ -117,42 +137,41 @@
         </main>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" integrity="sha384-+YQ4JLhjyBLPDQt//I+STsc9iw4uQqACwlvpslubQzn4u2UU2UFM80nGisd026JF" crossorigin="anonymous"></script>
-    <script src="https://ajax.aspnetcdn.com/ajax/jquery.unobtrusive-ajax/3.2.5/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/bootstrap-table@1.15.5/dist/bootstrap-table.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
-    <script>
+    <script type="text/javascript">
         var ppChart;
         var ppPartsChart;
         var probChart;
         $('#spinner').hide();
         var chartZoom = {
-                            zoom: {
-                                // Container for pan options
-                                pan: {
-                                    // Boolean to enable panning
-                                    enabled: true,
-                                    mode: 'x',
-                                    rangeMin: { x: 0 },
-                                    speed: 20,
-                                    threshold: 10,
-                                },
+            zoom: {
+                // Container for pan options
+                pan: {
+                    // Boolean to enable panning
+                    enabled: true,
+                    mode: 'x',
+                    rangeMin: { x: 0 },
+                    speed: 20,
+                    threshold: 10,
+                },
 
-                                zoom: {
-                                    enabled: true,
-                                    drag: false,
-                                    mode: 'x',
-                                    rangeMin: { x: 0 },
-                                    speed: 0.1,
-                                    threshold: 2,
-                                    sensitivity: 3
-                                }
-                            }
-                        };
+                zoom: {
+                    enabled: true,
+                    drag: false,
+                    mode: 'x',
+                    rangeMin: { x: 0 },
+                    speed: 0.1,
+                    threshold: 2,
+                    sensitivity: 3
+                }
+            }
+        };
 
-        $(function() {
+        $(function () {
             var ppctx = document.getElementById('ppChart').getContext('2d');
             ppChart = new Chart(ppctx,
                 {
@@ -201,14 +220,14 @@
         });
 
         $("form").on('submit',
-            function(e) {
+            function (e) {
                 getMap($('#id').val());
 
                 //stop form submission
                 e.preventDefault();
             });
 
-        window.onpopstate = function(event) {
+        window.onpopstate = function (event) {
             if (event.state != null && !isNaN(event.state))
                 getMap(event.state, true);
             else {
@@ -225,13 +244,13 @@
                 dataType: "json",
                 data: JSON.stringify({
                     map: id,
-                    mods: $("input:checkbox[id=mod]:checked").map(function() { return $(this).val() }).get()
+                    mods: $("input:checkbox[id=mod]:checked").map(function () { return $(this).val() }).get()
                 }),
 
-                error: function(d) {
+                error: function (d) {
                     $('#error').html(d.responseJSON.err);
                 },
-                success: function(json) {
+                success: function (json) {
                     // get beatmap cover if possible
                     if (json.BeatmapSetId != null && json.BeatmapSetId != 0)
                         $('#bg').attr("src",
@@ -240,7 +259,7 @@
                         $('#bg').attr("src", null);
 
                     // mod badges
-                    var mods = json.Mods.map(function(item) {
+                    var mods = json.Mods.map(function (item) {
                         return '<span class="badge badge-secondary">' + item.acronym + '</span>'
                     }).join(" ");
 
@@ -317,10 +336,10 @@
                         type: 'GET',
                         url: "/api/maps/probabilitychart/" + json.Id,
                         data: {
-                            mods: json.Mods.sort().map(function(item) {return item.acronym}).join('')
+                            mods: json.Mods.sort().map(function (item) { return item.acronym }).join('')
                         },
                         /*data: { mapId: json.Id },*/
-                        success: function(probs) {
+                        success: function (probs) {
                             probChart.data.datasets = [
                                 {
                                     backgroundColor: "rgba(0,123,255,0.3)",
@@ -331,7 +350,7 @@
                             probChart.update();
                             $('#probChart').show();
                         },
-                        error: function(d) {
+                        error: function (d) {
                             $('#probChart').hide();
                         },
                     });
@@ -343,11 +362,11 @@
                     $('#hr').show();
                     $('#map').show();
                 },
-                complete: function() {
+                complete: function () {
                     $('#submit').show();
                     $('#spinner').hide();
                 },
-                beforeSend: function() {
+                beforeSend: function () {
                     $('#error').html('');
                     $('#username').val('');
                     $('#submit').hide();
@@ -357,18 +376,98 @@
         }
     </script>
     <!-- Yandex.Metrika counter -->
-    <script type="text/javascript" >
-        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-                m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+    <script type="text/javascript">
+        (function (m, e, t, r, i, k, a) {
+            m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
+            m[i].l = 1 * new Date(); k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+        })
             (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
 
         ym(56214328, "init", {
-            clickmap:true,
-            trackLinks:true,
-            accurateTrackBounce:true
+            clickmap: true,
+            trackLinks: true,
+            accurateTrackBounce: true
         });
     </script>
     <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
     <!-- /Yandex.Metrika counter -->
+    <!-- Dark mode -->
+    <script type="text/javascript">
+        $(function () {
+            function updateDarkToggleButton() {
+                $dark = get_color_mode() == "dark";
+                $("#darkSwitch").prop("checked", $dark);
+            }
+
+            function updateDarkModeFromCookie() {
+                $mode = $("#css").attr("data-color-scheme");
+                if (typeof $mode === 'undefined') {
+                    $mode = get_color_mode();
+                    init_color_scheme_css("css", $mode);
+                }
+                toggle_color_scheme_css("css", get_color_mode());
+            }
+
+            updateDarkModeFromCookie();
+            updateDarkToggleButton();
+            if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addListener(updateDarkToggleButton);
+
+            function get_color_mode() {
+                $mode = 'light';
+                $modeCookie = getCookie("darkMode");
+                if ($modeCookie == null) {
+                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                        $mode = 'dark';
+                } else {
+                    $mode = $modeCookie;
+                }
+                return $mode;
+            }
+
+            function init_color_scheme_css($id, $mode) {
+                if ($("#" + $id)) $("#" + $id).remove();
+                $("#" + $id + "-" + $mode).attr({
+                    "data-href-light": $("#" + $id + "-light").attr("href"),  // store the light CSS url
+                    "data-href-dark": $("#" + $id + "-dark").attr("href"), // store the dark CSS url
+                    "data-color-scheme": $mode,  // store the mode, so that we don't re-initalise
+                    "media": "all",  // drop the media filter
+                    "id": $id  // rename the id (drop the `-{mode}` bit)
+                });
+                $other = ($mode == 'dark') ? 'light' : 'dark';
+                $("#" + $id + "-" + $other).remove();
+            }
+
+            function toggle_color_scheme_css($id, $mode) {
+                $href = $("#" + $id).data("href-" + $mode);
+                $("#" + $id).attr({
+                    "href": $href,
+                    "data-color-scheme": $mode,
+                });
+                setCookie("darkMode", $mode);
+            }
+
+            $("#darkSwitch").bind("click", function () {
+                $mode = $("#css").attr("data-color-scheme");
+                if (typeof $mode === 'undefined') {
+                    $mode = get_color_mode();
+                    init_color_scheme_css("css", $mode);
+                }
+                $new_mode = ($mode == 'dark') ? 'light' : 'dark';
+                toggle_color_scheme_css("css", $new_mode);
+            });
+        });
+
+        function setCookie(key, value) {
+            var expires = new Date();
+            expires.setTime(expires.getTime() + (30 * 24 * 60 * 60 * 1000));
+            document.cookie = key + '=' + value + ';expires=' + expires.toUTCString();
+        }
+
+        function getCookie(key) {
+            var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
+            return keyValue ? keyValue[2] : null;
+        }
+    </script>
+    <!--  /Dark mode -->
 </body>
 </html>
