@@ -1,5 +1,7 @@
+using System.IO;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace WebPerformanceCalculator
 {
@@ -10,13 +12,18 @@ namespace WebPerformanceCalculator
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args)
+        public static IConfiguration Configuration { get; private set; } = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddEnvironmentVariables()
+                    .Build();
+
+        public static IWebHostBuilder CreateHostBuilder(string[] args)
         {
-            return Host.CreateDefaultBuilder(args)
-                       .ConfigureWebHostDefaults(webBuilder =>
-                       {
-                            webBuilder.UseStartup<Startup>();
-                       });
+            return WebHost.CreateDefaultBuilder(args)
+                    .UseConfiguration(Configuration)
+                    .UseSentry()
+                    .UseStartup<Startup>();
         }
     }
 }
