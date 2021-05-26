@@ -1,5 +1,4 @@
 ﻿
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -54,8 +53,8 @@ namespace WebPerformanceCalculator.Controllers
         [Consumes("application/x-www-form-urlencoded")]
         public IActionResult AddToQueue([FromForm] string player)
         {
-            var (success, errorMessage) = playerQueue.AddToQueue(player, httpContextAccessor.GetIpAddress());
-            if (!success)
+            var errorMessage = playerQueue.AddToQueue(player, httpContextAccessor.GetIpAddress());
+            if (!string.IsNullOrEmpty(errorMessage))
                 return StatusCode(400, new {err = errorMessage});
 
             return new JsonResult(playerQueue.GetQueue());
@@ -100,8 +99,11 @@ namespace WebPerformanceCalculator.Controllers
             }
             else
             {
-                var dbPlayerId = await db.Players.Where(x => x.Name.ToUpper() == name.ToUpper()).Select(x => x.Id)
+                var dbPlayerId = await db.Players.AsNoTracking()
+                    .Where(x => x.Name.ToUpper() == name.ToUpper())
+                    .Select(x => x.Id)
                     .FirstOrDefaultAsync();
+
                 if (dbPlayerId != default)
                     return RedirectPermanent($"/api/GetResults?player={dbPlayerId}");
             }
@@ -151,7 +153,7 @@ namespace WebPerformanceCalculator.Controllers
             if (limit > 500)
                 limit = 500;
 
-            var players = await query
+            var players = await query.AsNoTracking()
                 .Skip(offset)
                 .Take(limit)
                 .Select(x=> new TopPlayerModel
@@ -195,7 +197,6 @@ namespace WebPerformanceCalculator.Controllers
             await using var db = new DatabaseContext();
 
             var query = db.Scores
-                .AsNoTracking()
                 .Where(x => x.UpdateTime > updateService.CalculationModuleUpdateTime && x.LocalPp > highscoreThreshold);
 
             var totalNotFilteredAmt = await query.CountAsync();
@@ -209,7 +210,8 @@ namespace WebPerformanceCalculator.Controllers
             if (limit > 500)
                 limit = 500;
 
-            var scores = await query.Skip(offset)
+            var scores = await query.AsNoTracking()
+                .Skip(offset)
                 .Take(limit)
                 .Include(x => x.Map)
                 .Include(x => x.Player)

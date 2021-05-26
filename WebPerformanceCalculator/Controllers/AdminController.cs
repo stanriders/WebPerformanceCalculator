@@ -44,7 +44,8 @@ namespace WebPerformanceCalculator.Controllers
         {
             await using var db = new DatabaseContext();
 
-            var players = await db.Players.OrderByDescending(x => x.LocalPp)
+            var players = await db.Players.AsNoTracking()
+                .OrderByDescending(x => x.LocalPp)
                 .Skip(offset)
                 .Take(amt)
                 .ToArrayAsync();
@@ -66,7 +67,8 @@ namespace WebPerformanceCalculator.Controllers
             db.Scores.RemoveRange(await db.Scores.Select(x => x).ToArrayAsync());
             await db.SaveChangesAsync();
 
-            var players = await db.Players.OrderByDescending(x => x.LocalPp)
+            var players = await db.Players.AsNoTracking()
+                .OrderByDescending(x => x.LocalPp)
                 .Take(100)
                 .Select(x => x.Id.ToString())
                 .ToArrayAsync();

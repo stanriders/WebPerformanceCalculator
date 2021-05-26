@@ -10,11 +10,15 @@ namespace WebPerformanceCalculator.DB
         #nullable disable
         private const string connection_string = "Filename=./top.db";
 
+#if DEBUG
         private readonly ILoggerFactory loggerFactory;
+#endif
 
         public DatabaseContext()
         {
+#if DEBUG
             loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+#endif
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -40,6 +44,5 @@ namespace WebPerformanceCalculator.DB
         public DbSet<Map> Maps { get; set; }
 
         public DbSet<PlayerSearchQuery> PlayerSearchQuery { get; set; }
-
     }
 }

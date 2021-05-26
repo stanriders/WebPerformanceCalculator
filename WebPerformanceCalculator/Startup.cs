@@ -1,4 +1,5 @@
 
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -17,8 +18,8 @@ namespace WebPerformanceCalculator
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(typeof(PlayerQueueService));
-            services.AddTransient(typeof(CalculationUpdatesService));
-            services.AddTransient(typeof(MapCalculationService));
+            services.AddScoped(typeof(CalculationUpdatesService));
+            services.AddScoped(typeof(MapCalculationService));
 
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddDbContext<DatabaseContext>();
@@ -37,6 +38,10 @@ namespace WebPerformanceCalculator
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DatabaseContext db)
         {
+            var cultureInfo = new CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
             if (env.IsDevelopment())
             {
                 app.UseRewriter(new RewriteOptions()

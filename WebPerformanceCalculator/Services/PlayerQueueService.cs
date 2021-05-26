@@ -20,10 +20,10 @@ namespace WebPerformanceCalculator.Services
         private MemoryCache calculatingCache = new("currently_calculating"); // cache for currently calculating players
         private const int drop_calculation_after = 10; // minutes
 
-        private static readonly MemoryCache usersCache = new("users"); // cache for recently calculated players
+        private readonly MemoryCache usersCache = new("users"); // cache for recently calculated players
         private readonly double calcsPerHour; // how many profiles one user can calc in an hour
 
-        private readonly Regex usernameRegex = new(@"^[A-Za-z0-9-\[\]_ ]+$");
+        private static readonly Regex username_regex = new(@"^[A-Za-z0-9-\[\]_ ]+$", RegexOptions.Compiled);
 
         public PlayerQueueService(IConfiguration _configuration)
         {
@@ -37,23 +37,23 @@ namespace WebPerformanceCalculator.Services
         /// <param name="player">Player name</param>
         /// <param name="remoteIp">IP of the user that added player to the queue</param>
         /// <returns>(success, error message)</returns>
-        public (bool, string) AddToQueue(string player, string? remoteIp)
+        public string AddToQueue(string player, string? remoteIp)
         {
             if (queueLocked)
-                return (false, "Queue is temporary locked, try again later!");
+                return "Queue is temporary locked, try again later!";
 
             if (queueDebounce > DateTime.Now)
-                return (false, "Try again later");
+                return "Try again later";
 
             // performance calculator doesn't want to work with them even when escaping
             if (player.Contains('-'))
-                return (false, "Please use user ID instead");
+                return "Please use user ID instead";
 
             if (player.Length < 3 || 
                 player.Length > 16 ||
-                !usernameRegex.IsMatch(player) || 
+                !username_regex.IsMatch(player) || 
                 player.Contains("_full"))
-                return (false, "Incorrect username");
+                return "Incorrect username";
 
             var userCalcs = 0;
             if (remoteIp != null)
@@ -63,19 +63,19 @@ namespace WebPerformanceCalculator.Services
             }
 
             if (userCalcs > calcsPerHour)
-                return (false, "Chill");
+                return "Chill";
 
             player = HttpUtility.HtmlEncode(player.Trim()).ToLowerInvariant();
 
             if (playerQueue.Contains(player) || calculatedCache.Contains(player) || calculatingCache.Contains(player))
-                return (false, "This player doesn't need a recalculation yet! You can only recalculate once a day");
+                return "This player doesn't need a recalculation yet! You can only recalculate once a day";
 
             playerQueue.Enqueue(player);
             queueDebounce = DateTime.Now.AddSeconds(1);
 
             userCalcs++;
             usersCache.Set(remoteIp, userCalcs, DateTimeOffset.Now.AddHours(userCalcs / calcsPerHour));
-            return (true, string.Empty);
+            return string.Empty;
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace WebPerformanceCalculator.Services
         {
             if (player.Length < 3 ||
                 player.Length > 16 ||
-                !usernameRegex.IsMatch(player) ||
+                !username_regex.IsMatch(player) ||
                 player.Contains("_full"))
                 return;
 
