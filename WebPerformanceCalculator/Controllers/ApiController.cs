@@ -245,7 +245,7 @@ namespace WebPerformanceCalculator.Controllers
             });
         }
 
-        private string FixupSort(string? sort)
+        private static string FixupSort(string? sort)
         {
             // this is stupid
             return sort switch

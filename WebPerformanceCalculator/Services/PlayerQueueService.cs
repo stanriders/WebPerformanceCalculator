@@ -56,10 +56,9 @@ namespace WebPerformanceCalculator.Services
                 return "Incorrect username";
 
             var userCalcs = 0;
-            if (remoteIp != null)
+            if (remoteIp != null && usersCache.Contains(remoteIp))
             {
-                if (usersCache.Contains(remoteIp))
-                    userCalcs = (int)usersCache[remoteIp];
+                userCalcs = (int)usersCache[remoteIp];
             }
 
             if (userCalcs > calcsPerHour)

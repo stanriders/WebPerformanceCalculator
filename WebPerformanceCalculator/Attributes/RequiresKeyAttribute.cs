@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace WebPerformanceCalculator.Attributes
 {
+    [AttributeUsage(AttributeTargets.Method)]
     public class RequiresKeyAttribute : Attribute, IActionFilter
     {
-
         public void OnActionExecuted(ActionExecutedContext context) { }
 
         public void OnActionExecuting(ActionExecutingContext context)

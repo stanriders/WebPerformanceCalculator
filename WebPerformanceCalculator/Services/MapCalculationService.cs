@@ -77,7 +77,7 @@ namespace WebPerformanceCalculator.Services
             foreach (var file in Directory.EnumerateFiles($"{workingDirectory}/mapinfo", $"{mapId}_*"))
                 File.Delete(file);
 
-            return Calculate(mapId, new string[] { });
+            return Calculate(mapId, Array.Empty<string>());
         }
     }
 }
