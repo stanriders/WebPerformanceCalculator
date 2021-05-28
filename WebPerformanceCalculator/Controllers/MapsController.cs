@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WebPerformanceCalculator.Models;
+using WebPerformanceCalculator.Parsers;
 using WebPerformanceCalculator.Services;
 
 namespace WebPerformanceCalculator.Controllers
@@ -13,10 +12,6 @@ namespace WebPerformanceCalculator.Controllers
     [ApiController]
     public class MapsController : ControllerBase
     {
-        private readonly Regex mapLinkRegex =
-            new(@"(?>https?:\/\/)?(?>osu|old)\.ppy\.sh\/([b,s]|(?>beatmaps)|(?>beatmapsets))\/(\d+\/?\#osu\/)?(\d+)?\/?(?>[&,?].=\d)?",
-                RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        
         private readonly MapCalculationService calculationService;
 
         public MapsController(MapCalculationService _calculationService)
@@ -31,14 +26,16 @@ namespace WebPerformanceCalculator.Controllers
             if (string.IsNullOrEmpty(model.Map))
                 return StatusCode(400, new { err = "Incorrect beatmap link!" });
 
-            if (!int.TryParse(model.Map, out var mapId))
+            if (!uint.TryParse(model.Map, out var mapId))
             {
-                mapId = GetMapIdFromLink(model.Map, out var isSet);
-                if (mapId == 0)
+                var parsedLink = BeatmapLinkParser.Parse(model.Map);
+                if (parsedLink == null)
                     return StatusCode(400, new { err = "Incorrect beatmap link!" });
 
-                if (isSet)
+                if (parsedLink.IsBeatmapset)
                     return StatusCode(400, new { err = "Beatmap set links aren't supported" });
+
+                mapId = parsedLink.Id;
             }
 
             var mapInfo = await calculationService.Calculate(mapId, model.Mods);
@@ -70,43 +67,6 @@ namespace WebPerformanceCalculator.Controllers
             }
 
             return StatusCode(400);
-        }
-
-        /// <summary>
-        /// Parse beatmap link
-        /// </summary>
-        /// <param name="link">Link to parse</param>
-        /// <param name="isSet">True if it's a beatmapset link</param>
-        /// <returns>Beatmap ID</returns>
-        private int GetMapIdFromLink(string link, out bool isSet)
-        {
-            int beatmapId = 0;
-            isSet = false;
-            Match regexMatch = mapLinkRegex.Match(link);
-            if (regexMatch.Groups.Count > 1)
-            {
-                List<Group> regexGroups = regexMatch.Groups.Values
-                    .Where(x => x.Length > 0)
-                    .ToList();
-
-                bool isNew = regexGroups[1].Value == "beatmapsets"; // are we using new website or not
-                if (isNew)
-                {
-                    if (regexGroups[2].Value.Contains("#osu/"))
-                        beatmapId = int.Parse(regexGroups[3].Value);
-                    else
-                        isSet = true;
-                }
-                else
-                {
-                    if (regexGroups[1].Value == "s")
-                        isSet = true;
-                    else
-                        beatmapId = int.Parse(regexGroups[2].Value);
-                }
-            }
-
-            return beatmapId;
         }
     }
 }

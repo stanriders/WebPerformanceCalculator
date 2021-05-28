@@ -16,7 +16,7 @@ namespace WebPerformanceCalculator.Services
             updateService = _updateService;
         }
 
-        public async Task<string?> Calculate(int mapId, string[] mods)
+        public async Task<string?> Calculate(uint mapId, string[] mods)
         {
             var modsJoined = string.Join(string.Empty, mods);
             var mapInfoPath = $"{workingDirectory}/mapinfo/{mapId}_{modsJoined}.json";
