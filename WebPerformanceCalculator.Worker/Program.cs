@@ -4,43 +4,34 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using WebPerformanceCalculator.Shared;
+using WebPerformanceCalculator.Shared.Types;
 
 namespace WebPerformanceCalculator.Worker
 {
-    class Program
+    public static class Program
     {
-        private static string workingDir;
+        private static HttpClient http;
+
+        private static string workingDirectory;
+        private static string calculatorPath;
         private static string apiKey;
-        private static readonly HttpClient http = new HttpClient();
 
-#if DEBUG
-        private const string remote_in_endpoint = @"http://localhost:6000/api/GetUserForWorker";
-        private const string remote_out_endpoint = @"http://localhost:6000/api/SubmitWorkerResults";
-        private const int pooling_rate = 1000; // 1 second
-#else
-        private const string remote_in_endpoint = @"https://newpp.stanr.info/api/GetUserForWorker";
-        private const string remote_out_endpoint = @"https://newpp.stanr.info/api/SubmitWorkerResults";
-        private const int pooling_rate = 5000; // 5 seconds
-#endif
+        private static string getWorkEndpoint;
+        private static string submitWorkEndpoint;
+        private static int poolingRate;
+        private static string endpointKey;
 
-        private const string fallback_api_key = "";
         private const string lock_file = "lockcalc";
-        private const string calc_file = "osu.Game.Rulesets.Osu.dll";
+        private const int process_wait_time = 3 * 60 * 1000;
 
         static void Main(string[] args)
         {
-            var assemblyFileInfo = new FileInfo(typeof(Program).Assembly.Location);
-            workingDir = assemblyFileInfo.DirectoryName;
+            if (!Configure())
+                return;
 
-            apiKey = File.ReadAllText("apikey");
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                Log("API Key is empty! Using fallback key...");
-                apiKey = fallback_api_key;
-            }
-
+            http = new HttpClient();
             Log("Started...");
 
             while (!File.Exists("softexit"))
@@ -49,18 +40,7 @@ namespace WebPerformanceCalculator.Worker
                 {
                     if (!File.Exists(lock_file))
                     {
-                        var calcDate = File.GetLastWriteTime(calc_file).ToUniversalTime();
-                        var json = http.GetStringAsync($"{remote_in_endpoint}?key={Config.auth_key}&calcTimestamp={calcDate.Ticks}").Result;
-                        if (!string.IsNullOrEmpty(json))
-                        {
-                            var data = JsonConvert.DeserializeObject<WorkerDataModel>(json);
-                            if (data.NeedsCalcUpdate)
-                                UpdateCalc(data.Data);
-                            else
-                                CalcUser(data.Data);
-
-                            continue;
-                        }
+                        Loop();
                     }
                     else
                     {
@@ -71,9 +51,34 @@ namespace WebPerformanceCalculator.Worker
                 {
                     Log(e.Message);
                 }
-                Thread.Sleep(pooling_rate);
+                Thread.Sleep(poolingRate);
             }
+
+            http.Dispose();
             Log("Exiting...");
+        }
+
+        private static void Loop()
+        {
+            var calcDate = File.GetLastWriteTime(calculatorPath).ToUniversalTime();
+            var json = http.GetStringAsync($"{getWorkEndpoint}?key={endpointKey}&calcTimestamp={calcDate.Ticks}").Result;
+            if (!string.IsNullOrEmpty(json))
+            {
+                var data = JsonConvert.DeserializeObject<WorkerDataModel>(json);
+                switch (data.DataType)
+                {
+                    case DataType.Profile:
+                    {
+                        CalcUser(data.Data);
+                        break;
+                    }
+                    case DataType.Update:
+                    {
+                        UpdateCalc(data.Data);
+                        break;
+                    }
+                }
+            }
         }
 
         private static void UpdateCalc(string calcLink)
@@ -89,7 +94,7 @@ namespace WebPerformanceCalculator.Worker
 
                 Log("Downloading new calc module...");
                 var calcBytes = http.GetByteArrayAsync(calcLink).Result;
-                File.WriteAllBytes(calc_file, calcBytes);
+                File.WriteAllBytes(calculatorPath, calcBytes);
 
                 Log("Unlocking calculation...");
                 File.Delete(lock_file);
@@ -107,43 +112,86 @@ namespace WebPerformanceCalculator.Worker
             try
             {
                 Log($"Calculating {username}");
-                var jsonUsername = username.Replace(' ', '_');
+                var queueUsername = username.Replace(' ', '_');
 
                 var process = new Process()
                 {
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = "dotnet",
-                        WorkingDirectory = workingDir,
+                        WorkingDirectory = workingDirectory,
                         Arguments =
-                            $"PerformanceCalculator.dll profile \"{jsonUsername}\" {apiKey}",
+                            $"{calculatorPath} profile \"{queueUsername}\" {apiKey}",
                         RedirectStandardOutput = false,
                         UseShellExecute = true,
                         CreateNoWindow = true,
                     }
                 };
                 process.Start();
-                process.WaitForExit(180000); // 3 mins
+                process.WaitForExit(process_wait_time); // 3 mins
 
-                if (File.Exists($"players/{jsonUsername}.json"))
+                if (File.Exists($"{workingDirectory}/players/{queueUsername}.json"))
                 {
-                    result = File.ReadAllText($"players/{jsonUsername}.json");
-                    File.Delete($"players/{jsonUsername}.json");
+                    result = File.ReadAllText($"{workingDirectory}/players/{queueUsername}.json");
+                    File.Delete($"{workingDirectory}/players/{queueUsername}.json");
                 }
             }
             catch (Exception e)
             {
                 Log($"Failed to calc {username}\n {e.Message}");
             }
-            Log($"Sending {username} results");
+            Log($"Sending {username} results...");
 
             var content = new StringContent(result, Encoding.UTF8, "application/json");
-            http.PostAsync($"{remote_out_endpoint}?key={Config.auth_key}&jsonUsername={username}", content).Wait();
+            var response = http.PostAsync($"{submitWorkEndpoint}?key={endpointKey}&queueUsername={username}", content).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                Log("Sent!");
+            }
+            else
+            {
+                Log($"Failed! {response.StatusCode} - {response.ReasonPhrase}");
+            }
         }
 
         private static void Log(string log)
         {
             Console.WriteLine($"[{DateTime.Now}] {log}");
+        }
+
+        private static bool Configure()
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", true, true)
+                .Build();
+
+            workingDirectory = configuration["CalculatorPath"];
+            if (string.IsNullOrEmpty(workingDirectory))
+                workingDirectory = new FileInfo(typeof(Program).Assembly.Location).DirectoryName ?? ".";
+
+            calculatorPath = Path.Combine(workingDirectory, "PerformanceCalculator.dll");
+
+            apiKey = configuration["APIKey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Log("API Key is empty!");
+                return false;
+            }
+
+            getWorkEndpoint = configuration["GetWorkEndpointAddress"];
+            submitWorkEndpoint = configuration["SubmitWorkEndpointAddress"];
+            if (string.IsNullOrEmpty(getWorkEndpoint) || string.IsNullOrEmpty(submitWorkEndpoint))
+            {
+                Log("Work endpoint addresses are empty!");
+                return false;
+            }
+
+            if (!int.TryParse(configuration["PollingRate"], out poolingRate))
+                poolingRate = 5000;
+
+            endpointKey = configuration["Key"];
+
+            return true;
         }
     }
 }

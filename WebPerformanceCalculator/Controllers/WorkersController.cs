@@ -15,7 +15,7 @@ using WebPerformanceCalculator.Shared.Types;
 
 namespace WebPerformanceCalculator.Controllers
 {
-    [Route("api")]
+    [Route("api/[controller]")]
     [ApiController]
     public class WorkersController : ControllerBase
     {
@@ -33,8 +33,7 @@ namespace WebPerformanceCalculator.Controllers
 
         [HttpPost]
         [RequiresKey]
-        [Route("SubmitWorkerResults")] // FIXME: better name
-        public async Task<IActionResult> SubmitWorkerResults([FromBody] CalculatedPlayerModel content, string key, string jsonUsername)  // FIXME: better name
+        public async Task<IActionResult> PostResults([FromBody] CalculatedPlayerModel content, string key, string queueUsername)
         {
             await using var db = new DatabaseContext();
 
@@ -93,33 +92,38 @@ namespace WebPerformanceCalculator.Controllers
             }
             finally
             {
-                playerQueue.FinishedCalculation(jsonUsername);
+                playerQueue.FinishedCalculation(queueUsername);
             }
 
             return Ok();
         }
 
+        [HttpGet]
         [RequiresKey]
-        [Route("GetUserForWorker")] // FIXME: better name
-        public IActionResult GetUserForWorker(string key, long calcTimestamp)
+        public IActionResult GetPayload(string key, long calcTimestamp)
         {
             if (calcTimestamp == 0)
                 return StatusCode(422);
 
             if (calcTimestamp < updateService.CalculationModuleUpdateTime.Ticks)
             {
-                // send update data
                 return new JsonResult(new WorkerDataModel
                 {
-                    NeedsCalcUpdate = true,
-                    Data = updateService.GetUpdateLink()
+                    Data = updateService.GetUpdateLink(),
+                    DataType = DataType.Update
                 });
             }
 
             var player = playerQueue.GetPlayerForCalculation();
             if (player != null)
-                return new JsonResult(new WorkerDataModel { Data = player });
-            
+            {
+                return new JsonResult(new WorkerDataModel
+                {
+                    Data = player,
+                    DataType = DataType.Profile
+                });
+            }
+
             return Ok();
         }
 
