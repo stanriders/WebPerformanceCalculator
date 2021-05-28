@@ -1,8 +1,8 @@
 ﻿
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 using WebPerformanceCalculator.Attributes;
 using WebPerformanceCalculator.DB;
 using WebPerformanceCalculator.Services;
@@ -35,6 +35,14 @@ namespace WebPerformanceCalculator.Controllers
         public IActionResult ClearQueue(string key)
         {
             playerQueue.ClearQueue();
+            return new OkResult();
+        }
+
+        [RequiresKey]
+        [Route("ClearCaches")]
+        public IActionResult ClearCaches(string key)
+        {
+            playerQueue.ClearCaches();
             return new OkResult();
         }
 
