@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Sentry;
 using WebPerformanceCalculator.Attributes;
 using WebPerformanceCalculator.DB;
 using WebPerformanceCalculator.DB.Types;
@@ -35,6 +36,11 @@ namespace WebPerformanceCalculator.Controllers
         [RequiresKey]
         public async Task<IActionResult> PostResults([FromBody] CalculatedPlayerModel content, string key, string queueUsername)
         {
+            SentrySdk.ConfigureScope(scope => { scope.Contexts["Payload"] = new {
+                QueueUsername = queueUsername,
+                PlayerId = content.UserID
+            }; });
+
             await using var db = new DatabaseContext();
 
             try

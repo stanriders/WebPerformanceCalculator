@@ -86,9 +86,26 @@
                 <br />
                 <div class="card">
                     <div class="card-body">
+                        <p>Remove map</p>
+                        <form class="form-row align-items-right" id="removemap">
+                            <div class="col-auto"><input type="text" id="mapid" name="name" class="form-control" placeholder="Map ID" /></div>
+                            <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Go" id="submit" /></div>
+                            <div class="col-auto"><p id="errorMap" class="text-danger"></p></div>
+                        </form>
+                    </div>
+                </div>
+                <br />
+                <div class="card">
+                    <div class="card-body">
                         <p>Misc</p>
                         <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Clear Highscores" id="clear" onclick="clearHighscores()" /></div>
                         <div class="col-auto"><p id="errorClear" class="text-danger"></p></div>
+                        <br />
+                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Clear Queue" id="toggle" onclick="clearQueue()" /></div>
+                        <div class="col-auto"><p id="errorClearQueue" class="text-danger"></p></div>
+                        <br />
+                        <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Clear Caches" id="toggle" onclick="clearCaches()" /></div>
+                        <div class="col-auto"><p id="errorCaches" class="text-danger"></p></div>
                         <br />
                         <div class="col-auto"><input type="submit" class="btn btn-secondary" value="Toggle Queue" id="toggle" onclick="toggleQueue()" /></div>
                         <div class="col-auto"><p id="errorToggle" class="text-danger"></p></div>
@@ -172,6 +189,22 @@
                 e.preventDefault();
             });
 
+        $("#removemap").on('submit',
+            function (e) {
+                var params = $("#removemap").serialize();
+                $.ajax({
+                    type: 'GET',
+                    url: "/api/admin/UpdateMap?key=" + key + '&' + params,
+                    error: function (d) {
+                        $('#errorMap').html('Failed');
+                    },
+                    success: function (d) {
+                        $('#errorMap').html('Succ');
+                    }
+                });
+                e.preventDefault();
+            });
+
         function clearHighscores() {
             $.ajax({
                 type: 'GET',
@@ -183,7 +216,32 @@
                     $('#errorClear').html('Succ');
                 }
             });
-            e.preventDefault();
+        };
+
+        function clearQueue() {
+            $.ajax({
+                type: 'GET',
+                url: "/api/admin/ClearQueue?key=" + key,
+                error: function (d) {
+                    $('#errorClearQueue').html('Failed');
+                },
+                success: function (d) {
+                    $('#errorClearQueue').html('Succ');
+                }
+            });
+        };
+
+        function clearCaches() {
+            $.ajax({
+                type: 'GET',
+                url: "/api/admin/ClearCaches?key=" + key,
+                error: function (d) {
+                    $('#errorCaches').html('Failed');
+                },
+                success: function (d) {
+                    $('#errorCaches').html('Succ');
+                }
+            });
         };
 
         function toggleQueue() {
@@ -197,21 +255,6 @@
                     $('#errorToggle').html('Succ');
                 }
             });
-            e.preventDefault();
-        };
-
-        function toggleQueue() {
-            $.ajax({
-                type: 'GET',
-                url: "/api/admin/ToggleQueue?key=" + key,
-                error: function (d) {
-                    $('#errorToggle').html('Failed');
-                },
-                success: function (d) {
-                    $('#errorToggle').html('Succ');
-                }
-            });
-            e.preventDefault();
         };
 
         function updateUserTable() {

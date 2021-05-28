@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Sentry;
 using WebPerformanceCalculator.Models;
 using WebPerformanceCalculator.Parsers;
 using WebPerformanceCalculator.Services;
@@ -25,6 +26,8 @@ namespace WebPerformanceCalculator.Controllers
         {
             if (string.IsNullOrEmpty(model.Map))
                 return StatusCode(400, new { err = "Incorrect beatmap link!" });
+
+            SentrySdk.ConfigureScope(scope => { scope.Contexts["Map"] = model; });
 
             if (!uint.TryParse(model.Map, out var mapId))
             {

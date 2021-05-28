@@ -63,5 +63,21 @@ namespace WebPerformanceCalculator.Services
 
             return null;
         }
+
+        public Task UpdateMap(uint mapId)
+        {
+            // delete map
+            File.Delete($"{workingDirectory}/cache/{mapId}.osu");
+
+            // delete graphs
+            foreach (var file in Directory.EnumerateFiles($"{workingDirectory}/cache", $"*_{mapId}_*.*"))
+                File.Delete(file);
+
+            // delete mapinfos
+            foreach (var file in Directory.EnumerateFiles($"{workingDirectory}/mapinfo", $"{mapId}_*"))
+                File.Delete(file);
+
+            return Calculate(mapId, new string[] { });
+        }
     }
 }
