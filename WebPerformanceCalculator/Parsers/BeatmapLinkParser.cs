@@ -32,7 +32,7 @@ namespace WebPerformanceCalculator.Parsers
                 var regexGroups = regexMatch.Groups.Values.ToArray();
 
                 bool isNew = regexGroups[1].Value != "b" && regexGroups[1].Value != "s"; // are we using new website or not
-                bool isSet = (regexGroups[1].Value == "beatmapsets" && regexGroups.Length < 3) || regexGroups[1].Value == "s";
+                bool isSet = (regexGroups[1].Value == "beatmapsets" && regexGroups.Length < 4) || regexGroups[1].Value == "s";
 
                 if (isNew)
                 {

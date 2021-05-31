@@ -57,8 +57,7 @@ Get all known countries in the player database
 ---
 
 ## Running
-Requires [osu-tools](https://github.com/stanriders/osu-tools) built in the same folder as workers for pp calculation.  
-
+```dotnet WebPerformanceCalculator.dll```
 ### appsettings.json
 ```
 {
@@ -74,7 +73,25 @@ Requires [osu-tools](https://github.com/stanriders/osu-tools) built in the same 
 
   "CommitHashFileName": "commithash"  // path to file with commit hash, can be relative
 }
+```
 
+---
+
+## Running workers
+```dotnet WebPerformanceCalculator.Worker.dll```
+
+### appsettings.json
+```
+{
+  "CalculatorPath": "/home/pp/osu-tools/bin/netcoreapp3.1",  // path to a PerformanceCalculator.dll
+  "CalculationModuleFileName": "osu.Game.Rulesets.Osu.dll",
+  "APIKey": "",  // osu! API v1 key
+
+  "GetWorkEndpointAddress": "http://localhost:6000/api/workers",  // endpoint to get work data from, GET
+  "SubmitWorkEndpointAddress": "http://localhost:6000/api/workers",  // endpoint to submit work data to, POST
+  "PollingRate": 1000,  // how often to poll work endpoint
+  "Key": "abcdefghjklmnopqrstuvwxyz0123456789"  // worker endpoints access key
+}
 ```
   
 ASP.NET 5.0
