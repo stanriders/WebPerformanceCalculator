@@ -9,16 +9,17 @@ using Microsoft.Extensions.Configuration;
 
 namespace WebPerformanceCalculator.Services
 {
-    public class PlayerQueueService
+    public class PlayerQueueService : IDisposable
     {
         private MemoryCache calculatedCache = new("calculated_players"); // cache for recently calculated players
+        private readonly double allowRecalcAfter; // how often player can be recalculated, in hours
 
         private readonly ConcurrentQueue<string> playerQueue = new(); // main calculation queue
         private DateTime queueDebounce = DateTime.Now;
         private bool queueLocked;
 
         private MemoryCache calculatingCache = new("currently_calculating"); // cache for currently calculating players
-        private const int drop_calculation_after = 10; // minutes
+        private const int drop_calculation_after = 5; // minutes
 
         private readonly MemoryCache usersCache = new("users"); // cache for recently calculated players
         private readonly double calcsPerHour; // how many profiles one user can calc in an hour
@@ -29,6 +30,9 @@ namespace WebPerformanceCalculator.Services
         {
             if (!double.TryParse(_configuration["CalcsPerHourPerUser"], out calcsPerHour))
                 calcsPerHour = 15.0;
+
+            if (!double.TryParse(_configuration["AllowPlayerRecalcAfterHours"], out allowRecalcAfter))
+                allowRecalcAfter = 24.0;
         }
 
         /// <summary>
@@ -67,7 +71,7 @@ namespace WebPerformanceCalculator.Services
             player = HttpUtility.HtmlEncode(player.Trim()).ToLowerInvariant();
 
             if (playerQueue.Contains(player) || calculatedCache.Contains(player) || calculatingCache.Contains(player))
-                return "This player doesn't need a recalculation yet! You can only recalculate once a day";
+                return $"This player doesn't need a recalculation yet! You can only recalculate once every {allowRecalcAfter} hours";
 
             playerQueue.Enqueue(player);
             queueDebounce = DateTime.Now.AddSeconds(1);
@@ -152,8 +156,7 @@ namespace WebPerformanceCalculator.Services
         {
             calculatingCache.Remove(player);
 
-            // one calculation a day
-            calculatedCache.Add(player, player, DateTimeOffset.Now.AddDays(1));
+            calculatedCache.Add(player, player, DateTimeOffset.Now.AddHours(allowRecalcAfter));
         }
 
         /// <summary>
@@ -174,6 +177,13 @@ namespace WebPerformanceCalculator.Services
 
             calculatingCache.Dispose();
             calculatingCache = new MemoryCache("currently_calculating");
+        }
+
+        public void Dispose()
+        {
+            calculatedCache.Dispose();
+            calculatingCache.Dispose();
+            usersCache.Dispose();
         }
     }
 }
