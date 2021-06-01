@@ -29,7 +29,7 @@ namespace WebPerformanceCalculator.Parsers
                 // 1 - link type (b/s/beatmapsets/beatmaps)
                 // 2 - beatmapset id (beatmap id if link type is 'beatmaps/b/s')
                 // 3 - beatmap id
-                var regexGroups = regexMatch.Groups.Values.ToArray();
+                var regexGroups = regexMatch.Groups.Values.Where(x => x.Success).ToArray();
 
                 bool isNew = regexGroups[1].Value != "b" && regexGroups[1].Value != "s"; // are we using new website or not
                 bool isSet = (regexGroups[1].Value == "beatmapsets" && regexGroups.Length < 4) || regexGroups[1].Value == "s";
