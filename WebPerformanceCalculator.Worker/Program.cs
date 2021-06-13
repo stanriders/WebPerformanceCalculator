@@ -16,6 +16,7 @@ namespace WebPerformanceCalculator.Worker
 
         private static string workingDirectory;
         private static string calculatorPath;
+        private static string calculatorModulePath;
         private static string apiKey;
 
         private static string getWorkEndpoint;
@@ -60,7 +61,7 @@ namespace WebPerformanceCalculator.Worker
 
         private static void Loop()
         {
-            var calcDate = File.GetLastWriteTime(calculatorPath).ToUniversalTime();
+            var calcDate = File.GetLastWriteTime(calculatorModulePath).ToUniversalTime();
             var json = http.GetStringAsync($"{getWorkEndpoint}?key={endpointKey}&calcTimestamp={calcDate.Ticks}").Result;
             if (!string.IsNullOrEmpty(json))
             {
@@ -83,7 +84,7 @@ namespace WebPerformanceCalculator.Worker
 
         private static void UpdateCalc(string calcLink)
         {
-            Log("OUTDATED CALC MODULE! Updating...");
+            Log($"OUTDATED CALC MODULE ({File.GetLastWriteTime(calculatorModulePath).ToUniversalTime()})! Updating...");
             try
             {
                 Log("Locking calculation...");
@@ -94,7 +95,7 @@ namespace WebPerformanceCalculator.Worker
 
                 Log("Downloading new calc module...");
                 var calcBytes = http.GetByteArrayAsync(calcLink).Result;
-                File.WriteAllBytes(calculatorPath, calcBytes);
+                File.WriteAllBytes(calculatorModulePath, calcBytes);
 
                 Log("Unlocking calculation...");
                 File.Delete(lock_file);
@@ -170,6 +171,7 @@ namespace WebPerformanceCalculator.Worker
                 workingDirectory = new FileInfo(typeof(Program).Assembly.Location).DirectoryName ?? ".";
 
             calculatorPath = Path.Combine(workingDirectory, "PerformanceCalculator.dll");
+            calculatorModulePath = Path.Combine(workingDirectory, configuration["CalculationModuleFileName"] ?? "osu.Game.Rulesets.Osu.dll");
 
             apiKey = configuration["APIKey"];
             if (string.IsNullOrEmpty(apiKey))
