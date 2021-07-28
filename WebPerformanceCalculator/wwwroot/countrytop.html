@@ -59,7 +59,7 @@
 
             var country = window.location.href.slice(window.location.href.lastIndexOf('/') + 1).replace('#', '');
             if (!!country && country != "countrytop") {
-                $('#countryName').html('<img style="width: 32px;padding-top: 5px; padding-bottom:5px;" src="https://osu.ppy.sh/images/flags/' + country + '.png"/>');
+                $('#countryName').html('<img style="width: 32px;padding-top: 5px; padding-bottom:5px;" src="' + flagUrl(country) + '"/>');
                 $('title').html(country + ' Leaderboard - delta_t PP Rebalance Calculator');
                 getCountry(country);
             } else {
@@ -73,7 +73,7 @@
                     success: function (d) {
                         d = d.sort();
                         for (var i = 0; i < d.length; i++) {
-                            $('#countries').append('<div class="col"><a href="/countrytop/' + d[i] + '"><img style="width: 48px;padding-top: 15px; padding-bottom:15px;" src="https://osu.ppy.sh/images/flags/' + d[i] + '.png"/></a></div>');
+                            $('#countries').append('<div class="col"><a href="/countrytop/' + d[i] + '"><img style="width: 48px;padding-top: 15px; padding-bottom:15px;" src="' + flagUrl(d[i]) + '"/></a></div>');
                         }
                     },
 
@@ -126,11 +126,19 @@
             });
         }
         function formatPlayerName(value, row, index) {
-            return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/" + row.country + ".png\"/></a><a href=\"/user/" + row.id + "\">" + value + "</a>";
+            return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"" + flagUrl(row.country) + "\"/></a><a href=\"/user/" + row.id + "\">" + value + "</a>";
         }
         function formatPpChange(value, row, index) {
             return (row.localPp - row.livePp).toFixed(1);
         }
+
+        function flagUrl(code) {
+          var flagName = code.split('')
+            .map(function(c) { return (c.charCodeAt(0) + 127397).toString(16)})
+            .join('-');
+
+          return "https://osu.ppy.sh/assets/images/flags/"+flagName+".svg";
+        };
     </script>
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript">

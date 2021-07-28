@@ -102,12 +102,20 @@
             }
             function formatPlayerName(value, row, index) {
                 if (!!row.country) {
-                    return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"https://osu.ppy.sh/images/flags/" + row.country + ".png\"/></a><a href=\"/user/" + row.id + "\">" + value + "</a>";
+                    return "<a href=\"/countrytop/" + row.country + "\"><img style=\"width: 32px; padding: 0 5px;\" src=\"" + flagUrl(row.country) + "\"/></a><a href=\"/user/" + row.id + "\">" + value + "</a>";
                 } else {
                     return "<a href=\"/user/" + row.id + "\">" + value + "</a>";
                 }
             }
         });
+
+		function flagUrl(code) {
+		  var flagName = code.split('')
+		    .map(function(c) { return (c.charCodeAt(0) + 127397).toString(16)})
+		    .join('-');
+
+		  return "https://osu.ppy.sh/assets/images/flags/"+flagName+".svg";
+		};
     </script>
     <!-- Yandex.Metrika counter -->
     <script type="text/javascript">
