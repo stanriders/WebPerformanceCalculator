@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Sentry;
 using WebPerformanceCalculator.Attributes;
 using WebPerformanceCalculator.DB;
@@ -22,14 +23,16 @@ namespace WebPerformanceCalculator.Controllers
     {
         private readonly PlayerQueueService playerQueue;
         private readonly CalculationUpdatesService updateService;
+        private readonly ILogger<WorkersController> logger;
 
-        private readonly Regex scoreRegex = new("(\\d+) - (.+]) \\+?(.+)? \\((\\d+(?>\\.\\d+)?)%, (\\d+)\\/(\\d+)x(?>, (\\d+) \\w+)?\\)");
+        private readonly Regex scoreRegex = new("(\\d+) - (.+]) \\+?(.+)? \\((\\d+(?>\\.\\d+)?)%, (\\d+)\\/(\\d+)?x(?>, (\\d+) \\w+)?\\)");
         private readonly Regex livePpRegex = new("(\\d+.\\d+) \\(\\D+(\\d+.\\d+)");
 
-        public WorkersController(PlayerQueueService _playerQueue, CalculationUpdatesService _updateService)
+        public WorkersController(PlayerQueueService _playerQueue, CalculationUpdatesService _updateService, ILogger<WorkersController> _logger)
         {
             playerQueue = _playerQueue;
             updateService = _updateService;
+            logger = _logger;
         }
 
         [HttpPost]
@@ -96,6 +99,10 @@ namespace WebPerformanceCalculator.Controllers
                 await db.AddRangeAsync(scoresToAdd);
                 await db.SaveChangesAsync();
             }
+            catch (Exception e)
+            {
+                logger.LogWarning(e.ToString());
+            }
             finally
             {
                 playerQueue.FinishedCalculation(queueUsername);
@@ -152,7 +159,11 @@ namespace WebPerformanceCalculator.Controllers
             var mods = regexMatches.Groups[3].Value;
             var accuracy = double.Parse(regexMatches.Groups[4].Value);
             var combo = int.Parse(regexMatches.Groups[5].Value);
-            var maxCombo = int.Parse(regexMatches.Groups[6].Value);
+
+            var maxCombo = 0;
+            if (regexMatches.Groups[6].Success)
+                maxCombo = int.Parse(regexMatches.Groups[6].Value);
+
             var misses = 0;
             if (regexMatches.Groups[7].Success)
                 misses = int.Parse(regexMatches.Groups[7].Value);
@@ -161,7 +172,8 @@ namespace WebPerformanceCalculator.Controllers
                 score.PositionChange = "0";
 
             Map? map = null;
-            if (!await db.Maps.AsNoTracking().AnyAsync(x => x.Id == mapId))
+            var dbMap = await db.Maps.FirstOrDefaultAsync(x => x.Id == mapId);
+            if (dbMap == null)
             {
                 map = new Map
                 {
@@ -169,6 +181,11 @@ namespace WebPerformanceCalculator.Controllers
                     Name = mapName,
                     MaxCombo = maxCombo
                 };
+            }
+            else if (dbMap.MaxCombo != maxCombo || dbMap.Name != mapName)
+            {
+                dbMap.MaxCombo = maxCombo;
+                dbMap.Name = mapName;
             }
 
             return new Score
