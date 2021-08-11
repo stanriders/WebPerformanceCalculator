@@ -47,29 +47,5 @@ namespace WebPerformanceCalculator.Controllers
 
             return StatusCode(500, new { err = "Failed to calculate!" });
         }
-
-        [HttpGet("probabilitychart/{mapId}")]
-        [Route("probabilitychart")]
-        public async Task<IActionResult> GetProbabilityChart(string mapId, string? mods = "")
-        {
-            var graph = await calculationService.GetProbabilityChart(mapId, mods);
-            if (graph?.Length > 0)
-            {
-                var jsonGraph = new List<ProbabilityGraphModel>(graph.Length);
-                foreach (var g in graph)
-                {
-                    var split = g.Split(' ');
-                    jsonGraph.Add(new ProbabilityGraphModel
-                    {
-                        Time = Convert.ToDouble(split[0]),
-                        Probability = Convert.ToDouble(split[3])
-                    });
-                }
-
-                return Ok(jsonGraph);
-            }
-
-            return StatusCode(400);
-        }
     }
 }

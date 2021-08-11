@@ -12,12 +12,12 @@ namespace WebPerformanceCalculator.Models
             public string Beatmap { get; set; }
             public string LivePP { get; set; }
             public string LocalPP { get; set; }
-            public string ComparePP { get; set; }
             public string PPChange { get; set; }
             public string PositionChange { get; set; }
             public string AimPP { get; set; }
-            public string TapPP { get; set; }
+            public string SpeedPP { get; set; }
             public string AccPP { get; set; }
+            public string FlashlightPP { get; set; }
         }
 
         public int UserID { get; set; }
@@ -25,7 +25,6 @@ namespace WebPerformanceCalculator.Models
         public string UserCountry { get; set; }
         public string LivePP { get; set; }
         public string LocalPP { get; set; }
-        public string SitePP { get; set; }
         public List<CalculatedPlayerBeatmap> Beatmaps { get; set; } = new();
     }
 }

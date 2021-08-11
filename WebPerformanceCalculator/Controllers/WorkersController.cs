@@ -201,7 +201,7 @@ namespace WebPerformanceCalculator.Controllers
                 Accuracy = accuracy,
                 Combo = combo,
                 Misses = misses,
-                AdditionalPpData = $"aimPP = {score.AimPP}, tapPP = {score.TapPP}, accPP = {score.AccPP}",
+                AdditionalPpData = $"aimPP = {score.AimPP}, speedPP = {score.SpeedPP}, accPP = {score.AccPP}, flashlightPP = {score.FlashlightPP}",
                 PositionChange = int.Parse(score.PositionChange)
             };
         }
