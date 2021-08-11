@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark">
-    <title>Loading... - delta_t's PP Rework Calculator</title>
+    <title>Loading... - MBmasher's Flashlight Rework Calculator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" id="css-light" type="text/css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/vinorodrigues/bootstrap-dark@0.0/dist/bootstrap-night.min.css" id="css-dark" type="text/css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
@@ -14,7 +14,7 @@
     <div class="container">
         <main role="main" class="pb-1 pt-2">
             <nav class="navbar navbar-expand-sm navbar-light bg-light">
-                <a class="navbar-brand" href="/">delta_t's Rework Calculator</a>
+                <a class="navbar-brand" href="/">MBmasher's Flashlight Rework Calculator</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -50,7 +50,8 @@
             <div class="pt-2 pb-2">
                 <h1 class="username">Loading...</h1>
                 <div><b>Updated on:</b> <span id="updatedate"></span> <span id="outdated"></span></div>
-                <div><b>Total PP:</b> <span id="localPP"></span></div>
+                <div><b>Live PP:</b> <span id="livePP"></span></div>
+                <div><b>New PP:</b> <span id="localPP"></span></div>
                 <br>
                 <table class="table table-bordered table-striped table-sm" data-toggle="bootstrap-table" id="maintable"></table>
             </div>
@@ -70,9 +71,10 @@
                     $('#username').html("Failed to load");
                 },
                 success: function (json) {
-                    $('#localPP').html(json.localPp);
+                    $('#livePP').html(json.livePp);
+                    $('#localPP').html(json.localPp + ' (' + (json.localPp - json.livePp).toFixed(1) + ')');
                     $('.username').html("<a href=\"https://osu.ppy.sh/users/" + json.id + "\">" + json.name + "</a>");
-                    $('title').html(json.name + ' - delta_t PP Rebalance Calculator');
+                    $('title').html(json.name + " - MBmasher's Flashlight Rebalance Calculator");
 
                     var updateDate = new Date(json.updateTime);
                     $('#updatedate').html(updateDate.toLocaleDateString() + ' ' + updateDate.toLocaleTimeString());
@@ -101,8 +103,14 @@
                             title: 'Beatmap',
                             field: 'map'
                         }, {
+                            title: 'Live PP',
+                            field: 'livePp',
+                            width: 100,
+                            sortable: true,
+                            align: 'center'
+                        }, {
                             formatter: localPPFormatter,
-                            title: 'PP',
+                            title: 'New PP',
                             field: 'localPp',
                             width: 100,
                             sortable: true,
@@ -136,11 +144,19 @@
             if (row.misses > 0)
                 misses += ', ' + row.misses + ' misses';
 
-            return '<a href=\"https://newpp.stanr.info/map/' + row.mapId + '\">' + value.name + '</a> ' + mods + '<span style="font-size: 11px">(' + row.accuracy + '%, ' + row.combo + '/' + value.maxCombo + 'x' + misses + ')</span>';
+            var diff = row.localPp - row.livePp;
+            if (diff == 0) {
+                return '<a href=\"https://flashlight.stanr.info/map/' + row.mapId + '\">' + value.name + '</a> ' + mods + '<span style="font-size: 11px">(' + row.accuracy + '%)</span>';
+            }
+
+            return '<a href=\"https://flashlight.stanr.info/map/' + row.mapId + '\">' + value.name + '</a> ' + mods + '<span style="font-size: 11px">(' + row.accuracy + '%, ' + row.combo + '/' + value.maxCombo + 'x' + misses + ')</span>';
         }
         function localPPFormatter(value, row, index) {
-            var weighted = Math.pow(0.95, index) * value;
-            return '<span title=\"Live PP: ' + row.livePp + '\n' + row.additionalPpData + '\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + weighted.toFixed(1) + ')</span></span>';
+            var diff = row.localPp - row.livePp;
+            if (diff == 0) {
+                return '-';
+            }
+            return '<span title=\"' + row.additionalPpData + '\"><b>' + value + '</b> <span style=\"font-size: 9px\">(' + diff.toFixed(1) + ')</span></span>';
         }
         function updateProfile() {
             $('#outdated').html('(...)');
@@ -158,22 +174,6 @@
         }
 
     </script>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
-        (function (m, e, t, r, i, k, a) {
-            m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments) };
-            m[i].l = 1 * new Date(); k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
-        })
-            (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-
-        ym(56214328, "init", {
-            clickmap: true,
-            trackLinks: true,
-            accurateTrackBounce: true
-        });
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/56214328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
     <!-- Dark mode -->
     <script type="text/javascript">
         $(function () {
