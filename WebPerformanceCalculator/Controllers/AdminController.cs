@@ -70,6 +70,24 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [RequiresKey]
+        [Route("RecalcFlashlight")]
+        public async Task<IActionResult> RecalcFlashlight(string key)
+        {
+            await using var db = new DatabaseContext();
+
+            var players = await db.Scores.AsNoTracking()
+                .Where(x=> x.Mods != null && x.Mods.Contains("FL"))
+                .Select(x=> x.PlayerId)
+                .Distinct()
+                .ToArrayAsync();
+
+            foreach (var player in players)
+                playerQueue.AddToQueueInternal(player.ToString());
+
+            return new OkResult();
+        }
+
+        [RequiresKey]
         [Route("ClearHighscores")]
         public async Task<IActionResult> ClearHighscores(string key)
         {
