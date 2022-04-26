@@ -1,15 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29411.108
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebPerformanceCalculator", "WebPerformanceCalculator\WebPerformanceCalculator.csproj", "{AA9D7C4C-CDC5-46C8-9039-FD4DCD368C1F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebPerformanceCalculator.Worker", "WebPerformanceCalculator.Worker\WebPerformanceCalculator.Worker.csproj", "{34AD8B74-F4B9-4492-BE31-A316D2CCCA1A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebPerformanceCalculator.Shared", "WebPerformanceCalculator.Shared\WebPerformanceCalculator.Shared.csproj", "{C6CF5217-E786-4C3D-9B84-2573E0DA6535}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebPerformanceCalculator.DbConvert", "WebPerformanceCalculator.DbConvert\WebPerformanceCalculator.DbConvert.csproj", "{EB381B1A-DAAE-433C-A357-1CB718ECC44A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,18 +15,6 @@ Global
 		{AA9D7C4C-CDC5-46C8-9039-FD4DCD368C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA9D7C4C-CDC5-46C8-9039-FD4DCD368C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA9D7C4C-CDC5-46C8-9039-FD4DCD368C1F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{34AD8B74-F4B9-4492-BE31-A316D2CCCA1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{34AD8B74-F4B9-4492-BE31-A316D2CCCA1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{34AD8B74-F4B9-4492-BE31-A316D2CCCA1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{34AD8B74-F4B9-4492-BE31-A316D2CCCA1A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C6CF5217-E786-4C3D-9B84-2573E0DA6535}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C6CF5217-E786-4C3D-9B84-2573E0DA6535}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C6CF5217-E786-4C3D-9B84-2573E0DA6535}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C6CF5217-E786-4C3D-9B84-2573E0DA6535}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EB381B1A-DAAE-433C-A357-1CB718ECC44A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB381B1A-DAAE-433C-A357-1CB718ECC44A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EB381B1A-DAAE-433C-A357-1CB718ECC44A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EB381B1A-DAAE-433C-A357-1CB718ECC44A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

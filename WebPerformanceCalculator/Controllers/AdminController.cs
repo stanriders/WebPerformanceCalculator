@@ -15,15 +15,12 @@ namespace WebPerformanceCalculator.Controllers
     {
         private readonly PlayerQueueService playerQueue;
         private readonly CalculationUpdatesService updateService;
-        private readonly MapCalculationService mapCalculationService;
 
         public AdminController(PlayerQueueService _playerQueue, 
-            CalculationUpdatesService _updateService, 
-            MapCalculationService _mapCalculationService)
+            CalculationUpdatesService _updateService)
         {
             playerQueue = _playerQueue;
             updateService = _updateService;
-            mapCalculationService = _mapCalculationService;
         }
 
         [RequiresKey]
@@ -114,14 +111,6 @@ namespace WebPerformanceCalculator.Controllers
         public IActionResult GetUsers(string key)
         {
             return new JsonResult(playerQueue.GetUsersStats());
-        }
-
-        [RequiresKey]
-        [Route("UpdateMap")]
-        public async Task<IActionResult> UpdateMap(string key, uint mapId)
-        {
-            await mapCalculationService.UpdateMap(mapId);
-            return new OkResult();
         }
     }
 }

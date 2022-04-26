@@ -1,4 +1,5 @@
 
+using System;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,7 +20,12 @@ namespace WebPerformanceCalculator
         {
             services.AddSingleton(typeof(PlayerQueueService));
             services.AddScoped(typeof(CalculationUpdatesService));
-            services.AddScoped(typeof(MapCalculationService));
+            services.AddHostedService<CalculationService>();
+
+            services.AddHttpClient("OsuApi", client =>
+            {
+                client.BaseAddress = new Uri("https://osu.ppy.sh");
+            });
 
             services.AddAutoMapper(typeof(MappingProfile));
             services.AddDbContext<DatabaseContext>();
@@ -44,29 +50,19 @@ namespace WebPerformanceCalculator
 
             if (env.IsDevelopment())
             {
-                app.UseRewriter(new RewriteOptions()
-                    .AddRewrite("^top", "top.html", false)
-                    .AddRewrite("^map", "map.html", false)
-                    .AddRewrite("^highscores", "highscores.html", false)
-                    .AddRewrite("^user", "user.html", false)
-                    .AddRewrite("^countrytop", "countrytop.html", false)
-                    .AddRewrite("^admin", "admin.html", false)
-                );
-                app.UseFileServer();
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                db.Database.Migrate();
-
                 app.UseForwardedHeaders(new ForwardedHeadersOptions
                 {
                     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                 });
+                app.UseHsts();
             }
+            db.Database.Migrate();
 
             app.UseCors();
-            app.UseHsts();
             app.UseRouting();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

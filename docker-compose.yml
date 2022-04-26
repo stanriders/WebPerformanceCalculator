@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./WebPerformanceCalculator/.
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:3001
+    volumes:
+      - ./db:/app/db
+      - ./logs/backend:/app/logs
+      - ./keys:/root/.aspnet/DataProtection-Keys
+
+  frontend:
+    build: ./WebPerformanceCalculator.Frontend/.
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./logs/frontend:/app/logs
+      - ./logs/frontend/npm:/root/.npm/_logs

@@ -49,9 +49,8 @@ namespace WebPerformanceCalculator.Controllers
         }
 
         [HttpPost]
-        [Route("queue")]
-        [Consumes("application/x-www-form-urlencoded")]
-        public IActionResult AddToQueue([FromForm] string player)
+        [Route("queue/{player}")]
+        public IActionResult AddToQueue(string player)
         {
             var errorMessage = playerQueue.AddToQueue(player, httpContextAccessor.GetIpAddress());
             if (!string.IsNullOrEmpty(errorMessage))
@@ -77,7 +76,7 @@ namespace WebPerformanceCalculator.Controllers
         public async Task<IActionResult> GetResults(string name)
         {
             if (string.IsNullOrEmpty(name))
-                return new JsonResult(new {Username = "Incorrect username"});
+                return NotFound(new {Username = "Incorrect username"});
 
             await using var db = new DatabaseContext();
 
@@ -105,10 +104,10 @@ namespace WebPerformanceCalculator.Controllers
                     .FirstOrDefaultAsync();
 
                 if (dbPlayerId != default)
-                    return RedirectPermanent($"/api/GetResults?player={dbPlayerId}");
+                    return RedirectPermanent($"/api/players/{dbPlayerId}");
             }
 
-            return new JsonResult(new {Username = "Unknown player"});
+            return NotFound(new {Username = "Unknown player"});
         }
 
         [Route("top")]
@@ -197,7 +196,7 @@ namespace WebPerformanceCalculator.Controllers
             await using var db = new DatabaseContext();
 
             var query = db.Scores
-                .Where(x => x.UpdateTime > updateService.CalculationModuleUpdateTime && x.LocalPp > highscoreThreshold);
+                .Where(x => x.LocalPp > highscoreThreshold);
 
             var totalNotFilteredAmt = await query.CountAsync();
 

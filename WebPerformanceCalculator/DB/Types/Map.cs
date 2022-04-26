@@ -10,5 +10,7 @@ namespace WebPerformanceCalculator.DB.Types
         public string Name { get; set; } = "Unknown Map";
 
         public int MaxCombo { get; set; }
+
+        public double AdjustmentPercentage { get; set; }
     }
 }

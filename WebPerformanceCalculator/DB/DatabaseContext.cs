@@ -8,7 +8,7 @@ namespace WebPerformanceCalculator.DB
     public class DatabaseContext : DbContext
     {
         #nullable disable
-        private const string connection_string = "Filename=./top.db";
+        private const string connection_string = "Filename=./db/top.db";
 
 #if DEBUG
         private readonly ILoggerFactory loggerFactory;
