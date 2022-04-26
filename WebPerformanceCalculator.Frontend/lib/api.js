@@ -29,6 +29,15 @@ export async function getPlayer(id) {
   return res.json()
 }
 
+export async function getMap(id) {
+  const res = await fetch(apiBase+'/admin/map/'+id)
+  return res.json()
+}
+
+export async function updateMap(id, percentage) {
+  return await api(`/admin/map/${id}?percentage=${percentage}`, {method: 'POST'})
+}
+
 export async function getBuild() {
   const res = await fetch(apiBase+'/version')
   return res.json()

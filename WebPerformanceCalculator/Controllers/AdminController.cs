@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic;
 using WebPerformanceCalculator.Attributes;
 using WebPerformanceCalculator.DB;
+using WebPerformanceCalculator.DB.Types;
+using WebPerformanceCalculator.Models;
 using WebPerformanceCalculator.Services;
 
 namespace WebPerformanceCalculator.Controllers
@@ -111,6 +114,39 @@ namespace WebPerformanceCalculator.Controllers
         public IActionResult GetUsers(string key)
         {
             return new JsonResult(playerQueue.GetUsersStats());
+        }
+
+        [HttpGet]
+        [Route("map/{id}")]
+        public async Task<IActionResult> GetMap(int id)
+        {
+            await using var db = new DatabaseContext();
+            db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+
+            var map = await db.Maps.FirstOrDefaultAsync(x=> x.Id == id);
+
+            return new JsonResult(map);
+        }
+
+        [HttpPost]
+        [Route("map/{id}")]
+        public async Task<IActionResult> UpdateMap(int id, double percentage)
+        {
+            if (id == 0 || percentage == 0)
+                return BadRequest();
+
+            await using var db = new DatabaseContext();
+
+            var map = await db.Maps.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (map is not null)
+            {
+                map.AdjustmentPercentage = percentage;
+            }
+
+            await db.SaveChangesAsync();
+
+            return new JsonResult(map);
         }
     }
 }
