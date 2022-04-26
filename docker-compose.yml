@@ -4,7 +4,7 @@ services:
   backend:
     build: ./WebPerformanceCalculator/.
     ports:
-      - "127.0.0.1:3001:3001"
+      - "127.0.0.1:1338:3001"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:3001
@@ -16,7 +16,7 @@ services:
   frontend:
     build: ./WebPerformanceCalculator.Frontend/.
     ports:
-      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:1337:3000"
     volumes:
       - ./logs/frontend:/app/logs
       - ./logs/frontend/npm:/root/.npm/_logs
