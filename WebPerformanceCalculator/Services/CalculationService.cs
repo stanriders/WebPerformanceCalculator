@@ -83,19 +83,19 @@ namespace WebPerformanceCalculator.Services
                 {
                     var playerData =
                         JsonConvert.DeserializeObject<ApiPlayerModel[]>(
-                            await client.GetStringAsync($"/api/get_user?k={key}&u={player}"));
+                            await client.GetStringAsync($"/api/get_user?k={key}&u={player}&m=0"));
 
                     if (playerData is not null && playerData.Length > 0)
                     {
                         logger.LogInformation("Got player data!");
                         var playerScores =
                             JsonConvert.DeserializeObject<ApiScore[]>(
-                                await client.GetStringAsync($"/api/v2/users/{playerData[0].Id}/scores/best?&limit=100"));
+                                await client.GetStringAsync($"/api/v2/users/{playerData[0].Id}/scores/best?&limit=100&mode=osu"));
 
                         if (playerScores is not null && playerScores.Length > 0)
                         {
                             await AdjustScores(playerData[0], playerScores);
-                            Thread.Sleep(500);
+                            Thread.Sleep(350);
                         }
                     }
                 }

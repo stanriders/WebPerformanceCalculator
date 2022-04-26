@@ -106,21 +106,23 @@ export default function Top() {
           ))}
         </tbody>
       </Table>
-      
+
       {players && (
-        
         <Pagination>
+          <Pagination.First onClick={() => setPage(1)} disabled={page <= 1} />
           <Pagination.Prev onClick={handlePrevClick} disabled={page <= 1} />
 
-          {Array((totalPages).toFixed(0)).fill(null).map((value, index) => (
-            <Pagination.Item key={index+1} active={index+1 === page} onClick={() => setPage(index+1)} activeLabel="">{index+1}</Pagination.Item>
-            )
-          )}
+          {page > 2 && (<Pagination.Item onClick={() => setPage(page -2)}>{page - 2}</Pagination.Item>)}
+          {page > 1 && (<Pagination.Item onClick={handlePrevClick}>{page - 1}</Pagination.Item>)}
+          <Pagination.Item active activeLabel="">{page}</Pagination.Item>
+          {page < totalPages && (<Pagination.Item onClick={() => setPage(page + 1)}>{page+1}</Pagination.Item>)}
+          {page < totalPages - 1 && (<Pagination.Item onClick={() => setPage(page + 2)}>{page+2}</Pagination.Item>)}
 
           <Pagination.Next onClick={() => setPage(page + 1)} disabled={page >= totalPages} />
+          <Pagination.Last onClick={() => setPage(totalPages)} disabled={page >= totalPages} />
         </Pagination>
       )}
-      
+
       <style jsx>{`
         .loading {
           width: 100%;
