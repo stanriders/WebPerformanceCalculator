@@ -67,7 +67,7 @@ export default function Queue() {
 
       <style jsx>{`
         .queue {
-          max-height: 10vh;
+          max-height: 30vh;
           overflow: auto;
         }`}
       </style>
