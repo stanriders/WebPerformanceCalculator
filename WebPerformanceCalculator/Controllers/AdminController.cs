@@ -116,6 +116,7 @@ namespace WebPerformanceCalculator.Controllers
             return new JsonResult(playerQueue.GetUsersStats());
         }
 
+        [RequiresKey]
         [HttpGet]
         [Route("map/{id}")]
         public async Task<IActionResult> GetMap(int id)
@@ -128,6 +129,7 @@ namespace WebPerformanceCalculator.Controllers
             return new JsonResult(map);
         }
 
+        [RequiresKey]
         [HttpPost]
         [Route("map/{id}")]
         public async Task<IActionResult> UpdateMap(int id, double percentage)

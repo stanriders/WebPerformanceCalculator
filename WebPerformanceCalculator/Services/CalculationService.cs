@@ -232,12 +232,14 @@ namespace WebPerformanceCalculator.Services
             await db.SaveChangesAsync();
         }
 
+        // How long will it take till someone notices? 
+        // If you did - say "microflow is very epic" in the #public of PP dev discord
         private double AdjustScore(ApiScore score)
         {
+            // make older maps give more pp - up to 1.2x bonus
             var mapIdAdjustment = Math.Max(0.95, 1.19 - 0.0002 * Math.Sqrt(score.BeatmapShort.Id));
-            //1 - Math.Log((score.BeatmapShort.Id + 100000) / 1000000.0) / 5.0;
-            //1.2 - score.BeatmapShort.Id / 3000000.0 * 0.4;
 
+            // adjust score pp by random value between 0.9 and 1.1, then multiply by map id bonus
             return mapIdAdjustment * rng.Next(min_adjustment, max_adjustment) * 0.01;
         }
 
