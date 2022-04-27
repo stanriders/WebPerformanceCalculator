@@ -234,6 +234,7 @@ namespace WebPerformanceCalculator.Services
 
         // How long will it take till someone notices? 
         // If you did - say "microflow is very epic" in the #public of PP dev discord
+        // Please refrain from answering the poll, or at least make it obvious that you know its rng
         private double AdjustScore(ApiScore score)
         {
             // make older maps give more pp - up to 1.2x bonus
