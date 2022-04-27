@@ -4,7 +4,7 @@ namespace WebPerformanceCalculator.Services
 {
     public class CalculationUpdatesService
     {
-        public string CommitHash { get; set; } = "94e892d";
+        public string CommitHash { get; set; } = "4ff7cba";
         public DateTime CalculationModuleUpdateTime { get; set; } = new(2022, 04, 26, 16, 47, 27);
 
         /// <summary>
