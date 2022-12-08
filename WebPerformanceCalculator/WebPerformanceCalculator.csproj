@@ -15,7 +15,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="RunProcessAsTask" Version="1.2.4" />
     <PackageReference Include="Sentry.AspNetCore" Version="3.3.4" />
     <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
