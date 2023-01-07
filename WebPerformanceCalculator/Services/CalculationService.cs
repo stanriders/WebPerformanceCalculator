@@ -35,8 +35,47 @@ namespace WebPerformanceCalculator.Services
 
         private readonly string key;
 
-        private const int max_adjustment = (int)(1.1 * 100);
         private const int min_adjustment = (int)(0.9 * 100);
+
+        private const double sotarkses_adjustment = 0.7;
+        private readonly int[] sotarkses = new[]
+        {
+            4452992, // sotarks
+            3533958, // fieryrage
+            7451883, // nevo
+            308676,  // fatfan kolek
+            2732340, // taeyang
+            3723568, // reform
+            5115995, // armin
+            4446810, // bibbity bill
+            4378277, // log off now
+            3361661, // azu
+            4589786, // dendyhere
+            9426712, // browiec
+            2185987, // emu1337
+            7785535, // onlybiscuit
+            5404892, // kowari
+            5156153  // DeRandom Otaku
+        };
+
+        private const double lesser_sotarkses_adjustment = 0.85;
+        private readonly int[] lesser_sotarkses = new[]
+        {
+            4830261, // seni
+            2706438, // monstrata
+            2506267, // snownino_
+            2773526, // xexxar
+            899031,  // lami
+            4754771, // akitoshi
+            3230571, // doormat
+            3178411, // kencho
+            3552948, // skyflame
+            6174349, // Kuki1537
+            6203841, // Kagetsu
+            5504231  // Shmiklak
+        };
+
+        private const double other_adjustment = 1.05;
 
         public CalculationService(ILogger<CalculationService> _logger, 
             PlayerQueueService _queue, 
@@ -231,17 +270,25 @@ namespace WebPerformanceCalculator.Services
             await db.AddRangeAsync(scoresToAdd);
             await db.SaveChangesAsync();
         }
-
-        // How long will it take till someone notices? 
-        // If you did - say "microflow is very epic" in the #public of PP dev discord
-        // Please refrain from answering the poll, or at least make it obvious that you know its rng
+        
         private double AdjustScore(ApiScore score)
         {
-            // make older maps give more pp - up to 1.2x bonus
-            var mapIdAdjustment = Math.Max(0.95, 1.19 - 0.0002 * Math.Sqrt(score.BeatmapShort.Id));
+            if (sotarkses.Contains((int)score.BeatmapSet.CreatorId))
+                return sotarkses_adjustment;
 
-            // adjust score pp by random value between 0.9 and 1.1, then multiply by map id bonus
-            return mapIdAdjustment * rng.Next(min_adjustment, max_adjustment) * 0.01;
+
+            if (lesser_sotarkses.Contains((int)score.BeatmapSet.CreatorId))
+                return lesser_sotarkses_adjustment;
+
+            // freedom dive buff
+            string[] fdfdMods = { "hd", "hr" };
+            var intersectedMods = fdfdMods.Intersect(score.Mods);
+            var isHDHR = intersectedMods.Count() == fdfdMods.Length;
+
+            if (score.BeatmapShort.Id == 129891 && isHDHR)
+                return 2.0;
+            
+            return other_adjustment;
         }
 
         private class AccessToken
