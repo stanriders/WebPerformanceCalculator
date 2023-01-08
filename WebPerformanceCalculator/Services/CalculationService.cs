@@ -40,7 +40,7 @@ namespace WebPerformanceCalculator.Services
             4452992, // sotarks
             3533958, // fieryrage
             7451883, // nevo
-            308676,  // fatfan kolek
+            2308676, // fatfan kolek
             2732340, // taeyang
             3723568, // reform
             5115995, // armin
