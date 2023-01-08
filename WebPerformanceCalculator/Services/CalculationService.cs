@@ -271,16 +271,15 @@ namespace WebPerformanceCalculator.Services
             if (sotarkses.Contains((int)score.BeatmapSet.CreatorId))
                 return sotarkses_adjustment;
 
-
             if (lesser_sotarkses.Contains((int)score.BeatmapSet.CreatorId))
                 return lesser_sotarkses_adjustment;
 
             // freedom dive buff
-            string[] fdfdMods = { "hd", "hr" };
+            string[] fdfdMods = { "HD", "HR" };
             var intersectedMods = fdfdMods.Intersect(score.Mods);
             var isHDHR = intersectedMods.Count() == fdfdMods.Length;
 
-            if (score.BeatmapShort.Id == 2249059 && isHDHR)
+            if (score.BeatmapShort.Id == 129891 && isHDHR)
                 return 2.0;
             
             return other_adjustment;
