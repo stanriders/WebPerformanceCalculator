@@ -7,7 +7,7 @@ import Container from 'react-bootstrap/Container'
 export default function Header() {
   return (
     <>
-      <Navbar bg="light" expand="sm">
+      <Navbar bg="light" expand="sm" className='header-bg'>
       <Container>
         <Link href="/" passHref><Navbar.Brand>{consts.title}</Navbar.Brand></Link>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -19,6 +19,12 @@ export default function Header() {
         </Navbar.Collapse>
         </Container>
       </Navbar>
+      <style jsx>{`
+        .header-bg {
+          background-color: #e3f2fd!important;
+        }`}
+      </style>
     </>
+    
   );
 }

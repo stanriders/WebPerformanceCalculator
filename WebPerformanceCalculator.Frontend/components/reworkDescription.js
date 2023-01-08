@@ -11,12 +11,8 @@ export default function ReworkDescription() {
       <Card>
         <Card.Body>
           <Card.Text>
-            <p><CurrentBuild /></p>
             <div dangerouslySetInnerHTML={{
                   __html: consts.description}} />
-            <Alert variant="warning">
-              Please give the feedback about this rework through <b><Link href="https://forms.gle/qQMCscj6vYVc6uVh6">this form</Link></b>, we would really appreciate it!
-            </Alert>
           </Card.Text>
         </Card.Body>
       </Card>
