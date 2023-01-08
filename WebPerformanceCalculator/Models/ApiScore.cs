@@ -102,6 +102,9 @@ public class BeatmapShort
 
     [JsonProperty("max_combo")]
 	public uint? MaxCombo { get; set; }
+
+    [JsonProperty("user_id")]
+    public uint CreatorId { get; set; }
 }
 
 public class BeatmapSetShort

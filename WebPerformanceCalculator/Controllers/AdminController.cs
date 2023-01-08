@@ -3,11 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualBasic;
 using WebPerformanceCalculator.Attributes;
 using WebPerformanceCalculator.DB;
-using WebPerformanceCalculator.DB.Types;
-using WebPerformanceCalculator.Models;
 using WebPerformanceCalculator.Services;
 
 namespace WebPerformanceCalculator.Controllers
@@ -119,7 +116,7 @@ namespace WebPerformanceCalculator.Controllers
         [RequiresKey]
         [HttpGet]
         [Route("map/{id}")]
-        public async Task<IActionResult> GetMap(int id)
+        public async Task<IActionResult> GetMap(string key, int id)
         {
             await using var db = new DatabaseContext();
             db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -132,7 +129,7 @@ namespace WebPerformanceCalculator.Controllers
         [RequiresKey]
         [HttpPost]
         [Route("map/{id}")]
-        public async Task<IActionResult> UpdateMap(int id, double percentage)
+        public async Task<IActionResult> UpdateMap(string key, int id, double percentage)
         {
             if (id == 0 || percentage == 0)
                 return BadRequest();

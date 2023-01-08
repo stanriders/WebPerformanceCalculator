@@ -277,10 +277,10 @@ namespace WebPerformanceCalculator.Services
         
         private double AdjustScore(ApiScore score)
         {
-            if (sotarkses.Contains((int)score.BeatmapSet.CreatorId))
+            if (sotarkses.Contains((int)score.BeatmapShort.CreatorId))
                 return sotarkses_adjustment;
 
-            if (lesser_sotarkses.Contains((int)score.BeatmapSet.CreatorId))
+            if (lesser_sotarkses.Contains((int)score.BeatmapShort.CreatorId))
                 return lesser_sotarkses_adjustment;
 
             return other_adjustment;
