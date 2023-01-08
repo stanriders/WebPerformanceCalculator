@@ -205,19 +205,14 @@ namespace WebPerformanceCalculator.Services
                 }
                 else
                 {
+                    var adjustmentPercent = AdjustScore(score);
+
+                    if (result.LivePp != null)
+                        result.LocalPp = result.LivePp.Value * adjustmentPercent;
+
                     var map = await db.Maps.FirstOrDefaultAsync(x => x.Id == score.BeatmapShort.Id);
-                    if (map is not null)
+                    if (map is null)
                     {
-                        if (result.LivePp != null)
-                            result.LocalPp = result.LivePp.Value * map.AdjustmentPercentage;
-                    }
-                    else
-                    {
-                        var adjustmentPercent = AdjustScore(score);
-
-                        if (result.LivePp != null)
-                            result.LocalPp = result.LivePp.Value * adjustmentPercent;
-
                         mapsToAdd.Add(new Map
                         {
                             AdjustmentPercentage = adjustmentPercent,
