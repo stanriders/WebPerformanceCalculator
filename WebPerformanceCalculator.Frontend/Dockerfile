@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm install --force
 
 # Rebuild the source code only when needed
 FROM node:16 AS builder
