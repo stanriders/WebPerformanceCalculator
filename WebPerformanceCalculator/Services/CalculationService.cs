@@ -28,14 +28,11 @@ namespace WebPerformanceCalculator.Services
         private Timer? timer;
 
         private AccessToken? accessToken;
-        private readonly Random rng;
 
         private readonly string clientId;
         private readonly string clientSecret;
 
         private readonly string key;
-
-        private const int min_adjustment = (int)(0.9 * 100);
 
         private const double sotarkses_adjustment = 0.7;
         private readonly int[] sotarkses = new[]
@@ -92,8 +89,6 @@ namespace WebPerformanceCalculator.Services
             clientSecret = _configuration["ApiV2Secret"];
 
             key = _configuration["ApiV1Key"];
-
-            rng = new Random();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -285,7 +280,7 @@ namespace WebPerformanceCalculator.Services
             var intersectedMods = fdfdMods.Intersect(score.Mods);
             var isHDHR = intersectedMods.Count() == fdfdMods.Length;
 
-            if (score.BeatmapShort.Id == 129891 && isHDHR)
+            if (score.BeatmapShort.Id == 2249059 && isHDHR)
                 return 2.0;
             
             return other_adjustment;
