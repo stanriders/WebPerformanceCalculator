@@ -30,6 +30,7 @@ export default function User({playerData}) {
             <td>Beatmap</td>
             <td className="pp">Live PP</td>
             <td className="pp">PP</td>
+            <td className="diff">Difference</td>
           </tr>
         </thead>
         <tbody>
@@ -47,6 +48,9 @@ export default function User({playerData}) {
                 <td className="pp">
                   <b>{data.localPp.toFixed(2)}</b> <span className="weighted">({(Math.pow(0.95, index) * data.localPp).toFixed(1)})</span>
                 </td>
+                <td className="diff">
+                  {(data.localPp - data.livePp).toFixed(2)}
+                </td>
               </tr>
           ))}
         </tbody>
@@ -58,6 +62,10 @@ export default function User({playerData}) {
         }
         .pp {
           width: 128px;
+          text-align: center;
+        }
+        .diff {
+          width: 96px;
           text-align: center;
         }
         .weighted {
