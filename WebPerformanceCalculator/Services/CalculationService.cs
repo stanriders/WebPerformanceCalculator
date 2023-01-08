@@ -198,25 +198,34 @@ namespace WebPerformanceCalculator.Services
                 var result = mapper.Map<Score>(score);
                 result.UpdateTime = DateTime.UtcNow;
 
-                var map = await db.Maps.FirstOrDefaultAsync(x => x.Id == score.BeatmapShort.Id);
-                if (map is not null)
+                if (IsFreedomDiveHdHr(score))
                 {
-                    if (result.LivePp != null) 
-                        result.LocalPp = result.LivePp.Value * map.AdjustmentPercentage;
+                    if (result.LivePp != null)
+                        result.LocalPp = result.LivePp.Value * 2.0;
                 }
                 else
                 {
-                    var adjustmentPercent = AdjustScore(score);
-
-                    if (result.LivePp != null) 
-                        result.LocalPp = result.LivePp.Value * adjustmentPercent;
-
-                    mapsToAdd.Add(new Map
+                    var map = await db.Maps.FirstOrDefaultAsync(x => x.Id == score.BeatmapShort.Id);
+                    if (map is not null)
                     {
-                        AdjustmentPercentage = adjustmentPercent,
-                        Id = score.BeatmapShort.Id,
-                        Name = $"{score.BeatmapSet.Artist} - {score.BeatmapSet.Title} [{score.BeatmapShort.Version}]"
-                    });
+                        if (result.LivePp != null)
+                            result.LocalPp = result.LivePp.Value * map.AdjustmentPercentage;
+                    }
+                    else
+                    {
+                        var adjustmentPercent = AdjustScore(score);
+
+                        if (result.LivePp != null)
+                            result.LocalPp = result.LivePp.Value * adjustmentPercent;
+
+                        mapsToAdd.Add(new Map
+                        {
+                            AdjustmentPercentage = adjustmentPercent,
+                            Id = score.BeatmapShort.Id,
+                            Name =
+                                $"{score.BeatmapSet.Artist} - {score.BeatmapSet.Title} [{score.BeatmapShort.Version}]"
+                        });
+                    }
                 }
 
                 scoresToAdd.Add(result);
@@ -274,15 +283,19 @@ namespace WebPerformanceCalculator.Services
             if (lesser_sotarkses.Contains((int)score.BeatmapSet.CreatorId))
                 return lesser_sotarkses_adjustment;
 
-            // freedom dive buff
+            return other_adjustment;
+        }
+
+        private bool IsFreedomDiveHdHr(ApiScore score)
+        {
             string[] fdfdMods = { "HD", "HR" };
             var intersectedMods = fdfdMods.Intersect(score.Mods);
             var isHDHR = intersectedMods.Count() == fdfdMods.Length;
 
             if (score.BeatmapShort.Id == 129891 && isHDHR)
-                return 2.0;
-            
-            return other_adjustment;
+                return true;
+
+            return false;
         }
 
         private class AccessToken
