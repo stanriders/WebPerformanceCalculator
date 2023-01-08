@@ -1,4 +1,4 @@
-const apiBase = 'https://pp.stanr.info/api'
+const apiBase = 'https://sotarks.stanr.info/api'
 //const apiBase = 'http://localhost:5001/api'
 
 export default async function api (endpoint, options) {
