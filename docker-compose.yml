@@ -1,5 +1,10 @@
 version: '3.8'
 
+networks:
+  main:
+  logs:
+    external: true
+
 services:
   backend:
     build: ./WebPerformanceCalculator/.
@@ -19,6 +24,9 @@ services:
       - ./db:/app/db
       - ./logs/backend:/app/logs
       - ./keys:/root/.aspnet/DataProtection-Keys
+    networks:
+      - main
+      - logs
 
   frontend:
     build: ./WebPerformanceCalculator.Frontend/.
@@ -27,3 +35,6 @@ services:
     volumes:
       - ./logs/frontend:/app/logs
       - ./logs/frontend/npm:/root/.npm/_logs
+    networks:
+      - main
+      - logs
