@@ -12,9 +12,9 @@ services:
       - ApiV1Key
       - ApiV2Client
       - ApiV2Secret
-      - HighscoreThreshold: 699.5
-      - CalcsPerHourPerUser: 50
-      - CommitHashFileName: commithash
+      - HighscoreThreshold=699.5
+      - CalcsPerHourPerUser=50
+      - CommitHashFileName=commithash
     volumes:
       - ./db:/app/db
       - ./logs/backend:/app/logs
