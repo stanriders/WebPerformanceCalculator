@@ -8,6 +8,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:3001
+      - Key
+      - ApiV1Key
+      - ApiV2Client
+      - ApiV2Secret
+      - HighscoreThreshold: 699.5
+      - CalcsPerHourPerUser: 50
+      - CommitHashFileName: commithash
     volumes:
       - ./db:/app/db
       - ./logs/backend:/app/logs
